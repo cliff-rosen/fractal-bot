@@ -4,7 +4,7 @@
 
 The Fractal Bot system enables deep collaboration between users and an AI assistant to solve complex questions through a pipeline-oriented approach to workflow development and execution.
 
-he system consists of four key entities that work together:
+The system consists of four key entities that work together:
 
 1. **User**: The human operator who:
    - Poses questions and tasks

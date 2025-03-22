@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
-import { MoonIcon, SunIcon, DocumentTextIcon, Square2StackIcon, FolderIcon, PlayIcon, SparklesIcon, BeakerIcon, CubeIcon } from '@heroicons/react/24/outline'
+import { MoonIcon, SunIcon, DocumentTextIcon, Square2StackIcon, FolderIcon, PlayIcon, SparklesIcon, BeakerIcon, CubeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import settings from '../config/settings'
 import { HelpGuide } from './HelpGuide';
 
@@ -43,6 +43,17 @@ export default function TopBar() {
                             >
                                 <PlayIcon className="h-5 w-5 mr-1" />
                                 Jobs
+                            </Link>
+
+                            <Link
+                                to="/fractal-bot"
+                                className={`${location.pathname === '/fractal-bot'
+                                    ? 'border-blue-500 text-gray-900 dark:text-gray-100'
+                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                            >
+                                <ChatBubbleLeftRightIcon className="h-5 w-5 mr-1" />
+                                FractalBot
                             </Link>
 
                             <Link

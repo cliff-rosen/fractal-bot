@@ -106,21 +106,17 @@ enum ActionType {
 ### Chatbot
 ```typescript
 class Chatbot {
-  // Core interaction methods
-  async proposePlan(question: string): Promise<Message>;
-  async proposeAgent(agentType: AgentType, context: any): Promise<Message>;
-  async reportProgress(agent_id: string, progress: number): Promise<Message>;
-  async reportCompletion(agent_id: string, results: any): Promise<Message>;
-  
-  // Asset management
-  async createAsset(type: AssetType, content: any): Promise<Asset>;
-  async updateAsset(asset_id: string, content: any): Promise<Asset>;
-  async getAsset(asset_id: string): Promise<Asset>;
-  
-  // Agent coordination
-  async launchAgent(agent_id: string): Promise<void>;
-  async stopAgent(agent_id: string): Promise<void>;
-  async getAgentStatus(agent_id: string): Promise<AgentStatus>;
+  // Single entry point for all user interactions
+  async sendUserMessage(message: Message): Promise<ChatResponse>;
+}
+
+interface ChatResponse {
+  message: Message;  // The bot's response message
+  sideEffects?: {
+    assets?: Asset[];  // Any assets created/updated
+    agents?: Agent[];  // Any agents launched/stopped
+    progress?: number;  // Any progress updates
+  };
 }
 ```
 

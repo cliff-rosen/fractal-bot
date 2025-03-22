@@ -21,32 +21,118 @@ export interface ChatMessage {
     };
 }
 
-// Agent types
-export type AgentStatus = 'pending' | 'in_progress' | 'completed' | 'error';
-
-export interface Agent {
-    id: string;
-    title: string;
-    description: string;
-    status: AgentStatus;
-    createdAt: string;
-    completedAt?: string;
-    metadata?: Record<string, any>;
+// Asset Types
+export enum AssetType {
+    TEXT = 'text',
+    DATA = 'data',
+    PDF = 'pdf',
+    SPREADSHEET = 'spreadsheet',
+    IMAGE = 'image',
+    CODE = 'code',
+    DOCUMENT = 'document'
 }
 
-// Asset types
+export enum AssetStatus {
+    PROPOSED = 'proposed',
+    PENDING = 'pending',
+    READY = 'ready',
+    ERROR = 'error'
+}
+
 export interface Asset {
-    id: string;
-    type: string;
-    name: string;
+    asset_id: string;
+    type: AssetType;
     content: any;
-    ready: boolean;
     metadata: {
-        timestamp: string;
+        status: AssetStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        creator: string;  // user/bot/agent
         tags: string[];
-        agentId?: string;
-        [key: string]: any;
+        agent_associations: string[];  // agent_ids
+        version: number;
     };
+}
+
+// Agent Types
+export enum AgentType {
+    DATA_COLLECTION = 'data_collection',
+    INFORMATION_RETRIEVAL = 'information_retrieval',
+    ANALYSIS = 'analysis'
+}
+
+export enum AgentStatus {
+    IDLE = 'idle',
+    RUNNING = 'running',
+    COMPLETED = 'completed',
+    ERROR = 'error'
+}
+
+export interface Agent {
+    agent_id: string;
+    type: string;
+    description: string;
+    status: AgentStatus;
+    metadata: {
+        createdAt: Date;
+        lastRunAt?: Date;
+        progress?: number;
+        estimatedCompletion?: Date;
+    };
+}
+
+// Message Types
+export enum MessageRole {
+    USER = 'user',
+    BOT = 'bot'
+}
+
+export enum ActionType {
+    CREATE_ASSET = 'create_asset',
+    START_AGENT = 'start_agent',
+    APPROVE_AGENT = 'approve_agent',
+    REJECT_AGENT = 'reject_agent',
+    LAUNCH_AGENT = 'launch_agent',
+    MODIFY_ASSET = 'modify_asset',
+    NEXT_STEP = 'next_step'
+}
+
+export interface ActionButton {
+    label: string;
+    action: ActionType;
+}
+
+export interface Message {
+    message_id: string;
+    content: string;
+    sender: 'user' | 'bot';
+    timestamp: Date;
+    metadata?: {
+        actionButtons?: ActionButton[];
+    };
+}
+
+// Chat Response Types
+export interface ChatResponse {
+    message: Message;
+    sideEffects?: {
+        assets?: Asset[];
+        agents?: Agent[];
+    };
+}
+
+// Workflow Types
+export enum WorkflowStatus {
+    IDLE = 'idle',
+    RUNNING = 'running',
+    COMPLETED = 'completed',
+    ERROR = 'error'
+}
+
+export interface WorkflowState {
+    currentStep: number;
+    totalSteps: number;
+    status: WorkflowStatus;
 }
 
 // Turn state represents a single interaction cycle
