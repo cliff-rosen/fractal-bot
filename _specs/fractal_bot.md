@@ -2,7 +2,43 @@
 
 ## Overview
 
-The Fractal Bot system enables deep collaboration between users and an AI assistant to solve complex questions through a pipeline-oriented approach to workflow development and execution. The system is built as a React-based web application with a modern, responsive UI.
+The Fractal Bot system enables deep collaboration between users and an AI assistant to solve complex questions through a pipeline-oriented approach to workflow development and execution.
+
+he system consists of four key entities that work together:
+
+1. **User**: The human operator who:
+   - Poses questions and tasks
+   - Reviews and approves steps
+   - Can intervene at any point
+   - Has direct access to all assets
+   - Maintains control of the workflow
+
+2. **Chatbot**: An AI assistant that:
+   - Helps plan and structure the approach
+   - Guides the user through the process
+   - Provides "agent assistance":
+      - Suggests appropriate agents
+      - Facilitates invocation of agents
+      - Reports on agent progress
+   - Provides explanations and insights
+   - Works as a copilot rather than an autonomous agent
+   - Has ability to directly generate assets when an specialized agent is not required (ie for basic document drafting)
+
+3. **Assets**: A shared workspace that:
+   - Contains all information and data
+   - Is accessible to all entities
+   - Represents the current state
+   - Tracks progress and results
+   - Serves as the communication medium
+
+4. **Agents**: Specialized workers that:
+   - Execute specific tasks
+   - Read from and write to assets
+   - Report their status
+   - Operate under user/bot guidance
+   - Can be run locally or in the cloud - ie through MCP
+
+As where in traditional systems the user accesses a chatbot that chooses and uses tools on its own, with FractalBot, the user is choosing and using tools with the help of an AI copilot.
 
 ## Core Concepts
 
@@ -43,33 +79,55 @@ The Fractal Bot system enables deep collaboration between users and an AI assist
        - New assets
        - Final results
 
-3. **Pipeline Workflow Development**
-   - Start with high-level plan (e.g., 3-4 specialized agents)
-   - Sequential execution of specialized tasks:
+3. **Typical Usage Flow**
+   - User initiates with question or request
+   - Chatbot analyzes and proposes overall plan:
+     - Identifies required agents
+     - Outlines sequence of tasks
+     - Explains expected outcomes
+   - User reviews and accepts/modifies plan
+   - Chatbot coordinates execution:
      ```
-     User Question
+     User Question/Request
          ↓
-     Agent 1 (Specialized Task)
+     Chatbot Proposes Plan
          ↓
-     User Approval/Intervention
+     User Accepts Plan
          ↓
-     Agent 2 (Next Specialized Task)
+     Chatbot Proposes First Task
          ↓
-     User Approval/Intervention
+     User Approves
          ↓
-     Agent 3 (Final Task)
+     Agent Executes Task
          ↓
-     Results
+     Chatbot Reports & Proposes Next
+         ↓
+     User Confirms/Redirects
+         ↓
+     Repeat Until Complete
      ```
-   - Each agent builds on previous results
-   - Natural progression from data collection to analysis
-   - Workflow phases:
-     - Setup: Initial planning and agent selection
-     - Execution: Sequential agent execution
-     - Review: Evaluating results and deciding next steps
-   - User control at key decision points
-   - Error handling at each stage
-   - Flexible redirection at any point
+   - Each cycle:
+     - Chatbot proposes next step
+     - User approves or redirects
+     - Agent executes if approved
+     - Chatbot reports results
+     - Process continues
+   - User can at any point:
+     - Review/revise the assets
+     - Modify the plan
+     - Add new information
+     - Request different analysis
+     - Interrupt the flow
+   - Chatbot maintains:
+     - General assistance and recommendations
+     - Certain asset generation activities that don't require separate agents (e.g. drafting documents)
+     - Progress tracking
+     - Status reporting
+     - Next-step planning
+   - Agents focus on:
+     - Task execution
+     - Asset creation/updates
+     - Status reporting
 
 4. **Visual Workspace**
    - Three-column layout:
@@ -98,7 +156,16 @@ The Fractal Bot system enables deep collaboration between users and an AI assist
    - Backdrop blur effects for depth
    - Glass-morphism design elements
 
-5. **Asset Management**
+5. **User Experience Transitions**
+
+   | State Change | Chat Interface | Assets Panel | Agents Panel |
+   |-------------|----------------|--------------|--------------|
+   | **Agent Launch Proposal** | • New message from chatbot proposing agent launch<br>• Action button appears for user approval<br>• Shows expected outcomes | • New asset appears<br>• Status: "Proposed"<br>• Shows expected output type<br>• Placeholder for future content | • Agent appears in "Current Agents" area<br>• Status: "Proposed"<br>• Shows agent description |
+   | **Agent Launch** | • New message from chatbot confirming launch<br>• Action button disappears<br>• Shows progress indicators | • Asset status updates to "Pending"<br>• Shows expected output type | • Agent status updates to "In Progress"<br>• Progress indicators become active<br>• Shows estimated completion time |
+   | **Agent Completion** | • New message from chatbot reporting completion<br>• Summary of results<br>• Proposal for next step<br>• New action buttons for next actions | • Asset status updates to "Ready"<br>• Content becomes available<br>• Metadata is populated<br>• Shows completion timestamp | • Agent status updates to "Completed"<br>• Agent moves to "Recently Used" section<br>• Shows completion time<br>• Re-run option becomes available |
+   | **User Intervention** | • Action buttons for approval/rejection<br>• Input field for modifications<br>• Asset review controls<br>• Cancel/stop buttons | • Edit controls for user-owned assets<br>• Review/comment interface<br>• Version history view<br>• Status indicators update | • Cancel/stop controls for active agents<br>• Re-run option for completed agents<br>• Status indicators update<br>• Progress bars pause/resume |
+
+6. **Asset Management**
    - Support for multiple asset types:
      - Text files
      - Spreadsheets
@@ -125,7 +192,7 @@ The Fractal Bot system enables deep collaboration between users and an AI assist
    - Shared access and modification rights
    - Version tracking of changes
 
-6. **Information Asset Building**
+7. **Information Asset Building**
    - Each agent generates specific information
    - Information flows through the pipeline
    - Assets can include:
