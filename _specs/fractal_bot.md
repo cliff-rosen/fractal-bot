@@ -42,9 +42,33 @@ As where in traditional systems the user accesses a chatbot that chooses and use
 
 ## Core Concepts
 
-1. **Collaborative Chat Interface**
-   - User and bot work together in a chat panel
-   - Natural conversation to develop and refine the approach
+1. **Fundamental Architecture**
+   - System enables human-AI collaboration through shared assets
+   - User and AI copilot work together to:
+     - Plan and structure approaches
+     - Choose and use appropriate tools
+     - Build and refine solutions
+   - All information is captured in shared assets that:
+     - Serve as the communication medium
+     - Represent the current state
+     - Track progress and results
+     - Are accessible to all participants
+   - Unlike traditional AI systems that:
+     - Act autonomously with tools
+     - Keep information internal
+     - Make decisions independently
+   - Fractal Bot:
+     - Works as a copilot with the user
+     - Makes all information visible and shared
+     - Requires user approval for actions
+     - Maintains transparency throughout
+                       
+2. **Collaborative Chat Interface**
+   - Primary interaction point between user and AI copilot
+   - Natural conversation to:
+     - Develop and refine approaches
+     - Choose appropriate tools
+     - Plan execution steps
    - Bot provides guidance while user maintains control
    - Real-time feedback and clarification
    - Support for action buttons to trigger specific workflows
@@ -58,7 +82,8 @@ As where in traditional systems the user accesses a chatbot that chooses and use
      - Redirect the workflow
      - Provide feedback on intermediate results
 
-2. **Specialized Agent System**
+3. **Specialized Agent System**
+   - Tools that the user and AI copilot can choose to use
    - Each agent is a specialized worker with a specific task
    - Agents are launched in sequence to build up information
    - Agent categories include:
@@ -70,67 +95,12 @@ As where in traditional systems the user accesses a chatbot that chooses and use
      - Produces output for the next agent
      - Reports its status and progress
      - Can be monitored and managed
-     - Takes input from:
-       - User instructions
-       - Bot guidance
-       - Existing assets
-     - Produces output as:
-       - Status updates
-       - New assets
-       - Final results
-
-3. **Typical Usage Flow**
-   - User initiates with question or request
-   - Chatbot analyzes and proposes overall plan:
-     - Identifies required agents
-     - Outlines sequence of tasks
-     - Explains expected outcomes
-   - User reviews and accepts/modifies plan
-   - Chatbot coordinates execution:
-     ```
-     User Question/Request
-         ↓
-     Chatbot Proposes Plan
-         ↓
-     User Accepts Plan
-         ↓
-     Chatbot Proposes First Task
-         ↓
-     User Approves
-         ↓
-     Agent Executes Task
-         ↓
-     Chatbot Reports & Proposes Next
-         ↓
-     User Confirms/Redirects
-         ↓
-     Repeat Until Complete
-     ```
-   - Each cycle:
-     - Chatbot proposes next step
-     - User approves or redirects
-     - Agent executes if approved
-     - Chatbot reports results
-     - Process continues
-   - User can at any point:
-     - Review/revise the assets
-     - Modify the plan
-     - Add new information
-     - Request different analysis
-     - Interrupt the flow
-   - Chatbot maintains:
-     - General assistance and recommendations
-     - Certain asset generation activities that don't require separate agents (e.g. drafting documents)
-     - Progress tracking
-     - Status reporting
-     - Next-step planning
-   - Agents focus on:
-     - Task execution
-     - Asset creation/updates
-     - Status reporting
+     - Takes input from shared assets
+     - Produces output as new assets
+     - Operates under user/bot guidance
 
 4. **Visual Workspace**
-   - Three-column layout:
+   - Three-column layout that emphasizes shared information:
      - Left Column: Chat Interface
        - Real-time conversation with the AI assistant
        - Message history display
@@ -148,7 +118,7 @@ As where in traditional systems the user accesses a chatbot that chooses and use
        - Represents current workflow state
        - Final state contains solution
      - Right Column: Agents Panel
-       - Display of active and completed agents
+       - Display of available and active tools
        - Agent status and progress
        - Agent selection interface
    - Modern UI with dark/light mode support
