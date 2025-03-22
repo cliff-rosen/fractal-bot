@@ -10,13 +10,13 @@ interface Settings {
 
 const productionSettings: Settings = {
     apiUrl: 'https://ra-api.ironcliff.ai',
-    appName: 'AutoSage',
+    appName: 'FractalBot',
     logoUrl: '/cognify-icon.svg'  // Using existing icon
 };
 
 const developmentSettings: Settings = {
     apiUrl: 'http://localhost:8000',
-    appName: 'AutoSage (Dev)',
+    appName: 'FractalBot (Dev)',
     logoUrl: '/cognify-icon.svg'  // Using existing icon
 };
 

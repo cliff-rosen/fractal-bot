@@ -1,18 +1,8 @@
 # Fractal Bot: Collaborative Problem-Solving System
 
-we will workout the state transition details later
-for now lets fix the layout
-the layout should be:
-- chat
-- info asset palette
-- workspace
-- tool palette
-four columns roughly the same width except the workspace is allowed to grow
-info assets is that juicy collaborative clipboard that's missing from chatbots. so make that part really nice. we want to show the assets there in a nice visual way with nice icons like attachements in an email
-
 ## Overview
 
-The Fractal Bot system enables deep collaboration between users and an AI assistant to solve complex questions through an iterative, fractal approach to workflow development and execution.
+The Fractal Bot system enables deep collaboration between users and an AI assistant to solve complex questions through a pipeline-oriented approach to workflow development and execution. The system is built as a React-based web application with a modern, responsive UI.
 
 ## Core Concepts
 
@@ -21,116 +11,194 @@ The Fractal Bot system enables deep collaboration between users and an AI assist
    - Natural conversation to develop and refine the approach
    - Bot provides guidance while user maintains control
    - Real-time feedback and clarification
+   - Support for action buttons to trigger specific workflows
+   - Message history with timestamps and role indicators
+   - Clear decision points between major workflow steps
+   - User approval required for workflow progression
+   - User can intervene at any point to:
+     - Add new information or files
+     - Revise the original question
+     - Request additional checks or analysis
+     - Redirect the workflow
+     - Provide feedback on intermediate results
 
-2. **Tool-Augmented Problem Solving**
-   - Shared access to a suite of tools for both user and bot
-   - Tool categories include:
-     - Search and retrieval
-     - List building and organization
-     - Evaluation and analysis
-     - Content generation
-     - Data manipulation
-   - Tools can be composed and combined as needed
+2. **Specialized Agent System**
+   - Each agent is a specialized worker with a specific task
+   - Agents are launched in sequence to build up information
+   - Agent categories include:
+     - Data Collection (e.g., Song List Agent)
+     - Information Retrieval (e.g., Lyrics Retrieval Agent)
+     - Analysis and Processing (e.g., Analysis Agent)
+   - Each agent:
+     - Has a clear, single responsibility
+     - Produces output for the next agent
+     - Reports its status and progress
+     - Can be monitored and managed
+     - Takes input from:
+       - User instructions
+       - Bot guidance
+       - Existing assets
+     - Produces output as:
+       - Status updates
+       - New assets
+       - Final results
 
-3. **Fractal Workflow Development**
-   - Start with high-level plan (e.g., 3-4 main steps)
-   - Recursively expand steps as needed:
+3. **Pipeline Workflow Development**
+   - Start with high-level plan (e.g., 3-4 specialized agents)
+   - Sequential execution of specialized tasks:
      ```
-     1. Main step
-        1a. Sub-step
-        1b. Sub-step
-           1b.1. Detail step
-           1b.2. Detail step
-        1c. Sub-step
+     User Question
+         ↓
+     Agent 1 (Specialized Task)
+         ↓
+     User Approval/Intervention
+         ↓
+     Agent 2 (Next Specialized Task)
+         ↓
+     User Approval/Intervention
+         ↓
+     Agent 3 (Final Task)
+         ↓
+     Results
      ```
-   - Each level can utilize appropriate tools
-   - Natural progression from abstract to concrete
+   - Each agent builds on previous results
+   - Natural progression from data collection to analysis
+   - Workflow phases:
+     - Setup: Initial planning and agent selection
+     - Execution: Sequential agent execution
+     - Review: Evaluating results and deciding next steps
+   - User control at key decision points
+   - Error handling at each stage
+   - Flexible redirection at any point
 
 4. **Visual Workspace**
-   - Split into key areas:
-     - Workflow visualization
-     - Available tools palette
-     - Information palette
-   - Workflow area shows current plan structure
-   - Tool palette provides easy access to capabilities
-   - Information palette tracks all inputs/outputs
+   - Three-column layout:
+     - Left Column: Chat Interface
+       - Real-time conversation with the AI assistant
+       - Message history display
+       - Input area for new messages
+       - Action buttons for workflow progression
+     - Middle Column: Assets Panel (Shared Project Folder)
+       - Display of all information assets
+       - File upload capabilities
+       - Asset organization and management
+       - Asset metadata display
+       - Accessible to all collaborators:
+         - User
+         - Bot
+         - Active agents
+       - Represents current workflow state
+       - Final state contains solution
+     - Right Column: Agents Panel
+       - Display of active and completed agents
+       - Agent status and progress
+       - Agent selection interface
+   - Modern UI with dark/light mode support
+   - Responsive layout with proper spacing and borders
+   - Backdrop blur effects for depth
+   - Glass-morphism design elements
 
-5. **Information Asset Building**
-   - Each step generates valuable information
-   - Information is organized and accessible
+5. **Asset Management**
+   - Support for multiple asset types:
+     - Text files
+     - Spreadsheets
+     - PDFs
+     - General data
+   - Asset metadata tracking:
+     - Timestamp
+     - File size
+     - File type
+     - Custom tags
+     - Agent associations
+     - Creator (user/bot/agent)
+   - Asset operations:
+     - Upload
+     - Delete
+     - View
+     - Organize
+     - Edit (by all collaborators)
+   - Asset readiness states:
+     - Processing
+     - Ready
+     - Error
+   - Asset relationships between agents
+   - Shared access and modification rights
+   - Version tracking of changes
+
+6. **Information Asset Building**
+   - Each agent generates specific information
+   - Information flows through the pipeline
    - Assets can include:
-     - Search results
-     - Generated content
+     - Collected data
+     - Retrieved information
      - Analysis outputs
-     - Intermediate findings
-   - Progressive refinement of information
+     - Intermediate results
+     - User contributions
+     - Bot insights
+   - Progressive building of information
+   - Asset linking to specific agents
+   - Clear asset ownership and responsibility
+   - Collaborative editing and review
+   - Final state represents complete solution
 
 ## Example Flow
 
-1. **Initial Planning**
-   - User presents question
-   - Bot helps formulate high-level approach
-   - Agreement on main workflow steps
+1. **Initial Setup**
+   - User presents question or task
+   - Bot analyzes requirements
+   - Bot proposes sequence of specialized agents
+   - User confirms or modifies plan
+   - System prepares first agent
+   - Initial assets are created
 
-2. **Step Refinement**
-   - Focus on first major step
-   - Discuss appropriate tools
-   - Break into sub-steps if needed
-   - Execute and gather information
+2. **Workflow Execution**
+   - Bot launches first specialized agent
+   - Agent performs its specific task
+   - Results are captured as assets
+   - User reviews and approves
+   - User can intervene to:
+     - Add new information
+     - Modify direction
+     - Request additional analysis
+   - Next agent is launched
+   - Process continues until completion
 
-3. **Progressive Development**
-   - Move through steps systematically
-   - Expand and refine as needed
-   - Build up information assets
-   - Maintain overview while diving deep
-
-4. **Solution Synthesis**
-   - Combine gathered information
-   - Generate final answer
-   - Review and validate
-
-## State Transitions
-
-| From Stage | To Stage | Purpose | Trigger | Current Message | Notes |
-|------------|----------|----------|---------|-----------------|--------|
-| initial | question_received | Initial greeting to receiving user's question | User sends first message | "Hello! I'm FractalBot. What question can I help you with today?" | Entry point |
-| question_received | workflow_designing | Process user's question and start designing workflow | System processes the question | Shows user's question about analyzing Beatles songs | Captures initial query |
-| workflow_designing | workflow_ready | Present the proposed workflow steps | System finishes designing workflow | Shows the 3-step plan for analysis | Presents action plan |
-| workflow_ready | workflow_started | Begin workflow execution | User confirms to start | "Sounds good! Let's start." | Phase changes from 'setup' to 'execution' |
-| workflow_started | compiling_songs | Start the first analysis step | Automatic after workflow starts | "Starting the analysis..." | Creates song list asset |
-| compiling_songs | retrieving_lyrics | Move to lyrics retrieval step | After song list is compiled | "Generating the list of Beatles songs..." | Creates lyrics database asset |
-| retrieving_lyrics | analyzing_lyrics | Begin analysis of lyrics | After lyrics are retrieved | "Retrieving lyrics for analysis..." | Processes gathered data |
-| analyzing_lyrics | workflow_complete | Complete the workflow | After analysis is done | "Analyzing the lyrics for occurrences of 'love'..." | Final results presentation |
-
-### Areas for Improvement
-
-1. **Transition Timing**: Some transitions happen too quickly without showing meaningful progress
-2. **Asset Management**: Assets are only created in certain transitions (compiling_songs and retrieving_lyrics) but not others
-3. **Progress Feedback**: Messages could be more informative about what's happening
-4. **Error Handling**: No specific error states or recovery paths
-5. **User Interaction**: Limited points where user can interact or influence the workflow
-6. **State Persistence**: No mechanism to save progress between stages
-7. **Backward Navigation**: While supported in code, the UX for going backward isn't well defined
-8. **Transition Validation**: No validation to ensure prerequisites are met before transitions
+3. **Review and Refinement**
+   - Results are presented to user
+   - User can request modifications
+   - Bot can suggest next steps
+   - Process continues until satisfied
+   - Workflow is documented
+   - Final assets represent solution
 
 ## Key Benefits
 
-1. **Natural Problem Decomposition**
-   - Break complex problems into manageable pieces
-   - Maintain context at all levels
-   - Flexible depth of analysis
+1. **Clear Task Specialization**
+   - Each agent has a specific role
+   - Clear progression of tasks
+   - Predictable workflow
+   - Easy to understand and follow
 
-2. **Guided Yet Flexible**
-   - Structure without rigidity
-   - Can adapt approach as new information emerges
-   - User maintains control while leveraging bot capabilities
+2. **User Control**
+   - Clear decision points
+   - Explicit approval required
+   - Easy to modify approach
+   - Transparent progress
+   - Intervention at any point
+   - Direct asset manipulation
 
 3. **Information Organization**
    - Clear tracking of progress
    - Easy access to all generated assets
    - Building blocks for solution
+   - Asset-agent relationships
+   - Shared project workspace
+   - Collaborative editing
 
-4. **Tool Integration**
-   - Right tool for each sub-task
-   - Combine tools effectively
-   - Build on previous results
+4. **Agent Integration**
+   - Specialized agents for specific tasks
+   - Sequential workflow
+   - Clear input/output relationships
+   - Status tracking and monitoring
+   - Asset-based communication
+   - Result-driven execution
