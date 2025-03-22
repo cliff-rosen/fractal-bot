@@ -84,7 +84,7 @@ export interface Agent {
 // Message Types
 export enum MessageRole {
     USER = 'user',
-    BOT = 'bot'
+    ASSISTANT = 'assistant'
 }
 
 export enum ActionType {
@@ -104,8 +104,8 @@ export interface ActionButton {
 
 export interface Message {
     message_id: string;
+    role: MessageRole;
     content: string;
-    sender: 'user' | 'bot';
     timestamp: Date;
     metadata?: {
         actionButtons?: ActionButton[];

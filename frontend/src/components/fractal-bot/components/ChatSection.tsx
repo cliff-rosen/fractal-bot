@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-import { Message, ActionButton, ActionType } from '../types/state';
+import { Message, ActionButton, ActionType, MessageRole } from '../types/state';
 
 interface ChatSectionProps {
     messages: Message[];
@@ -36,10 +36,10 @@ export const ChatSection: React.FC<ChatSectionProps> = ({
                 {messages.map((message) => (
                     <div
                         key={message.message_id}
-                        className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${message.role === MessageRole.USER ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`max-w-[80%] rounded-lg p-3 ${message.sender === 'user'
+                            className={`max-w-[80%] rounded-lg p-3 ${message.role === MessageRole.USER
                                 ? 'bg-blue-500 text-white'
                                 : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                                 }`}

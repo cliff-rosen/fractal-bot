@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from routers import search, auth, research, workflow, tools, files
+from routers import search, auth, research, workflow, tools, files, bot
 from database import get_db, init_db
 from models import Base
 from config import settings, setup_logging
@@ -66,6 +66,7 @@ app.include_router(
 )
 app.include_router(tools.router)
 app.include_router(files.router)
+app.include_router(bot.router)
 logger.info("Routers included")
 
 

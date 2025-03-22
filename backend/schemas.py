@@ -626,3 +626,33 @@ class FileImageResponse(BaseModel):
     file_id: str = Field(description="ID of the file this image belongs to")
     mime_type: str = Field(description="MIME type of the image")
     image_data: str = Field(description="Base64 encoded image data")
+
+##### CHAT SCHEMAS #####
+
+class MessageRole(str, Enum):
+    USER = "user"
+    ASSISTANT = "assistant"
+
+class Message(BaseModel):
+    """Schema for chat messages"""
+    message_id: str = Field(description="Unique identifier for the message")
+    role: MessageRole = Field(description="Role of the message sender (user/assistant)")
+    content: str = Field(description="Content of the message")
+    timestamp: datetime = Field(description="When the message was sent")
+    metadata: Optional[Dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Optional metadata for the message"
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ChatResponse(BaseModel):
+    """Schema for chat responses"""
+    message: Message = Field(description="The bot's response message")
+    sideEffects: Optional[Dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Optional side effects from the bot's response"
+    )
+
+    model_config = ConfigDict(from_attributes=True)

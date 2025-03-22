@@ -87,4 +87,5 @@ export const formatTimestamp = (timestamp: string): string => {
 
 // Export all APIs
 export * from './toolApi';
-export * from './workflowApi'; 
+export * from './workflowApi';
+export * from './botApi'; 

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { ChatSection } from './components/ChatSection';
 import { AssetsSection } from './components/AssetsSection';
 import { AgentsSection } from './components/AgentsSection';
-import { Message, Asset, Agent, ChatResponse, WorkflowState, WorkflowStatus, ActionType } from './types/state';
+import { Message, Asset, Agent, ChatResponse, WorkflowState, WorkflowStatus, ActionType, MessageRole } from './types/state';
+import { botApi } from '../../lib/api/botApi';
 
 const FractalBot: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -21,8 +22,8 @@ const FractalBot: React.FC = () => {
 
         const userMessage: Message = {
             message_id: Date.now().toString(),
+            role: MessageRole.USER,
             content: message,
-            sender: 'user',
             timestamp: new Date(),
             metadata: {}
         };
@@ -32,30 +33,34 @@ const FractalBot: React.FC = () => {
         setIsProcessing(true);
 
         try {
-            // TODO: Implement actual message processing logic
-            // For now, we'll simulate a response
-            const botMessage: Message = {
-                message_id: (Date.now() + 1).toString(),
-                content: `I received your message: "${message}"`,
-                sender: 'bot',
-                timestamp: new Date(),
-                metadata: {
-                    actionButtons: [
-                        {
-                            label: 'Create Asset',
-                            action: ActionType.CREATE_ASSET
-                        },
-                        {
-                            label: 'Start Agent',
-                            action: ActionType.START_AGENT
-                        }
-                    ]
-                }
-            };
+            // Send message to backend with history
+            const response = await botApi.sendMessage(message, messages);
 
-            setMessages(prev => [...prev, botMessage]);
+            // Add bot's response to messages
+            setMessages(prev => [...prev, response.message]);
+
+            // Handle any side effects (assets, agents, etc.)
+            const sideEffects = response.sideEffects || {};
+            const newAssets = sideEffects.assets || [];
+            const newAgents = sideEffects.agents || [];
+
+            if (newAssets.length > 0) {
+                setAssets(prev => [...prev, ...newAssets]);
+            }
+            if (newAgents.length > 0) {
+                setAgents(prev => [...prev, ...newAgents]);
+            }
         } catch (error) {
             console.error('Error processing message:', error);
+            // Add error message to chat
+            const errorMessage: Message = {
+                message_id: (Date.now() + 1).toString(),
+                role: MessageRole.ASSISTANT,
+                content: error instanceof Error ? error.message : 'Sorry, I encountered an error processing your message. Please try again.',
+                timestamp: new Date(),
+                metadata: {}
+            };
+            setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsProcessing(false);
         }
