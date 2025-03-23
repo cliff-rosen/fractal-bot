@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum, TIMESTAMP, JSON, LargeBinary
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum, TIMESTAMP, JSON, LargeBinary, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, foreign, remote, validates
 from datetime import datetime
@@ -19,12 +19,16 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True)
     password = Column(String(255))
+    is_active = Column(Boolean, default=True)
     registration_date = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     topics = relationship("Topic", back_populates="user")
     workflows = relationship("Workflow", back_populates="user")
     files = relationship("File", back_populates="user", cascade="all, delete-orphan")
+    google_credentials = relationship("GoogleOAuth2Credentials", back_populates="user", uselist=False)
 
 class Topic(Base):
     __tablename__ = "topics"
@@ -355,4 +359,22 @@ class FileImage(Base):
     image_data = Column(LargeBinary, nullable=False)
     mime_type = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class GoogleOAuth2Credentials(Base):
+    __tablename__ = "google_oauth2_credentials"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), unique=True)
+    token = Column(String)
+    refresh_token = Column(String)
+    token_uri = Column(String)
+    client_id = Column(String)
+    client_secret = Column(String)
+    scopes = Column(JSON)  # Store scopes as JSON array
+    expiry = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship
+    user = relationship("User", back_populates="google_credentials")
 
