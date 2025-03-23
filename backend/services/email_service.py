@@ -128,10 +128,6 @@ class EmailService:
             # Build search query
             query_parts = []
             
-            if folders:
-                folder_query = ' OR '.join(f'label:{folder}' for folder in folders)
-                query_parts.append(f'({folder_query})')
-                
             if date_range:
                 if date_range.get('start'):
                     query_parts.append(f'after:{int(date_range["start"].timestamp())}')
@@ -143,11 +139,14 @@ class EmailService:
                 
             query = ' '.join(query_parts) if query_parts else None
             
-            # Get messages
+            print("Query: ", query)
+
+            # Get messages with proper label handling
             results = self.service.users().messages().list(
                 userId='me',
                 q=query,
-                maxResults=max_results
+                maxResults=max_results,
+                labelIds=folders if folders else None  # Pass label IDs directly
             ).execute()
             
             messages = results.get('messages', [])

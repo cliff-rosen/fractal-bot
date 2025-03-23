@@ -276,6 +276,7 @@ async def get_messages(
             )
             
         # Get messages
+        print(f"Params: {params}")
         messages = await email_service.get_messages(
             folders=params.folders,
             date_range=params.date_range,
