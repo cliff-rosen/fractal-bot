@@ -4,7 +4,7 @@ import { Asset, AssetType, AssetStatus } from '../types/state';
 import { AssetModal } from './AssetModal';
 
 interface AssetsSectionProps {
-    assets: Asset[];
+    assets: Record<string, Asset>;
     onAssetClick?: (asset: Asset) => void;
 }
 
@@ -134,16 +134,17 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
             // Create a temporary asset from the file
             const tempAsset: Asset = {
                 asset_id: Date.now().toString(),
-                type: AssetType.TEXT, // Default to text, should be determined by file type
+                type: file.type.startsWith('image/') ? AssetType.IMAGE :
+                    file.type === 'application/pdf' ? AssetType.PDF :
+                        file.type.includes('spreadsheet') ? AssetType.SPREADSHEET :
+                            AssetType.TEXT,
                 content: file,
+                status: AssetStatus.PENDING,
                 metadata: {
-                    status: AssetStatus.PROPOSED,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    creator: 'user',
-                    tags: [],
-                    agent_associations: [],
-                    version: 1
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    lastModified: file.lastModified
                 }
             };
             onAssetClick(tempAsset);
@@ -153,6 +154,16 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
         }
     };
 
+    const assetList = Object.values(assets).map(asset => ({
+        ...asset,
+        status: asset.status || AssetStatus.PENDING,
+        metadata: {
+            ...asset.metadata,
+            tags: typeof asset.metadata?.tags === 'string' ? JSON.parse(asset.metadata.tags) : asset.metadata?.tags || [],
+            agent_associations: typeof asset.metadata?.agent_associations === 'string' ? JSON.parse(asset.metadata.agent_associations) : asset.metadata?.agent_associations || []
+        }
+    }));
+
     return (
         <div className="flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden h-full">
             <div className="flex items-center gap-2 p-4 border-b border-gray-200 dark:border-gray-700">
@@ -160,17 +171,19 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">Assets</h3>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
-                {assets.length === 0 ? (
+                {assetList.length === 0 ? (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                         No assets available
                     </div>
                 ) : (
                     <div className="space-y-2">
-                        {assets.map((asset) => (
+                        {assetList.map((asset) => (
                             <div
                                 key={asset.asset_id}
                                 className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                                 onClick={() => onAssetClick?.(asset)}
+                                onMouseEnter={(e) => handleMouseEnter(asset, e)}
+                                onMouseLeave={handleMouseLeave}
                             >
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -178,11 +191,11 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
                                             {asset.type}
                                         </h4>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Created: {new Date(asset.metadata.createdAt).toLocaleString()}
+                                            Created: {new Date(asset.metadata?.createdAt || asset.metadata?.lastModified || Date.now()).toLocaleString()}
                                         </p>
-                                        {asset.metadata.tags.length > 0 && (
+                                        {asset.metadata?.tags && asset.metadata.tags.length > 0 && (
                                             <div className="flex gap-1 mt-1">
-                                                {asset.metadata.tags.map((tag) => (
+                                                {asset.metadata.tags.map((tag: string) => (
                                                     <span
                                                         key={tag}
                                                         className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full"
@@ -193,12 +206,12 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
                                             </div>
                                         )}
                                     </div>
-                                    <span className={`px-2 py-1 text-xs rounded-full ${asset.metadata.status === AssetStatus.READY ? 'bg-green-100 text-green-800' :
-                                            asset.metadata.status === AssetStatus.PENDING ? 'bg-yellow-100 text-yellow-800' :
-                                                asset.metadata.status === AssetStatus.ERROR ? 'bg-red-100 text-red-800' :
-                                                    'bg-gray-100 text-gray-800'
+                                    <span className={`px-2 py-1 text-xs rounded-full ${asset.status === AssetStatus.READY ? 'bg-green-100 text-green-800' :
+                                        asset.status === AssetStatus.PENDING ? 'bg-yellow-100 text-yellow-800' :
+                                            asset.status === AssetStatus.ERROR ? 'bg-red-100 text-red-800' :
+                                                'bg-gray-100 text-gray-800'
                                         }`}>
-                                        {asset.metadata.status}
+                                        {asset.status}
                                     </span>
                                 </div>
                             </div>
@@ -237,7 +250,7 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
                                     {previewAsset.asset.type}
                                 </h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {previewAsset.asset.type} • {new Date(previewAsset.asset.metadata.createdAt).toLocaleDateString()}
+                                    {previewAsset.asset.type} • {new Date(previewAsset.asset.metadata?.lastModified || Date.now()).toLocaleDateString()}
                                 </p>
                             </div>
                         </div>

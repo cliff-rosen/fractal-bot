@@ -1,4 +1,3 @@
-
 // Basic types
 export type Phase = 'setup' | 'execution' | 'complete';
 
@@ -34,25 +33,30 @@ export enum AssetType {
 }
 
 export enum AssetStatus {
-    PROPOSED = 'proposed',
     PENDING = 'pending',
     READY = 'ready',
     ERROR = 'error'
+}
+
+export interface AssetMetadata {
+    name?: string;
+    type?: string;
+    size?: number;
+    lastModified?: number;
+    createdAt?: string;
+    updatedAt?: string;
+    creator?: string;
+    tags?: string[];
+    agent_associations?: string[];
+    version?: number;
 }
 
 export interface Asset {
     asset_id: string;
     type: AssetType;
     content: any;
-    metadata: {
-        status: AssetStatus;
-        createdAt: Date;
-        updatedAt: Date;
-        creator: string;  // user/bot/agent
-        tags: string[];
-        agent_associations: string[];  // agent_ids
-        version: number;
-    };
+    status: AssetStatus;
+    metadata?: AssetMetadata;
 }
 
 // Agent Types
@@ -72,23 +76,16 @@ export enum AgentStatus {
 
 export interface Agent {
     agent_id: string;
-    type: string;
-    title?: string;
+    type: AgentType;
     description: string;
     status: AgentStatus;
-    metadata: {
-        createdAt: Date;
-        lastRunAt?: Date;
+    metadata?: {
+        createdAt?: string;
         progress?: number;
-        estimatedCompletion?: Date;
-        searchParams?: {
-            folders?: string[];
-            query_terms?: string[];
-            max_results?: number;
-        };
+        estimatedCompletion?: string;
     };
     input_parameters?: Record<string, any>;
-    completedAt?: string;
+    output_asset_ids?: string[];
 }
 
 // Message Types
@@ -117,17 +114,7 @@ export interface Message {
     role: MessageRole;
     content: string;
     timestamp: Date;
-    metadata?: {
-        actionButtons?: ActionButton[];
-        tool_use_history?: Array<{
-            iteration: number;
-            tool: {
-                name: string;
-                parameters: Record<string, any>;
-            };
-            results: any;
-        }>;
-    };
+    metadata?: Record<string, any>;
 }
 
 // Chat Response Types
@@ -147,73 +134,36 @@ export interface ChatResponse {
     };
 }
 
-// Workflow Types
-export enum WorkflowStatus {
-    IDLE = 'idle',
-    RUNNING = 'running',
-    COMPLETED = 'completed',
-    ERROR = 'error'
-}
-
-export interface WorkflowState {
-    currentStep: number;
-    totalSteps: number;
-    status: WorkflowStatus;
-}
-
-// Turn state represents a single interaction cycle
-export interface TurnState {
-    messages: ChatMessage[];
-    newAgents: Agent[];
-    updatedAgents: Record<string, Partial<Agent>>;
-    newAssets: Asset[];
-}
-
 // Main state interface
 export interface FractalBotState {
-    phase: Phase;
-    messages: ChatMessage[];
+    messages: Message[];
+    assets: Record<string, Asset>;
     agents: Record<string, Agent>;
-    assets: Asset[];
-    currentTurn?: TurnState;
     metadata: {
-        lastUpdated: string;
         isProcessing: boolean;
-        [key: string]: any;
+        lastUpdated: Date;
     };
 }
 
-// Action creators for managing turns
-export const createTurn = (): TurnState => ({
-    messages: [],
-    newAgents: [],
-    updatedAgents: {},
-    newAssets: []
-});
-
 // Initial state factory
 export const createInitialState = (): FractalBotState => ({
-    phase: 'setup',
     messages: [],
-    agents: {
-        'fact-checker-agent': {
-            agent_id: 'fact-checker-agent',
-            type: 'fact-checker',
-            title: 'Fact Checker',
-            description: 'Verify and validate information across multiple sources',
-            status: AgentStatus.COMPLETED,
-            metadata: {
-                createdAt: new Date(),
-                lastRunAt: new Date(),
-                progress: 100,
-                estimatedCompletion: new Date()
-            },
-            completedAt: new Date().toISOString()
-        }
-    },
-    assets: [],
+    assets: {},
+    agents: {},
     metadata: {
-        lastUpdated: new Date().toISOString(),
-        isProcessing: false
+        isProcessing: false,
+        lastUpdated: new Date()
     }
-}); 
+});
+
+export type StateUpdateAction =
+    | { type: 'ADD_MESSAGE'; payload: { message: Message } }
+    | { type: 'CLEAR_MESSAGES' }
+    | { type: 'ADD_ASSET'; payload: { asset: Asset } }
+    | { type: 'UPDATE_ASSET'; payload: { assetId: string; updates: Partial<Asset> } }
+    | { type: 'REMOVE_ASSET'; payload: { assetId: string } }
+    | { type: 'ADD_AGENT'; payload: { agent: Agent } }
+    | { type: 'UPDATE_AGENT'; payload: { agentId: string; updates: Partial<Agent> } }
+    | { type: 'REMOVE_AGENT'; payload: { agentId: string } }
+    | { type: 'UPDATE_METADATA'; payload: { updates: Partial<FractalBotState['metadata']> } }
+    | { type: 'RESET_STATE' }; 

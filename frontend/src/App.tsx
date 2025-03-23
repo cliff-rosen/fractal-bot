@@ -21,7 +21,7 @@ import Job from './pages/Job';
 import AgentWorkflowPage from './pages/AgentWorkflow';
 import TestPage from './pages/TestPage';
 import InteractiveWorkflowTest from './components/interactive-workflow/InteractiveWorkflowTest';
-import FractalBot from './components/fractal-bot/FractalBot';
+import FractalBotPage from './pages/FractalBotPage';
 import EmailAuthSuccess from './pages/EmailAuthSuccess';
 import Profile from './pages/Profile';
 import { Toaster } from './components/ui/toaster';
@@ -132,7 +132,7 @@ function App() {
             <Route path="/agent-workflow" element={<AgentWorkflowPage />} />
             <Route path="/test" element={<TestPage />} />
             <Route path="/interactive-workflow" element={<InteractiveWorkflowTest />} />
-            <Route path="/fractal-bot" element={<FractalBot />} />
+            <Route path="/fractal-bot" element={<FractalBotPage />} />
 
             {/* Email auth routes */}
             <Route path="/email/auth/success" element={<EmailAuthSuccess />} />

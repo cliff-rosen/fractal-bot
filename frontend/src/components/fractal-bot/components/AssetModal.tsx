@@ -20,8 +20,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
         if (Array.isArray(asset.content)) {
             return (
                 <div className="space-y-2">
-                    {asset.content.map((item, index) => (
-                        <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                    {asset.content.map((item) => (
+                        <div key={`${asset.asset_id}-item-${JSON.stringify(item)}`} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                             <pre className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
                                 {JSON.stringify(item, null, 2)}
                             </pre>
@@ -37,6 +37,9 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
             </pre>
         );
     };
+
+    const createdAt = asset.metadata?.createdAt ? new Date(asset.metadata.createdAt) : null;
+    const tags = asset.metadata?.tags || [];
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -55,7 +58,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                             {/* Icon */}
                             <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10 ${getAssetColor(asset.type, asset.metadata)}`}>
                                 {getAssetIcon(asset.type, asset.metadata)}
-                                {asset.metadata.status === AssetStatus.PENDING && (
+                                {asset.status === AssetStatus.PENDING && (
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div className="absolute w-full h-full rounded-full animate-pulse bg-current opacity-20"></div>
                                         <svg className="absolute w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -70,7 +73,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                             <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
                                 <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">
                                     {asset.type}
-                                    {asset.metadata.status === AssetStatus.PENDING && (
+                                    {asset.status === AssetStatus.PENDING && (
                                         <span className="ml-2 text-sm text-blue-500 dark:text-blue-400">• Processing</span>
                                     )}
                                 </h3>
@@ -78,12 +81,12 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
                                         <span>{asset.type}</span>
                                         <span>•</span>
-                                        <span>{new Date(asset.metadata.createdAt).toLocaleString()}</span>
+                                        <span>{createdAt?.toLocaleString()}</span>
                                     </div>
                                     <div className="flex flex-wrap gap-1 mb-4">
-                                        {asset.metadata.tags?.map((tag, index) => (
+                                        {tags.map((tag) => (
                                             <span
-                                                key={index}
+                                                key={`${asset.asset_id}-tag-${tag}`}
                                                 className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 
                                                          dark:text-gray-400 rounded-full"
                                             >
