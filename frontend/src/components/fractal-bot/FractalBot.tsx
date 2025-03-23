@@ -4,8 +4,9 @@ import { AssetsSection } from './components/AssetsSection';
 import { AgentsSection } from './components/AgentsSection';
 import { Message, Asset, Agent, ChatResponse, WorkflowState, WorkflowStatus, ActionType, MessageRole } from './types/state';
 import { botApi } from '../../lib/api/botApi';
+import { FractalBotProvider } from './context/FractalBotContext';
 
-const FractalBot: React.FC = () => {
+const FractalBotContent: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -105,6 +106,14 @@ const FractalBot: React.FC = () => {
                 />
             </div>
         </div>
+    );
+};
+
+const FractalBot: React.FC = () => {
+    return (
+        <FractalBotProvider>
+            <FractalBotContent />
+        </FractalBotProvider>
     );
 };
 

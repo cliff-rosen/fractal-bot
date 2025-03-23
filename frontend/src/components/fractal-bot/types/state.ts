@@ -1,3 +1,5 @@
+import { InformationAsset } from '../../interactive-workflow/types';
+
 // Basic types
 export type Phase = 'setup' | 'execution' | 'complete';
 
@@ -58,7 +60,8 @@ export interface Asset {
 export enum AgentType {
     DATA_COLLECTION = 'data_collection',
     INFORMATION_RETRIEVAL = 'information_retrieval',
-    ANALYSIS = 'analysis'
+    ANALYSIS = 'analysis',
+    EMAIL_ACCESS = 'email_access'
 }
 
 export enum AgentStatus {
@@ -79,6 +82,11 @@ export interface Agent {
         lastRunAt?: Date;
         progress?: number;
         estimatedCompletion?: Date;
+        searchParams?: {
+            folders?: string[];
+            query_terms?: string[];
+            max_results?: number;
+        };
     };
     input_parameters?: Record<string, any>;
     completedAt?: string;

@@ -24,6 +24,7 @@ import InteractiveWorkflowTest from './components/interactive-workflow/Interacti
 import FractalBot from './components/fractal-bot/FractalBot';
 import EmailAuthSuccess from './pages/EmailAuthSuccess';
 import Profile from './pages/Profile';
+import { Toaster } from './components/ui/toaster';
 
 function App() {
   const { handleSessionExpired, isAuthenticated, login, register, error: authError } = useAuth();
@@ -172,6 +173,7 @@ function App() {
           <PromptTemplateProvider>
             <JobsProvider>
               <AuthenticatedApp />
+              <Toaster />
             </JobsProvider>
           </PromptTemplateProvider>
         </WorkflowProvider>

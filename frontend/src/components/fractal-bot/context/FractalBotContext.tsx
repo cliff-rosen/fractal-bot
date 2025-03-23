@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { FractalBotState, StateUpdateAction, InformationAsset, WorkspaceItem } from '../types/state';
+import { FractalBotState, StateUpdateAction, Asset } from '../types/state';
 import { fractalBotReducer } from '../state/reducer';
 import { createInitialState } from '../types/state';
 import { ChatMessage } from '../../interactive-workflow/types';
@@ -9,11 +9,7 @@ interface FractalBotContextType {
     state: FractalBotState;
     setStage: (stage: Stage) => void;
     addMessage: (stage: Stage, message: ChatMessage) => void;
-    addAsset: (stage: Stage, asset: InformationAsset) => void;
-    addWorkspaceItem: (stage: Stage, item: WorkspaceItem) => void;
-    updateWorkspaceItem: (stage: Stage, itemId: string, updates: Partial<WorkspaceItem>) => void;
-    addGlobalAsset: (asset: InformationAsset) => void;
-    addGlobalWorkspaceItem: (item: WorkspaceItem) => void;
+    addAsset: (asset: Asset) => void;
     updateMetadata: (updates: Partial<FractalBotState['metadata']>) => void;
 }
 
@@ -30,24 +26,8 @@ export const FractalBotProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         dispatch({ type: 'ADD_MESSAGE', payload: { stage, message } });
     }, []);
 
-    const addAsset = useCallback((stage: Stage, asset: InformationAsset) => {
-        dispatch({ type: 'ADD_ASSET', payload: { stage, asset } });
-    }, []);
-
-    const addWorkspaceItem = useCallback((stage: Stage, item: WorkspaceItem) => {
-        dispatch({ type: 'ADD_WORKSPACE_ITEM', payload: { stage, item } });
-    }, []);
-
-    const updateWorkspaceItem = useCallback((stage: Stage, itemId: string, updates: Partial<WorkspaceItem>) => {
-        dispatch({ type: 'UPDATE_WORKSPACE_ITEM', payload: { stage, itemId, updates } });
-    }, []);
-
-    const addGlobalAsset = useCallback((asset: InformationAsset) => {
-        dispatch({ type: 'ADD_GLOBAL_ASSET', payload: { asset } });
-    }, []);
-
-    const addGlobalWorkspaceItem = useCallback((item: WorkspaceItem) => {
-        dispatch({ type: 'ADD_GLOBAL_WORKSPACE_ITEM', payload: { item } });
+    const addAsset = useCallback((asset: Asset) => {
+        dispatch({ type: 'ADD_ASSET', payload: { asset } });
     }, []);
 
     const updateMetadata = useCallback((updates: Partial<FractalBotState['metadata']>) => {
@@ -59,10 +39,6 @@ export const FractalBotProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setStage,
         addMessage,
         addAsset,
-        addWorkspaceItem,
-        updateWorkspaceItem,
-        addGlobalAsset,
-        addGlobalWorkspaceItem,
         updateMetadata
     };
 

@@ -10,6 +10,7 @@ from schemas.email import (
     EmailSearchParams,
     EmailAgentResponse
 )
+from schemas.asset import Asset, AssetType, AssetStatus
 from database import get_db
 import logging
 from fastapi.responses import RedirectResponse
@@ -20,6 +21,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import jwt
 import asyncio
+import uuid
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/email", tags=["email"])
@@ -255,7 +257,7 @@ async def get_messages(
     db: Session = Depends(get_db)
 ):
     """
-    Get messages based on search parameters
+    Get messages based on search parameters and create an asset with the results
     
     Args:
         params: Search parameters
@@ -263,7 +265,7 @@ async def get_messages(
         db: Database session
         
     Returns:
-        EmailAgentResponse with list of messages
+        EmailAgentResponse with list of messages and created asset
     """
     try:
         # Authenticate with Gmail API
@@ -283,9 +285,42 @@ async def get_messages(
             include_metadata=params.include_metadata
         )
         
+        # Create an asset with the search results
+        asset = Asset(
+            asset_id=str(uuid.uuid4()),
+            type=AssetType.DATA,
+            content={
+                "messages": messages,
+                "search_params": params.dict()
+            },
+            metadata={
+                "status": AssetStatus.READY,
+                "createdAt": datetime.now(),
+                "updatedAt": datetime.now(),
+                "creator": user.user_id,
+                "tags": ["email", "search"],
+                "agent_associations": [],
+                "version": 1
+            }
+        )
+        
+        # Save the asset to the database
+        db_asset = AssetModel(
+            asset_id=asset.asset_id,
+            type=asset.type,
+            content=asset.content,
+            metadata=asset.metadata
+        )
+        db.add(db_asset)
+        db.commit()
+        db.refresh(db_asset)
+        
         return EmailAgentResponse(
             success=True,
-            data={'messages': messages},
+            data={
+                'messages': messages,
+                'asset': asset
+            },
             metadata={
                 'total_messages': len(messages),
                 'query': params.dict()

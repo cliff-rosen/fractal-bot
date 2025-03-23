@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SparklesIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Agent, AgentStatus } from '../types/state';
+import { Agent, AgentStatus, AgentType } from '../types/state';
+import EmailSearchAgent from '@/components/email/EmailSearchAgent';
 
 interface AgentsSectionProps {
     agents: Agent[];
@@ -43,6 +44,11 @@ export const AgentsSection: React.FC<AgentsSectionProps> = ({
     const renderAgentCard = (agent: Agent, isRecent: boolean = false) => {
         const isExpanded = expandedAgents.has(agent.agent_id);
         const isProposed = agent.status === AgentStatus.IDLE;
+
+        // Special handling for email access agent
+        if (agent.type === AgentType.EMAIL_ACCESS) {
+            return <EmailSearchAgent key={agent.agent_id} agent={agent} />;
+        }
 
         return (
             <div
