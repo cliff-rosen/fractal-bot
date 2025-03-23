@@ -140,14 +140,20 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 throw new Error(response.data.error || 'Failed to fetch email messages');
             }
 
-            const assetContent = response.data.data?.messages
-                ? `Email Messages:\n${response.data.data.messages.map((msg: any) => `- ${msg.subject}`).join('\n')}`
+            const messages = response.data.data?.messages || [];
+            const assetContent = messages.length > 0
+                ? `Email Messages:\n${messages.map((msg: any) => {
+                    const subject = msg.subject || 'No Subject';
+                    const from = msg.from || 'Unknown Sender';
+                    const date = msg.date ? new Date(msg.date).toLocaleString() : 'No Date';
+                    return `- Subject: ${subject}\n  From: ${from}\n  Date: ${date}\n`;
+                }).join('\n')}`
                 : "Email Messages Overview\nNo messages found.";
 
             // Update the existing asset
             updateAsset(assetId, {
                 content: assetContent,
-                status: response.data.data?.messages ? AssetStatus.READY : AssetStatus.PENDING,
+                status: messages.length > 0 ? AssetStatus.READY : AssetStatus.PENDING,
                 metadata: {
                     updatedAt: new Date().toISOString(),
                     version: (state.assets[assetId]?.metadata?.version || 0) + 1
@@ -157,14 +163,14 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             addMessage({
                 message_id: Date.now().toString(),
                 role: MessageRole.ASSISTANT,
-                content: 'I\'ve retrieved your email messages. You can find them in the assets panel.',
+                content: `I've retrieved ${messages.length} email messages. You can find them in the assets panel.`,
                 timestamp: new Date(),
                 metadata: {}
             });
 
             toast({
                 title: 'Messages Retrieved',
-                description: 'Email messages have been successfully retrieved.',
+                description: `Successfully retrieved ${messages.length} email messages.`,
                 variant: 'default'
             });
 
