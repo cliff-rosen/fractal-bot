@@ -77,9 +77,9 @@ const FractalBot: React.FC = () => {
     };
 
     return (
-        <div className="flex h-full gap-4 p-4 bg-gray-50 dark:bg-gray-900">
+        <div className="flex h-screen gap-4 p-4 bg-gray-50 dark:bg-gray-900">
             {/* Left Panel: Chat */}
-            <div className="w-[500px] flex-shrink-0">
+            <div className="w-[500px] flex-shrink-0 h-full">
                 <ChatSection
                     messages={messages}
                     inputMessage={inputMessage}

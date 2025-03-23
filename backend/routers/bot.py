@@ -1,17 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from services.ai_service import AIService
+from services.bot_service import BotService
 from schemas import Message, ChatResponse, MessageRole
 from datetime import datetime
-import uuid
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict, Any
 
 router = APIRouter(prefix="/api/bot", tags=["bot"])
-
-# Initialize AI service
-ai_service = AIService()
 
 class MessageHistory(BaseModel):
     role: str
@@ -29,36 +25,22 @@ async def run_bot(
 ):
     """Process a message and return the bot's response"""
     try:
-        # Convert history to the format expected by AI service
-        messages = [
+        # Initialize bot service
+        bot_service = BotService(db)
+        
+        # Convert history to dict format
+        history = [
             {
                 "role": msg.role,
-                "content": msg.content
+                "content": msg.content,
+                "timestamp": msg.timestamp
             }
             for msg in request.history
         ]
         
-        # Add the current message
-        messages.append({
-            "role": "user",
-            "content": request.message
-        })
+        # Process message and get response
+        response = await bot_service.process_message(request.message, history)
+        return response
         
-        # Get response from AI service
-        response = await ai_service.send_messages(messages)
-        
-        # Create chat response
-        chat_response = ChatResponse(
-            message=Message(
-                message_id=str(uuid.uuid4()),
-                role=MessageRole.ASSISTANT,
-                content=response,
-                timestamp=datetime.now(),
-                metadata={}
-            ),
-            sideEffects={}
-        )
-        
-        return chat_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 

@@ -109,6 +109,14 @@ export interface Message {
     timestamp: Date;
     metadata?: {
         actionButtons?: ActionButton[];
+        tool_use_history?: Array<{
+            iteration: number;
+            tool: {
+                name: string;
+                parameters: Record<string, any>;
+            };
+            results: any;
+        }>;
     };
 }
 
@@ -118,6 +126,14 @@ export interface ChatResponse {
     sideEffects?: {
         assets?: Asset[];
         agents?: Agent[];
+        tool_use_history?: Array<{
+            iteration: number;
+            tool: {
+                name: string;
+                parameters: Record<string, any>;
+            };
+            results: any;
+        }>;
     };
 }
 
