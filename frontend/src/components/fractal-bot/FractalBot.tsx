@@ -13,8 +13,8 @@ const FractalBotContent: React.FC = () => {
     const { messages, agents, assets } = state;
 
     const handleSendMessage = async (message: string) => {
-        await processMessage(message);
         setInputMessage('');
+        await processMessage(message);
     };
 
     const handleAssetClick = (asset: Asset) => {

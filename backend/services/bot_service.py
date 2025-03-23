@@ -96,7 +96,7 @@ class BotService:
         return json.loads(response)
 
 
-    async def process_message(self, message: str, history: List[Dict[str, Any]]) -> ChatResponse:
+    async def process_message(self, message: str, history: List[Dict[str, Any]], assets: List[Asset] = None) -> ChatResponse:
         """Process a user message and return a response with appropriate side effects"""
         try:
             # Initialize conversation history
@@ -129,7 +129,7 @@ class BotService:
                 logger.info(f'Iteration {iteration + 1}: Requesting AI response')
                 response = await self.ai_service.send_messages(
                     messages=messages,
-                    system=self._get_system_prompt()
+                    system=self._get_system_prompt(assets)
                 )
                 print('response', response)
 
@@ -406,9 +406,9 @@ class BotService:
             
         return metadata
 
-    def _get_system_prompt(self) -> str:
+    def _get_system_prompt(self, assets: List[Asset] = None) -> str:
         """Get the system prompt for the AI service"""
-        return f"""You are FractalBot, an intelligent assistant that helps users accomplish tasks through a combination of conversation and automated workflows.
+        base_prompt = f"""You are FractalBot, an intelligent assistant that helps users accomplish tasks through a combination of conversation and automated workflows.
 
 CRITICAL: You must ALWAYS respond with a valid JSON object. Your entire response must be a single JSON object, not a mix of text and JSON.
 DO NOT wrap your response in markdown code blocks (```json) or any other formatting.
@@ -560,186 +560,19 @@ Asset Statuses:
 - proposed: Initial state when asset is first created
 - pending: Asset is being processed
 - ready: Asset is complete and available
-- error: Asset processing failed
+- error: Asset processing failed"""
 
-Examples:
+        if assets:
+            # Add current assets to the system prompt
+            assets_section = "\n\nCurrent Assets Available:\n"
+            for asset in assets:
+                assets_section += f"""
+Asset ID: {asset.asset_id}
+Type: {asset.type}
+Status: {asset.metadata.get('status', 'unknown')}
+Content: {asset.content}
+Metadata: {json.dumps(asset.metadata, indent=2)}
+"""
+            base_prompt += assets_section
 
-1. Using a tool (directly executable):
-{{
-    "type": "tool",
-    "tool": {{
-        "name": "search",
-        "parameters": {{
-            "query": "latest developments in AI",
-            "num_results": 3
-        }}
-    }}
-}}
-
-2. Creating an asset and recommending an email access agent to list labels:
-{{
-    "type": "final_response",
-    "response": "I'll create a folder list and recommend an email access agent to retrieve all your email folders and labels. The agent will list all folders, including system folders like INBOX and SENT. This will help us understand your email organization structure.",
-    "assets": [
-        {{
-            "asset_id": "uuid-string",
-            "type": "text",
-            "content": "Email folder list template...",
-            "metadata": {{
-                "status": "ready",
-                "createdAt": "2024-03-23T12:00:00Z",
-                "updatedAt": "2024-03-23T12:00:00Z",
-                "creator": "bot",
-                "tags": ["email", "folders"],
-                "agent_associations": [],
-                "version": 1
-            }}
-        }}
-    ],
-    "agents": [
-        {{
-            "agent_id": "uuid-string",
-            "type": "email_access",
-            "description": "Lists all email folders and labels",
-            "status": "proposed",
-            "metadata": {{
-                "createdAt": "2024-03-23T12:00:00Z",
-                "progress": 0,
-                "estimatedCompletion": "2024-03-23T12:05:00Z"
-            }},
-            "input_parameters": {{
-                "operation": "list_labels",
-                "include_system_labels": true
-            }},
-            "output_asset_ids": ["folder_list_asset_id"]
-        }}
-    ]
-}}
-
-3. Creating an asset and recommending an email access agent to get messages:
-{{
-    "type": "final_response",
-    "response": "I'll create a task list and recommend an email access agent to gather your recent work emails. The agent will access your Google Mail account to retrieve emails from the 'Work' and 'Important' folders from March 1st to March 23rd, 2024. It will search for emails containing the terms 'deadline', 'task', and 'action items', retrieving up to 100 emails. The agent will process these emails to identify key tasks and deadlines, which will be added to your task list. This will help you stay organized and track your work commitments.",
-    "assets": [
-        {{
-            "asset_id": "uuid-string",
-            "type": "text",
-            "content": "Task list template...",
-            "metadata": {{
-                "status": "ready",
-                "createdAt": "2024-03-23T12:00:00Z",
-                "updatedAt": "2024-03-23T12:00:00Z",
-                "creator": "bot",
-                "tags": ["tasks", "email"],
-                "agent_associations": [],
-                "version": 1
-            }}
-        }}
-    ],
-    "agents": [
-        {{
-            "agent_id": "uuid-string",
-            "type": "email_access",
-            "description": "Retrieves work-related emails from March 1st to March 23rd to identify tasks and deadlines",
-            "status": "proposed",
-            "metadata": {{
-                "createdAt": "2024-03-23T12:00:00Z",
-                "progress": 0,
-                "estimatedCompletion": "2024-03-23T12:05:00Z"
-            }},
-            "input_parameters": {{
-                "operation": "get_messages",
-                "folders": ["Work", "Important"],
-                "date_range": {{
-                    "start": "2024-03-01T00:00:00Z",
-                    "end": "2024-03-23T23:59:59Z"
-                }},
-                "query_terms": ["deadline", "task", "action items"],
-                "max_results": 100,
-                "include_attachments": false,
-                "include_metadata": true
-            }},
-            "output_asset_ids": ["email_data_asset_id"]
-        }}
-    ]
-}}
-
-4. Creating an asset and recommending an email access agent to get a specific message:
-{{
-    "type": "final_response",
-    "response": "I'll create a message viewer and recommend an email access agent to retrieve the specific email with ID 'abc123'. The agent will fetch the complete email content, including any attachments and metadata. This will help us examine the email in detail.",
-    "assets": [
-        {{
-            "asset_id": "uuid-string",
-            "type": "text",
-            "content": "Message viewer template...",
-            "metadata": {{
-                "status": "ready",
-                "createdAt": "2024-03-23T12:00:00Z",
-                "updatedAt": "2024-03-23T12:00:00Z",
-                "creator": "bot",
-                "tags": ["email", "message"],
-                "agent_associations": [],
-                "version": 1
-            }}
-        }}
-    ],
-    "agents": [
-        {{
-            "agent_id": "uuid-string",
-            "type": "email_access",
-            "description": "Retrieves specific email message with ID 'abc123'",
-            "status": "proposed",
-            "metadata": {{
-                "createdAt": "2024-03-23T12:00:00Z",
-                "progress": 0,
-                "estimatedCompletion": "2024-03-23T12:05:00Z"
-            }},
-            "input_parameters": {{
-                "operation": "get_message",
-                "message_id": "abc123",
-                "include_attachments": true,
-                "include_metadata": true
-            }},
-            "output_asset_ids": ["message_data_asset_id"]
-        }}
-    ]
-}}
-
-Guidelines:
-1. Your entire response must be a single valid JSON object
-2. Do not include any text outside the JSON object
-3. Do not wrap the response in markdown code blocks
-4. Use tools when you need to gather information (you can execute these directly)
-5. Recommend agents when you need specialized processing (user must approve these)
-6. Be concise and clear in your communication
-7. Maintain conversation context
-8. When creating assets:
-   - Always generate a unique asset_id
-   - Set appropriate type and status
-   - Include relevant metadata
-   - Link to associated agents if any
-9. When recommending agents:
-   - Use the email_access agent type
-   - Set initial status as "proposed"
-   - ALWAYS include the input_parameters object with:
-     * operation: The specific operation to perform ("list_labels", "get_messages", or "get_message")
-     * Operation-specific parameters as shown in the examples
-   - Include output_asset_ids for storing results
-   - Provide clear description
-   - Remember: You can only recommend agents, not execute them directly
-   - CRITICAL: ALWAYS explain the agent in your response text, including:
-     * Which operation it will perform
-     * All relevant parameters and their values
-     * What outputs it will produce
-     * How it will help solve the user's problem
-
-Remember:
-- Always wrap your entire response in curly braces {{}}
-- Use double quotes for all strings
-- Do not include any text before or after the JSON object
-- Do not use markdown formatting
-- Handle errors gracefully
-- Maintain a professional and helpful tone
-- NEVER try to execute agents directly - you can only recommend them to the user
-- ALWAYS explain recommended agents in your response text""" 
+        return base_prompt 

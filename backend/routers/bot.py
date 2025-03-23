@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from services.bot_service import BotService
-from schemas import Message, ChatResponse, MessageRole
+from schemas import Message, ChatResponse, MessageRole, Asset
 from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Dict, Any
@@ -17,6 +17,7 @@ class MessageHistory(BaseModel):
 class BotRequest(BaseModel):
     message: str
     history: List[MessageHistory] = []
+    assets: List[Asset] = []
 
 @router.post("/run", response_model=ChatResponse)
 async def run_bot(
@@ -39,7 +40,7 @@ async def run_bot(
         ]
         
         # Process message and get response
-        response = await bot_service.process_message(request.message, history)
+        response = await bot_service.process_message(request.message, history, request.assets)
         return response
         
     except Exception as e:

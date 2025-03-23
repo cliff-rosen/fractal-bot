@@ -1,4 +1,4 @@
-import { Message, ChatResponse } from '../../components/fractal-bot/types/state';
+import { Message, ChatResponse, Asset } from '../../components/fractal-bot/types/state';
 import { api, handleApiError } from './index';
 
 export interface MessageHistory {
@@ -10,12 +10,13 @@ export interface MessageHistory {
 export interface SendMessageRequest {
     message: string;
     history: MessageHistory[];
+    assets: Asset[];
 }
 
 export interface SendMessageResponse extends ChatResponse { }
 
 export const botApi = {
-    sendMessage: async (message: string, history: Message[]): Promise<SendMessageResponse> => {
+    sendMessage: async (message: string, history: Message[], assets: Asset[]): Promise<SendMessageResponse> => {
         try {
             // Convert Message[] to MessageHistory[]
             const messageHistory: MessageHistory[] = history.map(msg => ({
@@ -26,7 +27,8 @@ export const botApi = {
 
             const response = await api.post<SendMessageResponse>('/api/bot/run', {
                 message,
-                history: messageHistory
+                history: messageHistory,
+                assets
             });
             return response.data;
         } catch (error) {

@@ -23,21 +23,22 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
         try {
             setIsLoading(true);
             const agent = state.agents[agentId];
-            if (!agent?.output_asset_ids?.length) {
-                throw new Error('No associated assets found for this agent');
-            }
 
-            // Get the first asset ID (we assume the agent has one asset for now)
-            const assetId = agent.output_asset_ids[0];
-            const asset = state.assets[assetId];
-            if (!asset) {
-                throw new Error('Associated asset not found');
+            // Get asset ID if available, but don't require it
+            let assetId: string | undefined;
+            if (agent?.output_asset_ids?.length) {
+                assetId = agent.output_asset_ids[0];
+                const asset = state.assets[assetId];
+                if (!asset) {
+                    // If asset not found, we'll proceed without an asset ID
+                    assetId = undefined;
+                }
             }
 
             if (operation === 'list_labels') {
                 await listEmailLabels(assetId);
             } else if (operation === 'get_messages') {
-                await searchEmails(assetId, searchParams);
+                await searchEmails(searchParams, assetId);
             } else {
                 throw new Error(`Unsupported operation: ${operation}`);
             }

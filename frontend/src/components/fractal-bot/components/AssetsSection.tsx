@@ -156,7 +156,6 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
 
     const assetList = Object.values(assets).map(asset => ({
         ...asset,
-        status: asset.status || AssetStatus.PENDING,
         metadata: {
             ...asset.metadata,
             tags: typeof asset.metadata?.tags === 'string' ? JSON.parse(asset.metadata.tags) : asset.metadata?.tags || [],
