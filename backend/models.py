@@ -365,11 +365,11 @@ class GoogleOAuth2Credentials(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"), unique=True)
-    token = Column(String)
-    refresh_token = Column(String)
-    token_uri = Column(String)
-    client_id = Column(String)
-    client_secret = Column(String)
+    token = Column(String(255))
+    refresh_token = Column(String(255))
+    token_uri = Column(String(255))
+    client_id = Column(String(255))
+    client_secret = Column(String(255))
     scopes = Column(JSON)  # Store scopes as JSON array
     expiry = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)

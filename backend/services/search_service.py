@@ -9,7 +9,6 @@ import ssl
 import certifi
 from bs4 import BeautifulSoup
 import asyncio
-import bleach
 import httpx
 from fastapi import HTTPException
 NUM_RESULTS = settings.GOOGLE_SEARCH_NUM_RESULTS
@@ -52,34 +51,6 @@ async def search(db: Session, query: str, user_id: int = 0) -> List[SearchResult
 
     except Exception as e:
         logger.error(f"Error performing Google search: {str(e)}")
-        return []
-
-
-async def search_and_rank(db: Session, query: str, user_id: int = 0) -> List[SearchResult]:
-    """
-    Perform web search for the given query using Google Custom Search API
-    and score results using AI
-
-    Args:
-        db (Session): Database session
-        query (str): Search query
-        user_id (int): ID of the user performing the search
-
-    Returns:
-        List[SearchResult]: List of scored and sorted search results
-    """
-    logger.info(f"Performing web search with ranking for query: {query}")
-
-    try:
-        # Get search results without scoring
-        search_results = await search(db, query, user_id)
-
-        # Score and sort results
-        scored_results = await score_and_rank_results(query, search_results)
-        return scored_results
-
-    except Exception as e:
-        logger.error(f"Error performing Google search with ranking: {str(e)}")
         return []
 
 
@@ -149,54 +120,6 @@ async def google_search(query: str,
         logger.error(f"An error occurred during Google search: {str(e)}")
         return []
 
-
-async def score_and_rank_results(query: str, results: List[SearchResult]) -> List[SearchResult]:
-    """
-    Score and rank search results based on relevance to the query.
-
-    Args:
-        query (str): The search query
-        results (List[SearchResult]): List of search results to score
-
-    Returns:
-        List[SearchResult]: Scored and ranked results
-    """
-    try:
-        # Convert SearchResult objects to dictionaries for AI scoring
-        results_for_scoring = [
-            {
-                'url': result.link,
-                'content': f"Title: {result.title}\nSnippet: {result.snippet}"
-            }
-            for result in results
-        ]
-
-        # Get scores from AI service
-        scores = await ai_service.score_results(query, results_for_scoring)
-
-        # Create a map of url to score
-        score_map = {score['url']: score['score'] for score in scores}
-
-        # Add scores to results
-        scored_results = []
-        for result in results:
-            result_copy = result.copy()
-            result_copy.relevance_score = score_map.get(result.link, 50.0)
-            scored_results.append(result_copy)
-
-        # Sort by score in descending order
-        scored_results.sort(key=lambda x: x.relevance_score, reverse=True)
-
-        return scored_results
-
-    except Exception as e:
-        logger.error(f"Error scoring results: {str(e)}")
-        # Return original results with default score if scoring fails
-        for result in results:
-            result.relevance_score = 50.0
-        return results
-
-
 async def fetch_url_content(url: str) -> URLContent:
 
     # Configure allowed HTML tags and attributes
@@ -249,7 +172,6 @@ async def fetch_url_content(url: str) -> URLContent:
         raise HTTPException(status_code=400, detail=f"Error fetching URL: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")    
-
 
 async def fetch_urls_content(urls: List[str]) -> List[URLContent]:
     """

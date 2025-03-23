@@ -22,6 +22,8 @@ import AgentWorkflowPage from './pages/AgentWorkflow';
 import TestPage from './pages/TestPage';
 import InteractiveWorkflowTest from './components/interactive-workflow/InteractiveWorkflowTest';
 import FractalBot from './components/fractal-bot/FractalBot';
+import EmailAuthSuccess from './pages/EmailAuthSuccess';
+import Profile from './pages/Profile';
 
 function App() {
   const { handleSessionExpired, isAuthenticated, login, register, error: authError } = useAuth();
@@ -130,6 +132,12 @@ function App() {
             <Route path="/test" element={<TestPage />} />
             <Route path="/interactive-workflow" element={<InteractiveWorkflowTest />} />
             <Route path="/fractal-bot" element={<FractalBot />} />
+
+            {/* Email auth routes */}
+            <Route path="/email/auth/success" element={<EmailAuthSuccess />} />
+
+            {/* Profile route */}
+            <Route path="/profile" element={<Profile />} />
 
             {/* Catch-all route for unmatched paths */}
             <Route path="*" element={<Navigate to="/" replace />} />

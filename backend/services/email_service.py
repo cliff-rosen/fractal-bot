@@ -1,51 +1,39 @@
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
+from sqlalchemy.orm import Session
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
-from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-import base64
-import email
-from email.mime.text import MIMEText
-import os
-from config.settings import settings
-from schemas.email import (
-    EmailLabel,
-    EmailMessage,
-    EmailThread,
-    EmailSearchParams,
-    EmailAgentResponse,
-    EmailLabelType
-)
-from sqlalchemy.orm import Session
 from models import GoogleOAuth2Credentials
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
 class EmailService:
-    """Service for interacting with Google Mail API"""
-    
+    SCOPES = [
+        'https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.metadata',
+        'openid',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email'
+    ]
+
     def __init__(self):
-        self.SCOPES = [
-            'https://www.googleapis.com/auth/gmail.readonly',
-            'https://www.googleapis.com/auth/gmail.labels',
-            'https://www.googleapis.com/auth/gmail.metadata'
-        ]
         self.service = None
         self.credentials = None
-        
-    async def authenticate(self, user_id: str, db: Session) -> bool:
+
+    async def authenticate(self, user_id: int, db: Session) -> bool:
         """
-        Authenticate with Google Mail API using stored credentials
+        Authenticate with Gmail API using stored credentials
         
         Args:
-            user_id: ID of the user to authenticate for
+            user_id: User ID
             db: Database session
             
         Returns:
-            bool: Whether authentication was successful
+            bool: True if authentication successful, False otherwise
         """
         try:
             # Get credentials from database
@@ -54,319 +42,210 @@ class EmailService:
             ).first()
             
             if not db_credentials:
-                logger.error(f"No Google credentials found for user {user_id}")
+                logger.error(f"No credentials found for user {user_id}")
                 return False
                 
-            # Check if token needs refresh
-            if db_credentials.expiry and db_credentials.expiry <= datetime.utcnow():
-                logger.info("Refreshing expired Google OAuth2 token")
-                credentials = Credentials(
-                    token=db_credentials.token,
-                    refresh_token=db_credentials.refresh_token,
-                    token_uri=db_credentials.token_uri,
-                    client_id=db_credentials.client_id,
-                    client_secret=db_credentials.client_secret,
-                    scopes=db_credentials.scopes
-                )
-                
-                # Refresh the token
-                credentials.refresh(Request())
-                
-                # Update credentials in database
-                db_credentials.token = credentials.token
-                db_credentials.expiry = credentials.expiry
-                db.commit()
-            else:
-                credentials = Credentials(
-                    token=db_credentials.token,
-                    refresh_token=db_credentials.refresh_token,
-                    token_uri=db_credentials.token_uri,
-                    client_id=db_credentials.client_id,
-                    client_secret=db_credentials.client_secret,
-                    scopes=db_credentials.scopes
-                )
+            # Create credentials object
+            self.credentials = Credentials(
+                token=db_credentials.token,
+                refresh_token=db_credentials.refresh_token,
+                token_uri=db_credentials.token_uri,
+                client_id=db_credentials.client_id,
+                client_secret=db_credentials.client_secret,
+                scopes=db_credentials.scopes
+            )
             
-            # Build the Gmail API service
-            self.service = build('gmail', 'v1', credentials=credentials)
-            self.credentials = credentials
+            # Refresh token if expired
+            if self.credentials.expired:
+                self.credentials.refresh(Request())
+                
+                # Update database with new token
+                db_credentials.token = self.credentials.token
+                db_credentials.expiry = self.credentials.expiry
+                db.commit()
+            
+            # Build Gmail API service
+            self.service = build('gmail', 'v1', credentials=self.credentials)
             return True
             
         except Exception as e:
             logger.error(f"Error authenticating with Gmail API: {str(e)}")
             return False
-            
-    async def list_labels(self, include_system_labels: bool = True) -> EmailAgentResponse:
+
+    async def list_labels(self, include_system_labels: bool = True) -> List[Dict[str, Any]]:
         """
         List all email labels/folders
         
         Args:
-            include_system_labels: Whether to include system labels like INBOX, SENT, etc.
+            include_system_labels: Whether to include system labels
             
         Returns:
-            EmailAgentResponse with list of labels
+            List of label objects
         """
         try:
             if not self.service:
-                return EmailAgentResponse(
-                    success=False,
-                    error="Not authenticated with Gmail API"
-                )
+                raise ValueError("Service not initialized. Call authenticate first.")
                 
-            # Get labels from Gmail API
             results = self.service.users().labels().list(userId='me').execute()
             labels = results.get('labels', [])
             
-            # Transform labels to our schema
-            email_labels = []
-            for label in labels:
-                # Skip system labels if not requested
-                if not include_system_labels and label['type'] == 'system':
-                    continue
-                    
-                email_labels.append(EmailLabel(
-                    id=label['id'],
-                    name=label['name'],
-                    type=EmailLabelType(label['type']),
-                    message_list_visibility=label.get('messageListVisibility'),
-                    label_list_visibility=label.get('labelListVisibility'),
-                    messages_total=label.get('messagesTotal'),
-                    messages_unread=label.get('messagesUnread'),
-                    threads_total=label.get('threadsTotal'),
-                    threads_unread=label.get('threadsUnread')
-                ))
+            if not include_system_labels:
+                # Filter out system labels
+                labels = [label for label in labels if label['type'] != 'system']
                 
-            return EmailAgentResponse(
-                success=True,
-                data={'labels': [label.dict() for label in email_labels]},
-                metadata={'total_labels': len(email_labels)}
-            )
+            return labels
             
         except HttpError as e:
-            logger.error(f"Gmail API error listing labels: {str(e)}")
-            return EmailAgentResponse(
-                success=False,
-                error=f"Gmail API error: {str(e)}"
-            )
-        except Exception as e:
             logger.error(f"Error listing labels: {str(e)}")
-            return EmailAgentResponse(
-                success=False,
-                error=f"Error listing labels: {str(e)}"
-            )
-            
-    async def get_messages(self, params: EmailSearchParams) -> EmailAgentResponse:
+            raise
+
+    async def get_messages(
+        self,
+        folders: Optional[List[str]] = None,
+        date_range: Optional[Dict[str, datetime]] = None,
+        query_terms: Optional[List[str]] = None,
+        max_results: int = 100,
+        include_attachments: bool = False,
+        include_metadata: bool = True
+    ) -> List[Dict[str, Any]]:
         """
-        Get messages matching the search parameters
+        Get messages from specified folders
         
         Args:
-            params: Search parameters for finding messages
+            folders: List of folder/label IDs
+            date_range: Dict with 'start' and 'end' datetime objects
+            query_terms: List of search terms
+            max_results: Maximum number of results to return
+            include_attachments: Whether to include attachment data
+            include_metadata: Whether to include message metadata
             
         Returns:
-            EmailAgentResponse with list of messages
+            List of message objects
         """
         try:
             if not self.service:
-                return EmailAgentResponse(
-                    success=False,
-                    error="Not authenticated with Gmail API"
-                )
+                raise ValueError("Service not initialized. Call authenticate first.")
                 
             # Build search query
             query_parts = []
             
-            # Add folder/label filters
-            if params.folders:
-                query_parts.append(f"({' OR '.join(f'in:{folder}' for folder in params.folders)})")
+            if folders:
+                folder_query = ' OR '.join(f'label:{folder}' for folder in folders)
+                query_parts.append(f'({folder_query})')
                 
-            # Add date range filter
-            if params.date_range:
-                start = params.date_range.get('start')
-                end = params.date_range.get('end')
-                if start:
-                    query_parts.append(f"after:{int(start.timestamp())}")
-                if end:
-                    query_parts.append(f"before:{int(end.timestamp())}")
+            if date_range:
+                if date_range.get('start'):
+                    query_parts.append(f'after:{int(date_range["start"].timestamp())}')
+                if date_range.get('end'):
+                    query_parts.append(f'before:{int(date_range["end"].timestamp())}')
                     
-            # Add search terms
-            if params.query_terms:
-                query_parts.extend(params.query_terms)
+            if query_terms:
+                query_parts.extend(query_terms)
                 
-            # Combine all query parts
-            query = ' '.join(query_parts)
+            query = ' '.join(query_parts) if query_parts else None
             
-            # Get messages from Gmail API
+            # Get messages
             results = self.service.users().messages().list(
                 userId='me',
                 q=query,
-                maxResults=params.max_results
+                maxResults=max_results
             ).execute()
             
             messages = results.get('messages', [])
+            detailed_messages = []
             
-            # Get full message details
-            email_messages = []
             for msg in messages:
-                message = self.service.users().messages().get(
-                    userId='me',
-                    id=msg['id'],
-                    format='full'
-                ).execute()
+                message = await self.get_message(
+                    msg['id'],
+                    include_attachments=include_attachments,
+                    include_metadata=include_metadata
+                )
+                detailed_messages.append(message)
                 
-                # Parse message headers
-                headers = {}
-                for header in message['payload']['headers']:
-                    headers[header['name']] = header['value']
-                    
-                # Get message body
-                body = None
-                body_html = None
-                attachments = []
-                
-                if 'parts' in message['payload']:
-                    for part in message['payload']['parts']:
-                        if part['mimeType'] == 'text/plain':
-                            body = base64.urlsafe_b64decode(part['body']['data']).decode()
-                        elif part['mimeType'] == 'text/html':
-                            body_html = base64.urlsafe_b64decode(part['body']['data']).decode()
-                        elif 'filename' in part:
-                            attachments.append({
-                                'id': part['body'].get('attachmentId'),
-                                'filename': part['filename'],
-                                'mime_type': part['mimeType'],
-                                'size': part['body'].get('size', 0)
-                            })
-                elif 'body' in message['payload']:
-                    body = base64.urlsafe_b64decode(message['payload']['body']['data']).decode()
-                    
-                email_messages.append(EmailMessage(
-                    id=message['id'],
-                    thread_id=message['threadId'],
-                    label_ids=message['labelIds'],
-                    snippet=message['snippet'],
-                    headers=headers,
-                    body=body,
-                    body_html=body_html,
-                    attachments=attachments,
-                    internal_date=datetime.fromtimestamp(int(message['internalDate'])/1000),
-                    size_estimate=message['sizeEstimate'],
-                    history_id=message['historyId']
-                ))
-                
-            return EmailAgentResponse(
-                success=True,
-                data={'messages': [msg.dict() for msg in email_messages]},
-                metadata={
-                    'total_messages': len(email_messages),
-                    'query': query
-                }
-            )
+            return detailed_messages
             
         except HttpError as e:
-            logger.error(f"Gmail API error getting messages: {str(e)}")
-            return EmailAgentResponse(
-                success=False,
-                error=f"Gmail API error: {str(e)}"
-            )
-        except Exception as e:
             logger.error(f"Error getting messages: {str(e)}")
-            return EmailAgentResponse(
-                success=False,
-                error=f"Error getting messages: {str(e)}"
-            )
-            
-    async def get_message(self, message_id: str, include_attachments: bool = False) -> EmailAgentResponse:
+            raise
+
+    async def get_message(
+        self,
+        message_id: str,
+        include_attachments: bool = False,
+        include_metadata: bool = True
+    ) -> Dict[str, Any]:
         """
         Get a specific message by ID
         
         Args:
-            message_id: ID of the message to retrieve
+            message_id: Message ID
             include_attachments: Whether to include attachment data
+            include_metadata: Whether to include message metadata
             
         Returns:
-            EmailAgentResponse with message details
+            Message object
         """
         try:
             if not self.service:
-                return EmailAgentResponse(
-                    success=False,
-                    error="Not authenticated with Gmail API"
-                )
+                raise ValueError("Service not initialized. Call authenticate first.")
                 
-            # Get message from Gmail API
+            # Get message details
             message = self.service.users().messages().get(
                 userId='me',
                 id=message_id,
                 format='full'
             ).execute()
             
-            # Parse message headers
+            # Parse message parts
             headers = {}
-            for header in message['payload']['headers']:
-                headers[header['name']] = header['value']
-                
-            # Get message body and attachments
             body = None
-            body_html = None
             attachments = []
             
-            if 'parts' in message['payload']:
-                for part in message['payload']['parts']:
-                    if part['mimeType'] == 'text/plain':
-                        body = base64.urlsafe_b64decode(part['body']['data']).decode()
-                    elif part['mimeType'] == 'text/html':
-                        body_html = base64.urlsafe_b64decode(part['body']['data']).decode()
-                    elif 'filename' in part:
-                        attachment_data = None
-                        if include_attachments and 'attachmentId' in part['body']:
-                            attachment = self.service.users().messages().attachments().get(
-                                userId='me',
-                                messageId=message_id,
-                                id=part['body']['attachmentId']
-                            ).execute()
-                            attachment_data = base64.urlsafe_b64decode(attachment['data'])
-                            
-                        attachments.append({
-                            'id': part['body'].get('attachmentId'),
-                            'filename': part['filename'],
-                            'mime_type': part['mimeType'],
-                            'size': part['body'].get('size', 0),
-                            'data': attachment_data
-                        })
-            elif 'body' in message['payload']:
-                body = base64.urlsafe_b64decode(message['payload']['body']['data']).decode()
+            if 'payload' in message:
+                payload = message['payload']
                 
-            email_message = EmailMessage(
-                id=message['id'],
-                thread_id=message['threadId'],
-                label_ids=message['labelIds'],
-                snippet=message['snippet'],
-                headers=headers,
-                body=body,
-                body_html=body_html,
-                attachments=attachments,
-                internal_date=datetime.fromtimestamp(int(message['internalDate'])/1000),
-                size_estimate=message['sizeEstimate'],
-                history_id=message['historyId']
-            )
-            
-            return EmailAgentResponse(
-                success=True,
-                data={'message': email_message.dict()},
-                metadata={
-                    'has_attachments': len(attachments) > 0,
-                    'attachment_count': len(attachments)
-                }
-            )
+                # Get headers
+                if 'headers' in payload:
+                    headers = {
+                        header['name'].lower(): header['value']
+                        for header in payload['headers']
+                    }
+                
+                # Get body and attachments
+                if 'parts' in payload:
+                    for part in payload['parts']:
+                        if part.get('mimeType') == 'text/plain':
+                            if 'data' in part['body']:
+                                body = part['body']['data']
+                        elif part.get('filename'):
+                            attachment = {
+                                'id': part['body'].get('attachmentId'),
+                                'filename': part['filename'],
+                                'mimeType': part['mimeType'],
+                                'size': part['body'].get('size')
+                            }
+                            if include_attachments and attachment['id']:
+                                attachment['data'] = self.service.users().messages().attachments().get(
+                                    userId='me',
+                                    messageId=message_id,
+                                    id=attachment['id']
+                                ).execute()['data']
+                            attachments.append(attachment)
+                            
+            return {
+                'id': message['id'],
+                'threadId': message['threadId'],
+                'labelIds': message.get('labelIds', []),
+                'snippet': message.get('snippet', ''),
+                'headers': headers if include_metadata else None,
+                'body': body,
+                'attachments': attachments if include_attachments else [],
+                'internalDate': message.get('internalDate'),
+                'sizeEstimate': message.get('sizeEstimate'),
+                'historyId': message.get('historyId'),
+                'raw': message.get('raw') if include_metadata else None
+            }
             
         except HttpError as e:
-            logger.error(f"Gmail API error getting message: {str(e)}")
-            return EmailAgentResponse(
-                success=False,
-                error=f"Gmail API error: {str(e)}"
-            )
-        except Exception as e:
-            logger.error(f"Error getting message: {str(e)}")
-            return EmailAgentResponse(
-                success=False,
-                error=f"Error getting message: {str(e)}"
-            ) 
+            logger.error(f"Error getting message {message_id}: {str(e)}")
+            raise 

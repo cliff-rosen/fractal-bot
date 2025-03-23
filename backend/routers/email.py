@@ -14,12 +14,28 @@ from database import get_db
 import logging
 from fastapi.responses import RedirectResponse
 from config.settings import settings
-from google.auth.transport.flow import Flow
-from google.oauth2.credentials import GoogleOAuth2Credentials
+from google_auth_oauthlib.flow import Flow
+from models import GoogleOAuth2Credentials, User
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import jwt
+import asyncio
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/email", tags=["email"])
 email_service = EmailService()
+
+
+def credentials_to_dict(credentials):
+    return {
+        "token": credentials.token,
+        "refresh_token": credentials.refresh_token,
+        "token_uri": credentials.token_uri,
+        "client_id": credentials.client_id,
+        "client_secret": credentials.client_secret,
+        "scopes": credentials.scopes,
+    }
+
 
 @router.get("/auth/init")
 async def init_oauth2(
@@ -34,9 +50,12 @@ async def init_oauth2(
         db: Database session
         
     Returns:
-        RedirectResponse to Google OAuth2 consent screen
+        JSON response with the authorization URL
     """
     try:
+        # Log the redirect URI being used
+        logger.info(f"Using redirect URI: {settings.GOOGLE_REDIRECT_URI}")
+        
         # Create OAuth2 flow
         flow = Flow.from_client_config(
             {
@@ -49,7 +68,8 @@ async def init_oauth2(
                     "scopes": email_service.SCOPES
                 }
             },
-            scopes=email_service.SCOPES
+            scopes=email_service.SCOPES,
+            redirect_uri=settings.GOOGLE_REDIRECT_URI
         )
         
         # Generate authorization URL
@@ -59,11 +79,14 @@ async def init_oauth2(
             prompt='consent'
         )
         
+        # Log the generated authorization URL
+        logger.info(f"Generated authorization URL: {auth_url}")
+        
         # Store state in session or database for verification
         # For now, we'll use the user_id as part of the state
         state = f"{state}_{user.user_id}"
         
-        return RedirectResponse(auth_url)
+        return {"url": auth_url}
         
     except Exception as e:
         logger.error(f"Error initializing OAuth2 flow: {str(e)}")
@@ -87,11 +110,11 @@ async def oauth2_callback(
         db: Database session
         
     Returns:
-        RedirectResponse to frontend success page
+        JSON response with success status
     """
     try:
-        # Extract user_id from state
-        user_id = int(state.split('_')[1])
+        # Log the received parameters
+        logger.info(f"Received callback with state: {state}")
         
         # Create OAuth2 flow
         flow = Flow.from_client_config(
@@ -105,16 +128,52 @@ async def oauth2_callback(
                     "scopes": email_service.SCOPES
                 }
             },
-            scopes=email_service.SCOPES
+            scopes=email_service.SCOPES,
+            redirect_uri=settings.GOOGLE_REDIRECT_URI
         )
         
         # Exchange code for tokens
         flow.fetch_token(code=code)
         credentials = flow.credentials
         
+        # Decode the ID token
+        try:
+            # Add a small delay to ensure token is valid
+            await asyncio.sleep(1)
+            
+            # Get the raw ID token
+            raw_id_token = credentials.id_token
+            print("Raw ID token: ", raw_id_token)
+
+            # Decode without verification first to get the token data
+            decoded_token = jwt.decode(raw_id_token, options={"verify_signature": False})
+    
+            
+            # Get the email from the decoded token
+            user_email = decoded_token.get('email')
+            if not user_email:
+                raise ValueError("No email found in ID token")
+                
+            logger.info(f"Got email from ID token: {user_email}")
+            
+        except Exception as e:
+            logger.error(f"Error decoding ID token: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to decode ID token: {str(e)}"
+            )
+        
+        user = db.query(User).filter(User.email == user_email).first()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User not found for email: {user_email}"
+            )
+        
         # Store credentials in database
         db_credentials = GoogleOAuth2Credentials(
-            user_id=user_id,
+            user_id=user.user_id,
             token=credentials.token,
             refresh_token=credentials.refresh_token,
             token_uri=credentials.token_uri,
@@ -126,7 +185,7 @@ async def oauth2_callback(
         
         # Update or insert credentials
         existing_credentials = db.query(GoogleOAuth2Credentials).filter(
-            GoogleOAuth2Credentials.user_id == user_id
+            GoogleOAuth2Credentials.user_id == user.user_id
         ).first()
         
         if existing_credentials:
@@ -138,8 +197,8 @@ async def oauth2_callback(
             
         db.commit()
         
-        # Redirect to frontend success page
-        return RedirectResponse(f"{settings.FRONTEND_URL}/email/auth/success")
+        # Return success response
+        return {"success": True, "message": "Gmail connected successfully"}
         
     except Exception as e:
         logger.error(f"Error handling OAuth2 callback: {str(e)}")
@@ -158,7 +217,7 @@ async def list_labels(
     List all email labels/folders
     
     Args:
-        include_system_labels: Whether to include system labels like INBOX, SENT, etc.
+        include_system_labels: Whether to include system labels
         user: Authenticated user
         db: Database session
         
@@ -174,22 +233,19 @@ async def list_labels(
             )
             
         # Get labels
-        response = await email_service.list_labels(include_system_labels)
-        if not response.success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=response.error
-            )
-            
-        return response
+        labels = await email_service.list_labels(include_system_labels)
         
-    except HTTPException:
-        raise
+        return EmailAgentResponse(
+            success=True,
+            data={'labels': labels},
+            metadata={'total_labels': len(labels)}
+        )
+        
     except Exception as e:
         logger.error(f"Error listing labels: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listing labels: {str(e)}"
+        return EmailAgentResponse(
+            success=False,
+            error=str(e)
         )
 
 @router.post("/messages", response_model=EmailAgentResponse)
@@ -199,10 +255,10 @@ async def get_messages(
     db: Session = Depends(get_db)
 ):
     """
-    Get messages matching the search parameters
+    Get messages based on search parameters
     
     Args:
-        params: Search parameters for finding messages
+        params: Search parameters
         user: Authenticated user
         db: Database session
         
@@ -218,28 +274,36 @@ async def get_messages(
             )
             
         # Get messages
-        response = await email_service.get_messages(params)
-        if not response.success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=response.error
-            )
-            
-        return response
+        messages = await email_service.get_messages(
+            folders=params.folders,
+            date_range=params.date_range,
+            query_terms=params.query_terms,
+            max_results=params.max_results,
+            include_attachments=params.include_attachments,
+            include_metadata=params.include_metadata
+        )
         
-    except HTTPException:
-        raise
+        return EmailAgentResponse(
+            success=True,
+            data={'messages': messages},
+            metadata={
+                'total_messages': len(messages),
+                'query': params.dict()
+            }
+        )
+        
     except Exception as e:
         logger.error(f"Error getting messages: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting messages: {str(e)}"
+        return EmailAgentResponse(
+            success=False,
+            error=str(e)
         )
 
 @router.get("/messages/{message_id}", response_model=EmailAgentResponse)
 async def get_message(
     message_id: str,
     include_attachments: bool = False,
+    include_metadata: bool = True,
     user = Depends(validate_token),
     db: Session = Depends(get_db)
 ):
@@ -247,8 +311,9 @@ async def get_message(
     Get a specific message by ID
     
     Args:
-        message_id: ID of the message to retrieve
+        message_id: Message ID
         include_attachments: Whether to include attachment data
+        include_metadata: Whether to include message metadata
         user: Authenticated user
         db: Database session
         
@@ -264,20 +329,24 @@ async def get_message(
             )
             
         # Get message
-        response = await email_service.get_message(message_id, include_attachments)
-        if not response.success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=response.error
-            )
-            
-        return response
+        message = await email_service.get_message(
+            message_id,
+            include_attachments=include_attachments,
+            include_metadata=include_metadata
+        )
         
-    except HTTPException:
-        raise
+        return EmailAgentResponse(
+            success=True,
+            data={'message': message},
+            metadata={
+                'has_attachments': len(message.get('attachments', [])) > 0,
+                'attachment_count': len(message.get('attachments', []))
+            }
+        )
+        
     except Exception as e:
         logger.error(f"Error getting message: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting message: {str(e)}"
+        return EmailAgentResponse(
+            success=False,
+            error=str(e)
         ) 

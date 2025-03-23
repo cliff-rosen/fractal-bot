@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
-import { MoonIcon, SunIcon, DocumentTextIcon, Square2StackIcon, FolderIcon, PlayIcon, SparklesIcon, BeakerIcon, CubeIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import { MoonIcon, SunIcon, DocumentTextIcon, Square2StackIcon, FolderIcon, PlayIcon, SparklesIcon, BeakerIcon, CubeIcon, ChatBubbleLeftRightIcon, UserCircleIcon } from '@heroicons/react/24/outline'
 import settings from '../config/settings'
 import { HelpGuide } from './HelpGuide';
 
@@ -92,6 +92,7 @@ export default function TopBar() {
                             </Link>
                         </div>
                     </div>
+
                     <div className="flex items-center gap-2">
                         <Link
                             to="/interactive-workflow"
@@ -125,25 +126,34 @@ export default function TopBar() {
                         <button
                             onClick={toggleTheme}
                             className="inline-flex items-center justify-center rounded-md w-8 h-8
-                                     text-gray-400 hover:text-gray-500 hover:bg-gray-100
-                                     dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800
-                                     focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
-                                     transition-colors"
+                                text-gray-400 hover:text-gray-500 dark:hover:text-gray-300
+                                hover:bg-gray-100 dark:hover:bg-gray-800
+                                focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                                transition-colors"
                             aria-label="Toggle theme"
                         >
                             {isDarkMode ? (
-                                <SunIcon className="h-4 w-4" />
+                                <SunIcon className="h-5 w-5" />
                             ) : (
-                                <MoonIcon className="h-4 w-4" />
+                                <MoonIcon className="h-5 w-5" />
                             )}
                         </button>
                         {isAuthenticated && (
                             <>
-                                <div className="ml-4 flex items-center">
-                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                        {user?.username}
-                                    </span>
-                                </div>
+                                <Link
+                                    to="/profile"
+                                    className={`${location.pathname === '/profile'
+                                        ? 'text-blue-500'
+                                        : 'text-gray-400 hover:text-gray-500 dark:hover:text-gray-300'
+                                        } inline-flex items-center justify-center rounded-md w-8 h-8
+                                        hover:bg-gray-100 dark:hover:bg-gray-800
+                                        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                                        transition-colors`}
+                                    aria-label="Profile"
+                                    title="Profile"
+                                >
+                                    <UserCircleIcon className="h-5 w-5" />
+                                </Link>
                                 <button
                                     onClick={logout}
                                     className="ml-4 inline-flex items-center justify-center rounded-md
