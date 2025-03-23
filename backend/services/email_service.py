@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 class EmailService:
     SCOPES = [
-        'https://www.googleapis.com/auth/gmail.modify',  # Allows reading and modifying but not deleting emails
-        'https://www.googleapis.com/auth/gmail.metadata',
+        'https://www.googleapis.com/auth/gmail.readonly',  # Allows reading emails and performing searches
         'openid',
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/userinfo.email'

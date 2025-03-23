@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from services.auth_service import validate_token
 from services.email_service import EmailService
@@ -257,7 +257,7 @@ async def get_messages(
     db: Session = Depends(get_db)
 ):
     """
-    Get messages based on search parameters and create an asset with the results
+    Get messages based on search parameters
     
     Args:
         params: Search parameters
@@ -265,7 +265,7 @@ async def get_messages(
         db: Database session
         
     Returns:
-        EmailAgentResponse with list of messages and created asset
+        EmailAgentResponse with list of messages
     """
     try:
         # Authenticate with Gmail API
@@ -285,41 +285,10 @@ async def get_messages(
             include_metadata=params.include_metadata
         )
         
-        # Create an asset with the search results
-        asset = Asset(
-            asset_id=str(uuid.uuid4()),
-            type=AssetType.DATA,
-            content={
-                "messages": messages,
-                "search_params": params.dict()
-            },
-            metadata={
-                "status": AssetStatus.READY,
-                "createdAt": datetime.now(),
-                "updatedAt": datetime.now(),
-                "creator": user.user_id,
-                "tags": ["email", "search"],
-                "agent_associations": [],
-                "version": 1
-            }
-        )
-        
-        # Save the asset to the database
-        db_asset = AssetModel(
-            asset_id=asset.asset_id,
-            type=asset.type,
-            content=asset.content,
-            metadata=asset.metadata
-        )
-        db.add(db_asset)
-        db.commit()
-        db.refresh(db_asset)
-        
         return EmailAgentResponse(
             success=True,
             data={
-                'messages': messages,
-                'asset': asset
+                'messages': messages
             },
             metadata={
                 'total_messages': len(messages),

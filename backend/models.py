@@ -7,6 +7,7 @@ from sqlalchemy.sql import text
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKeyConstraint
 from uuid import uuid4
 import json
+from schemas.asset import AssetType, AssetStatus
 
 Base = declarative_base()
 

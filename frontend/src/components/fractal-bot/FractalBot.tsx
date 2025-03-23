@@ -2,21 +2,25 @@ import React, { useState } from 'react';
 import { ChatSection } from './components/ChatSection';
 import { AssetsSection } from './components/AssetsSection';
 import { AgentsSection } from './components/AgentsSection';
+import { AssetModal } from './components/AssetModal';
 import { Message, Asset, Agent, ChatResponse, WorkflowState, WorkflowStatus, ActionType, MessageRole } from './types/state';
 import { botApi } from '../../lib/api/botApi';
-import { FractalBotProvider } from './context/FractalBotContext';
+import { FractalBotProvider, useFractalBot } from './context/FractalBotContext';
 
 const FractalBotContent: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
-    const [assets, setAssets] = useState<Asset[]>([]);
     const [agents, setAgents] = useState<Agent[]>([]);
+    const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
     const [workflowState, setWorkflowState] = useState<WorkflowState>({
         currentStep: 0,
         totalSteps: 0,
         status: WorkflowStatus.IDLE
     });
+
+    const { state, addAsset } = useFractalBot();
+    const { assets } = state;
 
     const handleSendMessage = async (message: string) => {
         if (!message.trim()) return;
@@ -46,7 +50,7 @@ const FractalBotContent: React.FC = () => {
             const newAgents = sideEffects.agents || [];
 
             if (newAssets.length > 0) {
-                setAssets(prev => [...prev, ...newAssets]);
+                newAssets.forEach(asset => addAsset(asset));
             }
             if (newAgents.length > 0) {
                 setAgents(prev => [...prev, ...newAgents]);
@@ -68,8 +72,7 @@ const FractalBotContent: React.FC = () => {
     };
 
     const handleAssetClick = (asset: Asset) => {
-        // TODO: Implement asset handling logic
-        console.log('Asset clicked:', asset);
+        setSelectedAsset(asset);
     };
 
     const handleAgentClick = (agent: Agent) => {
@@ -105,6 +108,14 @@ const FractalBotContent: React.FC = () => {
                     onAgentClick={handleAgentClick}
                 />
             </div>
+
+            {/* Asset Modal */}
+            {selectedAsset && (
+                <AssetModal
+                    asset={selectedAsset}
+                    onClose={() => setSelectedAsset(null)}
+                />
+            )}
         </div>
     );
 };

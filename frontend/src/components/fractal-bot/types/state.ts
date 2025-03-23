@@ -1,4 +1,3 @@
-import { InformationAsset } from '../../interactive-workflow/types';
 
 // Basic types
 export type Phase = 'setup' | 'execution' | 'complete';

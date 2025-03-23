@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SparklesIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Agent, AgentStatus, AgentType } from '../types/state';
-import EmailSearchAgent from '@/components/email/EmailSearchAgent';
+import EmailSearchAgent from '@/components/agents/email/EmailSearchAgent';
 
 interface AgentsSectionProps {
     agents: Agent[];

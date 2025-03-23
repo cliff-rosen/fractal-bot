@@ -1,5 +1,5 @@
 import React from 'react';
-import { Asset } from '../types/state';
+import { Asset, AssetStatus } from '../types/state';
 import { getAssetIcon, getAssetColor } from './AssetsSection';
 
 interface AssetModalProps {
@@ -8,6 +8,36 @@ interface AssetModalProps {
 }
 
 export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
+    const renderContent = () => {
+        if (typeof asset.content === 'string') {
+            return (
+                <pre className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                    {asset.content}
+                </pre>
+            );
+        }
+
+        if (Array.isArray(asset.content)) {
+            return (
+                <div className="space-y-2">
+                    {asset.content.map((item, index) => (
+                        <div key={index} className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                            <pre className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+                                {JSON.stringify(item, null, 2)}
+                            </pre>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        return (
+            <pre className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                {JSON.stringify(asset.content, null, 2)}
+            </pre>
+        );
+    };
+
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -25,7 +55,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                             {/* Icon */}
                             <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10 ${getAssetColor(asset.type, asset.metadata)}`}>
                                 {getAssetIcon(asset.type, asset.metadata)}
-                                {asset.metadata.status === 'in_progress' && (
+                                {asset.metadata.status === AssetStatus.PENDING && (
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div className="absolute w-full h-full rounded-full animate-pulse bg-current opacity-20"></div>
                                         <svg className="absolute w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -39,8 +69,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                             {/* Content */}
                             <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
                                 <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">
-                                    {asset.name}
-                                    {asset.metadata.status === 'in_progress' && (
+                                    {asset.type}
+                                    {asset.metadata.status === AssetStatus.PENDING && (
                                         <span className="ml-2 text-sm text-blue-500 dark:text-blue-400">• Processing</span>
                                     )}
                                 </h3>
@@ -48,7 +78,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
                                         <span>{asset.type}</span>
                                         <span>•</span>
-                                        <span>{new Date(asset.metadata.timestamp).toLocaleString()}</span>
+                                        <span>{new Date(asset.metadata.createdAt).toLocaleString()}</span>
                                     </div>
                                     <div className="flex flex-wrap gap-1 mb-4">
                                         {asset.metadata.tags?.map((tag, index) => (
@@ -62,12 +92,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                                         ))}
                                     </div>
                                     <div className="prose dark:prose-invert max-w-none">
-                                        <pre className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                                            {typeof asset.content === 'string'
-                                                ? asset.content
-                                                : JSON.stringify(asset.content, null, 2)
-                                            }
-                                        </pre>
+                                        {renderContent()}
                                     </div>
                                 </div>
                             </div>

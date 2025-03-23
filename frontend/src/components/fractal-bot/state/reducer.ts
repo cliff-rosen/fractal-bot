@@ -22,7 +22,15 @@ export const fractalBotReducer = (state: FractalBotState, action: StateUpdateAct
         }
 
         case 'ADD_ASSET': {
-            newState.assets.push(action.payload.asset);
+            // Check if asset already exists
+            const existingIndex = newState.assets.findIndex(a => a.asset_id === action.payload.asset.asset_id);
+            if (existingIndex >= 0) {
+                // Update existing asset
+                newState.assets[existingIndex] = action.payload.asset;
+            } else {
+                // Add new asset
+                newState.assets.push(action.payload.asset);
+            }
             newState.metadata.lastUpdated = new Date().toISOString();
             return newState;
         }

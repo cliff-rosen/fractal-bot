@@ -3,7 +3,7 @@ import { api } from '@/lib/api';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Asset, AssetType, AssetStatus } from '@/components/fractal-bot/types/state';
+import { Asset, AssetType, AssetStatus, MessageRole, ChatMessage } from '@/components/fractal-bot/types/state';
 import { useFractalBot } from '@/components/fractal-bot/context/FractalBotContext';
 
 interface EmailSearchButtonProps {
@@ -21,7 +21,8 @@ interface EmailSearchButtonProps {
 export default function EmailSearchButton({ agentId, operation, searchParams }: EmailSearchButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
-    const { addAsset } = useFractalBot();
+    const { state, addAsset, addMessage } = useFractalBot();
+    const { assets } = state;
 
     const handleOperation = async () => {
         try {
@@ -47,32 +48,54 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
                 throw new Error(response.data.error || 'Operation failed');
             }
 
-            // Create an asset with the appropriate status and content
+            // Find existing asset for this operation
+            const existingAsset = assets.find(a =>
+                a.metadata.creator === 'email_agent' &&
+                a.metadata.tags?.includes(operation === 'list_labels' ? 'labels' : 'messages')
+            );
+
+            const assetContent = operation === 'list_labels'
+                ? response.data.data?.labels
+                    ? `Email Labels:\n${response.data.data.labels.map((label: any) => `- ${label.name} (${label.type})`).join('\n')}`
+                    : "Email Labels Overview\nNo labels found."
+                : response.data.data?.messages
+                    ? `Email Messages:\n${response.data.data.messages.map((msg: any) => `- ${msg.subject}`).join('\n')}`
+                    : "Email Messages Overview\nNo messages found.";
+
             const asset: Asset = {
-                asset_id: `email-${operation}-${Date.now()}`,
+                asset_id: existingAsset?.asset_id || `email-${operation}-${Date.now()}`,
                 type: AssetType.DATA,
-                content: operation === 'list_labels'
-                    ? response.data.labels
-                        ? `Email Labels:\n${response.data.labels.map((label: any) => `- ${label.name}`).join('\n')}`
-                        : "Email Labels Overview\nNo labels found."
-                    : response.data.messages
-                        ? `Email Messages:\n${response.data.messages.map((msg: any) => `- ${msg.subject}`).join('\n')}`
-                        : "Email Messages Overview\nNo messages found.",
+                content: assetContent,
                 metadata: {
-                    status: response.data.labels || response.data.messages ? AssetStatus.READY : AssetStatus.PENDING,
-                    createdAt: new Date(),
+                    status: response.data.data?.labels || response.data.data?.messages ? AssetStatus.READY : AssetStatus.PENDING,
+                    createdAt: existingAsset?.metadata.createdAt || new Date(),
                     updatedAt: new Date(),
                     creator: 'email_agent',
                     tags: ['email', operation === 'list_labels' ? 'labels' : 'messages'],
                     agent_associations: [],
-                    version: 1
+                    version: (existingAsset?.metadata.version || 0) + 1
                 }
             };
 
-            console.log('Created Asset:', asset);
+            console.log('Created/Updated Asset:', asset);
 
-            // Add the asset to the store
+            // Add or update the asset
             addAsset(asset);
+
+            // Add a message to the chat history
+            const messageContent = operation === 'list_labels'
+                ? `I've retrieved your Gmail labels. You can find them in the assets panel.`
+                : `I've retrieved your email messages. You can find them in the assets panel.`;
+
+            const message: ChatMessage = {
+                id: Date.now().toString(),
+                role: MessageRole.ASSISTANT,
+                content: messageContent,
+                timestamp: new Date().toISOString(),
+                type: 'asset_added'
+            };
+
+            addMessage('setup', message);
 
             // Show success toast
             toast({
