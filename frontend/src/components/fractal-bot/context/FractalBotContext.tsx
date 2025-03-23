@@ -143,10 +143,11 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             const messages = response.data.data?.messages || [];
             const assetContent = messages.length > 0
                 ? `Email Messages:\n${messages.map((msg: any) => {
-                    const subject = msg.subject || 'No Subject';
-                    const from = msg.from || 'Unknown Sender';
-                    const date = msg.date ? new Date(msg.date).toLocaleString() : 'No Date';
-                    return `- Subject: ${subject}\n  From: ${from}\n  Date: ${date}\n`;
+                    const subject = msg.subject || msg.headers?.subject || 'No Subject';
+                    const from = msg.from || msg.headers?.from || 'Unknown Sender';
+                    const date = msg.date || msg.headers?.date || 'No Date';
+                    const snippet = msg.snippet || '';
+                    return `- Subject: ${subject}\n  From: ${from}\n  Date: ${date}\n  ${snippet ? `Preview: ${snippet}\n` : ''}`;
                 }).join('\n')}`
                 : "Email Messages Overview\nNo messages found.";
 
