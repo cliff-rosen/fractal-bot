@@ -18,13 +18,13 @@ interface FractalBotContextType {
     updateMetadata: (updates: Partial<FractalBotState['metadata']>) => void;
     resetState: () => void;
     processMessage: (message: string) => Promise<void>;
-    searchEmails: (params: {
+    searchEmails: (assetId: string, params: {
         folders?: string[];
         query_terms?: string[];
         max_results?: number;
         include_attachments?: boolean;
         include_metadata?: boolean;
-    }, assetId?: string) => Promise<void>;
+    }) => Promise<void>;
     listEmailLabels: (assetId?: string) => Promise<void>;
 }
 
@@ -129,35 +129,34 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         }
     }, [state.messages, state.assets, addMessage, addAsset, addAgent, updateMetadata, toast]);
 
-    const searchEmails = useCallback(async (params: {
+    const searchEmails = useCallback(async (assetId: string, params: {
         folders?: string[];
         query_terms?: string[];
         max_results?: number;
         include_attachments?: boolean;
         include_metadata?: boolean;
-    }, assetId?: string) => {
-        const targetAssetId = assetId || `email_messages_${Date.now()}`;
+    }) => {
 
-        try {
-            // Create initial asset with pending status
-            const initialAsset: Asset = {
-                asset_id: targetAssetId,
+        // create a new asset with pending status if needed
+        // if no assetId is provided, create a new one
+        if (!assetId) {
+            assetId = `email_messages_${Date.now()}`;
+        }
+        if (!state.assets[assetId]) {
+            addAsset({
+                asset_id: assetId,
                 type: AssetType.TEXT,
                 content: 'Fetching email messages...',
                 status: AssetStatus.PENDING,
                 metadata: {
-                    createdAt: state.assets[targetAssetId]?.metadata?.createdAt || new Date().toISOString(),
+                    createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
-                    version: (state.assets[targetAssetId]?.metadata?.version || 0) + 1
+                    version: 1
                 }
-            };
+            });
+        }
 
-            if (state.assets[targetAssetId]) {
-                updateAsset(targetAssetId, initialAsset);
-            } else {
-                addAsset(initialAsset);
-            }
-
+        try {
             const response = await api.post('/api/email/messages', {
                 folders: params.folders,
                 query_terms: params.query_terms,
@@ -173,21 +172,21 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             const messages = response.data.data?.messages || [];
             const assetContent = messages.length > 0
                 ? `Email Messages:\n${messages.map((msg: any) => {
-                    const subject = msg.subject || msg.headers?.subject || 'No Subject';
-                    const from = msg.from || msg.headers?.from || 'Unknown Sender';
-                    const date = msg.date || msg.headers?.date || 'No Date';
+                    const subject = msg.headers?.subject || 'No Subject';
+                    const from = msg.headers?.from || 'Unknown Sender';
+                    const date = msg.headers?.date || 'No Date';
                     const snippet = msg.snippet || '';
                     return `- Subject: ${subject}\n  From: ${from}\n  Date: ${date}\n  ${snippet ? `Preview: ${snippet}\n` : ''}`;
                 }).join('\n')}`
                 : "Email Messages Overview\nNo messages found.";
 
-            // Update asset with results
-            updateAsset(targetAssetId, {
+            // Update the existing asset
+            updateAsset(assetId, {
                 content: assetContent,
                 status: messages.length > 0 ? AssetStatus.READY : AssetStatus.PENDING,
                 metadata: {
                     updatedAt: new Date().toISOString(),
-                    version: (state.assets[targetAssetId]?.metadata?.version || 0) + 1
+                    version: (state.assets[assetId]?.metadata?.version || 0) + 1
                 }
             });
 
@@ -207,24 +206,22 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
         } catch (error: any) {
             console.error('Error fetching email messages:', error);
-
             // Update asset to show error state
-            updateAsset(targetAssetId, {
+            updateAsset(assetId, {
                 content: `Error fetching email messages: ${error.message || 'Unknown error'}`,
                 status: AssetStatus.ERROR,
                 metadata: {
                     updatedAt: new Date().toISOString(),
-                    version: (state.assets[targetAssetId]?.metadata?.version || 0) + 1
+                    version: (state.assets[assetId]?.metadata?.version || 0) + 1
                 }
             });
-
             toast({
                 title: 'Error',
                 description: error.message || 'Failed to retrieve email messages. Please try again.',
                 variant: 'destructive'
             });
         }
-    }, [state.assets, updateAsset, addAsset, addMessage, toast]);
+    }, [state.assets, updateAsset, addMessage, toast]);
 
     const listEmailLabels = useCallback(async (assetId?: string) => {
         try {

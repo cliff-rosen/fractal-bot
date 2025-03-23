@@ -24,7 +24,7 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
             setIsLoading(true);
             const agent = state.agents[agentId];
 
-            // Get asset ID if available, but don't require it
+            // Get asset ID if available
             let assetId: string | undefined;
             if (agent?.output_asset_ids?.length) {
                 assetId = agent.output_asset_ids[0];
@@ -38,7 +38,8 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
             if (operation === 'list_labels') {
                 await listEmailLabels(assetId);
             } else if (operation === 'get_messages') {
-                await searchEmails(searchParams, assetId);
+
+                await searchEmails(assetId, searchParams);
             } else {
                 throw new Error(`Unsupported operation: ${operation}`);
             }
