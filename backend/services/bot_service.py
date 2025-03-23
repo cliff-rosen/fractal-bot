@@ -80,6 +80,22 @@ class BotService:
             "pending_approvals": []
         }
 
+    def get_clean_response_json(self, response: str) -> str:
+        """Clean the response to ensure it's valid JSON"""
+        response = response.strip()
+        if response.startswith('```json'):
+            response = response[7:]
+        if response.endswith('```'):    
+            response = response[:-3]
+                    # Handle multiple JSON objects in response
+        if '\n\n' in response:
+            logger.info(f'Received multiple tool requests')
+            # Take only the first tool request
+            response = response.split('\n\n')[0]
+
+        return json.loads(response)
+
+
     async def process_message(self, message: str, history: List[Dict[str, Any]]) -> ChatResponse:
         """Process a user message and return a response with appropriate side effects"""
         try:
@@ -115,24 +131,11 @@ class BotService:
                     messages=messages,
                     system=self._get_system_prompt()
                 )
-                
+                print('response', response)
+
                 try:
                     # Clean the response to ensure it's valid JSON
-                    response = response.strip()
-                    if response.startswith('```json'):
-                        response = response[7:]
-                    if response.endswith('```'):
-                        response = response[:-3]
-                    response = response.strip()
-                    
-                    # Handle multiple JSON objects in response
-                    if '\n\n' in response:
-                        logger.info(f'Iteration {iteration + 1}: Received multiple tool requests')
-                        # Take only the first tool request
-                        response = response.split('\n\n')[0]
-                    
-                    # Parse the JSON response
-                    response_data = json.loads(response)
+                    response_data = self.get_clean_response_json(response)
                     
                     if not isinstance(response_data, dict):
                         raise ValueError("Response must be a JSON object")
@@ -189,9 +192,16 @@ class BotService:
                     elif response_data.get("type") == "final_response":
                         # Process final response
                         logger.info(f'Iteration {iteration + 1}: Received final response')
+                        
+                        # Add asset_id to each asset
+                        assets = response_data.get("assets", [])
+                        for asset in assets:
+                            if "asset_id" not in asset:
+                                asset["asset_id"] = str(uuid.uuid4())
+                        
                         side_effects = {
                             "final_response": response_data["response"],
-                            "assets": response_data.get("assets", []),
+                            "assets": assets,
                             "agents": response_data.get("agents", []),
                             "tool_use_history": tool_use_history
                         }
@@ -386,9 +396,9 @@ class BotService:
         if side_effects.get("final_response"):
             metadata["final_response"] = side_effects["final_response"]
             if side_effects.get("assets"):
-                metadata["asset_references"] = [asset["id"] for asset in side_effects["assets"]]
+                metadata["asset_references"] = [asset["asset_id"] for asset in side_effects["assets"]]
             if side_effects.get("agents"):
-                metadata["agent_references"] = [agent["id"] for agent in side_effects["agents"]]
+                metadata["agent_references"] = [agent["agent_id"] for agent in side_effects["agents"]]
             
         # Add tool use history to metadata if it exists
         if side_effects.get("tool_use_history"):
@@ -404,9 +414,9 @@ CRITICAL: You must ALWAYS respond with a valid JSON object. Your entire response
 DO NOT wrap your response in markdown code blocks (```json) or any other formatting.
 DO NOT include any text before or after the JSON object.
 
-You have two possible response formats:
+You have two possible response formats: 
 
-1. To use a tool:
+1. To use a tool (directly executable by you):
 {{
     "type": "tool",
     "tool": {{
@@ -418,20 +428,143 @@ You have two possible response formats:
     }}
 }}
 
-2. To give a final response:
+2. To give a final response (which can include recommending agents and/or supplying assets to the user):
 {{
     "type": "final_response",
     "response": "Your response text here",
-    "assets": [],
-    "agents": []
+    "assets": [
+        {{
+            "asset_id": "uuid-string",
+            "type": "text|spreadsheet|pdf|data",
+            "content": "The actual content",
+            "metadata": {{
+                "status": "proposed|pending|ready|error",
+                "createdAt": "timestamp",
+                "updatedAt": "timestamp",
+                "creator": "user/bot/agent",
+                "tags": ["tag1", "tag2"],
+                "agent_associations": ["agent_id1", "agent_id2"],
+                "version": 1
+            }}
+        }}
+    ],
+    "agents": [
+        {{
+            "agent_id": "uuid-string",
+            "type": "email_access",
+            "description": "What this agent does",
+            "status": "proposed|in_progress|completed|error",
+            "metadata": {{
+                "createdAt": "timestamp",
+                "lastRunAt": "timestamp",
+                "completionTime": "timestamp",
+                "progress": 0-100,
+                "estimatedCompletion": "timestamp"
+            }},
+            "input_parameters": {{
+                "folders": ["folder1", "folder2"],
+                "date_range": {{
+                    "start": "2024-03-01T00:00:00Z",
+                    "end": "2024-03-23T23:59:59Z"
+                }},
+                "query_terms": ["term1", "term2"],
+                "max_results": 100,
+                "include_attachments": false
+            }},
+            "output_asset_ids": ["asset_id3"]
+        }}
+    ]
 }}
 
-Available Tools:
+IMPORTANT DISTINCTION:
+1. Tools (Directly Usable):
+   - These are tools you can directly execute in your responses
+   - Currently available tools:
 {json.dumps(TOOLS, indent=2)}
+
+2. Agents (Recommendable):
+   - These are specialized workers you can recommend to the user
+   - You CANNOT directly execute agents
+   - You can only propose them in the "agents" array of a final_response
+   - The user must approve and launch them
+   
+   Available Agent Type:
+   - email_access: Google Mail API Integration Agent
+     * Purpose: Accesses and retrieves email data from Google Mail API
+     * Operations:
+       1. list_labels: Lists all email folders/labels
+          * Input Parameters:
+            {{
+                "operation": "list_labels",
+                "include_system_labels": true  // Whether to include system labels like INBOX, SENT, etc.
+            }}
+          * Example: "I'll create an email access agent to list all your email folders and labels"
+
+       2. get_messages: Retrieves messages from specified folders
+          * Input Parameters:
+            {{
+                "operation": "get_messages",
+                "folders": ["folder1", "folder2"],  // List of folders/labels to search
+                "date_range": {{
+                    "start": "2024-03-01T00:00:00Z",  // ISO 8601 format
+                    "end": "2024-03-23T23:59:59Z"     // ISO 8601 format
+                }},
+                "query_terms": ["term1", "term2"],    // Optional search terms
+                "max_results": 100,                   // Maximum number of emails to retrieve
+                "include_attachments": false,         // Whether to include email attachments
+                "include_metadata": true              // Whether to include email metadata (headers, etc.)
+            }}
+          * Example: "I'll create an email access agent to retrieve your recent work emails from the past month"
+
+       3. get_message: Retrieves a specific message by ID
+          * Input Parameters:
+            {{
+                "operation": "get_message",
+                "message_id": "message_id_here",      // The ID of the specific message
+                "include_attachments": true,          // Whether to include email attachments
+                "include_metadata": true              // Whether to include email metadata
+            }}
+          * Example: "I'll create an email access agent to retrieve the specific email with ID 'abc123'"
+
+   Agent Statuses:
+   - proposed: Initial state when agent is first created
+   - in_progress: Agent is currently running
+   - completed: Agent has finished successfully
+   - error: Agent execution failed
+
+   CRITICAL: When recommending an agent, you MUST do TWO things:
+   1. Add the agent to the "agents" array in your response with:
+      - A unique agent_id
+      - Type set to "email_access"
+      - A clear description of the specific email access task
+      - Status set to "proposed"
+      - input_parameters object with:
+        * operation: The specific operation to perform ("list_labels", "get_messages", or "get_message")
+        * Operation-specific parameters as shown above
+      - output_asset_ids: Array of asset IDs for storing results
+      - Required metadata
+   
+   2. EXPLAIN THE AGENT IN YOUR RESPONSE TEXT. This is MANDATORY. Include:
+      - Which operation it will perform
+      - All relevant parameters and their values
+      - What outputs it will produce
+      - How it will help solve the user's problem
+
+Asset Types:
+- text: Plain text content
+- spreadsheet: Tabular data
+- pdf: PDF documents
+- data: Structured data in any format
+
+Asset Statuses:
+- proposed: Initial state when asset is first created
+- pending: Asset is being processed
+- ready: Asset is complete and available
+- error: Asset processing failed
 
 Examples:
 
-1. If you need to search for information:
+1. Using a tool (directly executable):
 {{
     "type": "tool",
     "tool": {{
@@ -443,22 +576,163 @@ Examples:
     }}
 }}
 
-2. If you have enough information to answer:
+2. Creating an asset and recommending an email access agent to list labels:
 {{
     "type": "final_response",
-    "response": "Based on the search results, here's what I found...",
-    "assets": [],
-    "agents": []
+    "response": "I'll create a folder list and recommend an email access agent to retrieve all your email folders and labels. The agent will list all folders, including system folders like INBOX and SENT. This will help us understand your email organization structure.",
+    "assets": [
+        {{
+            "asset_id": "uuid-string",
+            "type": "text",
+            "content": "Email folder list template...",
+            "metadata": {{
+                "status": "ready",
+                "createdAt": "2024-03-23T12:00:00Z",
+                "updatedAt": "2024-03-23T12:00:00Z",
+                "creator": "bot",
+                "tags": ["email", "folders"],
+                "agent_associations": [],
+                "version": 1
+            }}
+        }}
+    ],
+    "agents": [
+        {{
+            "agent_id": "uuid-string",
+            "type": "email_access",
+            "description": "Lists all email folders and labels",
+            "status": "proposed",
+            "metadata": {{
+                "createdAt": "2024-03-23T12:00:00Z",
+                "progress": 0,
+                "estimatedCompletion": "2024-03-23T12:05:00Z"
+            }},
+            "input_parameters": {{
+                "operation": "list_labels",
+                "include_system_labels": true
+            }},
+            "output_asset_ids": ["folder_list_asset_id"]
+        }}
+    ]
+}}
+
+3. Creating an asset and recommending an email access agent to get messages:
+{{
+    "type": "final_response",
+    "response": "I'll create a task list and recommend an email access agent to gather your recent work emails. The agent will access your Google Mail account to retrieve emails from the 'Work' and 'Important' folders from March 1st to March 23rd, 2024. It will search for emails containing the terms 'deadline', 'task', and 'action items', retrieving up to 100 emails. The agent will process these emails to identify key tasks and deadlines, which will be added to your task list. This will help you stay organized and track your work commitments.",
+    "assets": [
+        {{
+            "asset_id": "uuid-string",
+            "type": "text",
+            "content": "Task list template...",
+            "metadata": {{
+                "status": "ready",
+                "createdAt": "2024-03-23T12:00:00Z",
+                "updatedAt": "2024-03-23T12:00:00Z",
+                "creator": "bot",
+                "tags": ["tasks", "email"],
+                "agent_associations": [],
+                "version": 1
+            }}
+        }}
+    ],
+    "agents": [
+        {{
+            "agent_id": "uuid-string",
+            "type": "email_access",
+            "description": "Retrieves work-related emails from March 1st to March 23rd to identify tasks and deadlines",
+            "status": "proposed",
+            "metadata": {{
+                "createdAt": "2024-03-23T12:00:00Z",
+                "progress": 0,
+                "estimatedCompletion": "2024-03-23T12:05:00Z"
+            }},
+            "input_parameters": {{
+                "operation": "get_messages",
+                "folders": ["Work", "Important"],
+                "date_range": {{
+                    "start": "2024-03-01T00:00:00Z",
+                    "end": "2024-03-23T23:59:59Z"
+                }},
+                "query_terms": ["deadline", "task", "action items"],
+                "max_results": 100,
+                "include_attachments": false,
+                "include_metadata": true
+            }},
+            "output_asset_ids": ["email_data_asset_id"]
+        }}
+    ]
+}}
+
+4. Creating an asset and recommending an email access agent to get a specific message:
+{{
+    "type": "final_response",
+    "response": "I'll create a message viewer and recommend an email access agent to retrieve the specific email with ID 'abc123'. The agent will fetch the complete email content, including any attachments and metadata. This will help us examine the email in detail.",
+    "assets": [
+        {{
+            "asset_id": "uuid-string",
+            "type": "text",
+            "content": "Message viewer template...",
+            "metadata": {{
+                "status": "ready",
+                "createdAt": "2024-03-23T12:00:00Z",
+                "updatedAt": "2024-03-23T12:00:00Z",
+                "creator": "bot",
+                "tags": ["email", "message"],
+                "agent_associations": [],
+                "version": 1
+            }}
+        }}
+    ],
+    "agents": [
+        {{
+            "agent_id": "uuid-string",
+            "type": "email_access",
+            "description": "Retrieves specific email message with ID 'abc123'",
+            "status": "proposed",
+            "metadata": {{
+                "createdAt": "2024-03-23T12:00:00Z",
+                "progress": 0,
+                "estimatedCompletion": "2024-03-23T12:05:00Z"
+            }},
+            "input_parameters": {{
+                "operation": "get_message",
+                "message_id": "abc123",
+                "include_attachments": true,
+                "include_metadata": true
+            }},
+            "output_asset_ids": ["message_data_asset_id"]
+        }}
+    ]
 }}
 
 Guidelines:
 1. Your entire response must be a single valid JSON object
 2. Do not include any text outside the JSON object
 3. Do not wrap the response in markdown code blocks
-4. Use tools when you need to gather information
-5. Provide final responses when you have enough information
+4. Use tools when you need to gather information (you can execute these directly)
+5. Recommend agents when you need specialized processing (user must approve these)
 6. Be concise and clear in your communication
 7. Maintain conversation context
+8. When creating assets:
+   - Always generate a unique asset_id
+   - Set appropriate type and status
+   - Include relevant metadata
+   - Link to associated agents if any
+9. When recommending agents:
+   - Use the email_access agent type
+   - Set initial status as "proposed"
+   - ALWAYS include the input_parameters object with:
+     * operation: The specific operation to perform ("list_labels", "get_messages", or "get_message")
+     * Operation-specific parameters as shown in the examples
+   - Include output_asset_ids for storing results
+   - Provide clear description
+   - Remember: You can only recommend agents, not execute them directly
+   - CRITICAL: ALWAYS explain the agent in your response text, including:
+     * Which operation it will perform
+     * All relevant parameters and their values
+     * What outputs it will produce
+     * How it will help solve the user's problem
 
 Remember:
 - Always wrap your entire response in curly braces {{}}
@@ -466,4 +740,6 @@ Remember:
 - Do not include any text before or after the JSON object
 - Do not use markdown formatting
 - Handle errors gracefully
-- Maintain a professional and helpful tone""" 
+- Maintain a professional and helpful tone
+- NEVER try to execute agents directly - you can only recommend them to the user
+- ALWAYS explain recommended agents in your response text""" 

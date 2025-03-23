@@ -71,6 +71,7 @@ export enum AgentStatus {
 export interface Agent {
     agent_id: string;
     type: string;
+    title?: string;
     description: string;
     status: AgentStatus;
     metadata: {
@@ -79,6 +80,8 @@ export interface Agent {
         progress?: number;
         estimatedCompletion?: Date;
     };
+    input_parameters?: Record<string, any>;
+    completedAt?: string;
 }
 
 // Message Types
@@ -187,11 +190,17 @@ export const createInitialState = (): FractalBotState => ({
     messages: [],
     agents: {
         'fact-checker-agent': {
-            id: 'fact-checker-agent',
+            agent_id: 'fact-checker-agent',
+            type: 'fact-checker',
             title: 'Fact Checker',
             description: 'Verify and validate information across multiple sources',
-            status: 'completed',
-            createdAt: new Date().toISOString(),
+            status: AgentStatus.COMPLETED,
+            metadata: {
+                createdAt: new Date(),
+                lastRunAt: new Date(),
+                progress: 100,
+                estimatedCompletion: new Date()
+            },
             completedAt: new Date().toISOString()
         }
     },
