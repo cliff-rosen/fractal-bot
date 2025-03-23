@@ -17,32 +17,12 @@ interface EmailSearchButtonProps {
 
 export default function EmailSearchButton({ agentId, operation, searchParams }: EmailSearchButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const { searchEmails, listEmailLabels, state } = useFractalBot();
+    const { executeAgent } = useFractalBot();
 
     const handleOperation = async () => {
         try {
             setIsLoading(true);
-            const agent = state.agents[agentId];
-
-            // Get asset ID if available
-            let assetId: string | undefined;
-            if (agent?.output_asset_ids?.length) {
-                assetId = agent.output_asset_ids[0];
-                const asset = state.assets[assetId];
-                if (!asset) {
-                    // If asset not found, we'll proceed without an asset ID
-                    assetId = undefined;
-                }
-            }
-
-            if (operation === 'list_labels') {
-                await listEmailLabels(assetId);
-            } else if (operation === 'get_messages') {
-
-                await searchEmails(assetId, searchParams);
-            } else {
-                throw new Error(`Unsupported operation: ${operation}`);
-            }
+            await executeAgent(agentId);
         } catch (error: any) {
             console.error('Error in email operation:', error);
         } finally {

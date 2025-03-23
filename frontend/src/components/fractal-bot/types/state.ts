@@ -85,8 +85,12 @@ export interface Agent {
         createdAt?: string;
         progress?: number;
         estimatedCompletion?: string;
+        lastRunAt?: string;
+        completionTime?: string;
+        lastError?: string;
     };
     input_parameters?: Record<string, any>;
+    input_asset_ids?: string[];
     output_asset_ids?: string[];
 }
 

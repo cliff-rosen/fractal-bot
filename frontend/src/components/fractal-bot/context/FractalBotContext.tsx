@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { FractalBotState, StateUpdateAction, createInitialState, Asset, AssetType, AssetStatus, MessageRole, Message, Agent } from '../types/state';
+import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import { FractalBotState, createInitialState, Asset, MessageRole, Message, Agent, AgentType, AgentStatus } from '../types/state';
 import { fractalBotReducer } from '../state/reducer';
 import { botApi } from '@/lib/api/botApi';
-import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
+import { agentRegistry, AgentExecutionContext, AgentExecutionResult } from '@/lib/agents';
+import { registerAgentExecutors } from '@/lib/agents';
 
 interface FractalBotContextType {
     state: FractalBotState;
@@ -26,6 +27,7 @@ interface FractalBotContextType {
         include_metadata?: boolean;
     }) => Promise<void>;
     listEmailLabels: (assetId?: string) => Promise<void>;
+    executeAgent: (agentId: string) => Promise<AgentExecutionResult>;
 }
 
 const FractalBotContext = createContext<FractalBotContextType | undefined>(undefined);
@@ -33,6 +35,11 @@ const FractalBotContext = createContext<FractalBotContextType | undefined>(undef
 export function FractalBotProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(fractalBotReducer, createInitialState());
     const { toast } = useToast();
+
+    // Register agent executors on mount
+    useEffect(() => {
+        registerAgentExecutors();
+    }, []);
 
     const addMessage = useCallback((message: Message) => {
         dispatch({ type: 'ADD_MESSAGE', payload: { message } });
@@ -124,12 +131,82 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             toast({
                 title: 'Error',
                 description: 'Failed to process message. Please try again.',
-                variant: 'destructive'
+                variant: 'destructive',
+                className: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
             });
         } finally {
             updateMetadata({ isProcessing: false });
         }
     }, [state.messages, state.assets, addMessage, addAsset, addAgent, updateMetadata, toast]);
+
+    const executeAgent = useCallback(async (agentId: string) => {
+        const agent = state.agents[agentId];
+        if (!agent) {
+            throw new Error(`Agent ${agentId} not found`);
+        }
+
+        // Get the executor for this agent type
+        const executor = agentRegistry.getExecutor(agent.type);
+        if (!executor) {
+            throw new Error(`No executor found for agent type ${agent.type}`);
+        }
+
+        // Prepare execution context
+        const context: AgentExecutionContext = {
+            agent,
+            inputAssets: agent.input_asset_ids?.map(id => state.assets[id]).filter(Boolean) || [],
+            outputAssets: agent.output_asset_ids?.map(id => state.assets[id]).filter(Boolean) || [],
+            state
+        };
+
+        // Validate inputs if the executor provides validation
+        if (executor.validateInputs && !executor.validateInputs(context)) {
+            throw new Error(`Invalid inputs for agent ${agentId}`);
+        }
+
+        // Update agent status to running
+        updateAgent(agentId, { status: AgentStatus.RUNNING });
+
+        try {
+            // Execute the agent
+            const result: AgentExecutionResult = await executor.execute(context);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Agent execution failed');
+            }
+
+            // Add output assets if any
+            if (result.outputAssets) {
+                result.outputAssets.forEach(asset => addAsset(asset));
+            }
+
+            // Update agent status and metadata
+            updateAgent(agentId, {
+                status: AgentStatus.COMPLETED,
+                metadata: {
+                    ...agent.metadata,
+                    lastRunAt: new Date().toISOString(),
+                    completionTime: new Date().toISOString(),
+                    ...result.metadata
+                }
+            });
+
+            return result;
+
+        } catch (error: any) {
+            // Update agent status to error
+            updateAgent(agentId, {
+                status: AgentStatus.ERROR,
+                metadata: {
+                    ...agent.metadata,
+                    lastError: error.message,
+                    lastRunAt: new Date().toISOString()
+                }
+            });
+
+            throw error;
+        }
+    }, [state.agents, state.assets, addAsset, updateAgent]);
 
     const searchEmails = useCallback(async (assetId: string, params: {
         folders?: string[];
@@ -138,139 +215,82 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         include_attachments?: boolean;
         include_metadata?: boolean;
     }) => {
+        // Create a new agent for email search
+        const agentId = `email_search_${Date.now()}`;
+        const agent: Agent = {
+            agent_id: agentId,
+            type: AgentType.EMAIL_ACCESS,
+            description: 'Search for email messages',
+            status: AgentStatus.IDLE,
+            input_parameters: params,
+            metadata: {
+                createdAt: new Date().toISOString()
+            }
+        };
 
-        // create a new asset with pending status if needed
-        // if no assetId is provided, create a new one
-        if (!assetId) {
-            assetId = `email_messages_${Date.now()}`;
-        }
-        if (!state.assets[assetId]) {
-            addAsset({
-                asset_id: assetId,
-                name: 'Email Messages',
-                description: 'Collection of email messages from search results',
-                type: AssetType.TEXT,
-                content: 'Fetching email messages...',
-                status: AssetStatus.PENDING,
-                metadata: {
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    version: 1
-                }
-            });
-        }
+        // Add the agent to state
+        addAgent(agent);
 
         try {
-            const response = await api.post('/api/email/messages', {
-                folders: params.folders,
-                query_terms: params.query_terms,
-                max_results: params.max_results || 100,
-                include_attachments: params.include_attachments,
-                include_metadata: params.include_metadata
-            });
+            // Execute the agent
+            const result = await executeAgent(agentId);
 
-            if (!response.data.success) {
-                throw new Error(response.data.error || 'Failed to fetch email messages');
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to search emails');
             }
 
-            const messages = response.data.data?.messages || [];
-            const assetContent = messages.length > 0
-                ? `Email Messages:\n${messages.map((msg: any) => {
-                    const subject = msg.headers?.subject || 'No Subject';
-                    const from = msg.headers?.from || 'Unknown Sender';
-                    const date = msg.headers?.date || 'No Date';
-                    const snippet = msg.snippet || '';
-                    return `- Subject: ${subject}\n  From: ${from}\n  Date: ${date}\n  ${snippet ? `Preview: ${snippet}\n` : ''}`;
-                }).join('\n')}`
-                : "Email Messages Overview\nNo messages found.";
-
-            // Update the existing asset
-            updateAsset(assetId, {
-                content: assetContent,
-                status: messages.length > 0 ? AssetStatus.READY : AssetStatus.PENDING,
-                metadata: {
-                    updatedAt: new Date().toISOString(),
-                    version: (state.assets[assetId]?.metadata?.version || 0) + 1
-                }
-            });
-
+            // Add a success message
             addMessage({
                 message_id: Date.now().toString(),
                 role: MessageRole.ASSISTANT,
-                content: `I've retrieved ${messages.length} email messages. You can find them in the assets panel.`,
+                content: `I've retrieved ${result.metadata?.messageCount || 0} email messages. You can find them in the assets panel.`,
                 timestamp: new Date(),
                 metadata: {}
             });
 
             toast({
-                title: 'Messages Retrieved',
-                description: `Successfully retrieved ${messages.length} email messages.`,
-                variant: 'default'
+                title: 'Success',
+                description: `Retrieved ${result.metadata?.messageCount || 0} messages`,
+                variant: 'default',
+                className: 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg'
             });
 
         } catch (error: any) {
-            console.error('Error fetching email messages:', error);
-            // Update asset to show error state
-            updateAsset(assetId, {
-                content: `Error fetching email messages: ${error.message || 'Unknown error'}`,
-                status: AssetStatus.ERROR,
-                metadata: {
-                    updatedAt: new Date().toISOString(),
-                    version: (state.assets[assetId]?.metadata?.version || 0) + 1
-                }
-            });
+            console.error('Error searching emails:', error);
             toast({
                 title: 'Error',
-                description: error.message || 'Failed to retrieve email messages. Please try again.',
-                variant: 'destructive'
+                description: error.message || 'Failed to retrieve messages',
+                variant: 'destructive',
+                className: 'bg-white dark:bg-gray-900 text-red-900 dark:text-red-100 border border-red-200 dark:border-red-800 shadow-lg'
             });
         }
-    }, [state.assets, updateAsset, addMessage, toast]);
+    }, [addAgent, executeAgent, addMessage, toast]);
 
     const listEmailLabels = useCallback(async (assetId?: string) => {
+        // Create a new agent for listing labels
+        const agentId = `email_labels_${Date.now()}`;
+        const agent: Agent = {
+            agent_id: agentId,
+            type: AgentType.EMAIL_ACCESS,
+            description: 'List email labels and folders',
+            status: AgentStatus.IDLE,
+            metadata: {
+                createdAt: new Date().toISOString()
+            }
+        };
+
+        // Add the agent to state
+        addAgent(agent);
+
         try {
-            const response = await api.get('/api/email/labels');
+            // Execute the agent
+            const result = await executeAgent(agentId);
 
-            if (!response.data.success) {
-                throw new Error(response.data.error || 'Failed to fetch email labels');
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to list email labels');
             }
 
-            const assetContent = response.data.data?.labels
-                ? `Email Labels:\n${response.data.data.labels.map((label: any) => `- ${label.name} (${label.type}) [ID: ${label.id}]`).join('\n')}`
-                : "Email Labels Overview\nNo labels found.";
-
-            // If no assetId provided, create a new one
-            const targetAssetId = assetId || `email_labels_${Date.now()}`;
-
-            // Create or update the asset with all required fields
-            if (!state.assets[targetAssetId]) {
-                addAsset({
-                    asset_id: targetAssetId,
-                    name: 'Email Labels List',
-                    description: 'Complete list of email labels and folders',
-                    type: AssetType.TEXT,
-                    content: 'Fetching email labels...',
-                    status: AssetStatus.PENDING,
-                    metadata: {
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        creator: 'email_access_agent',
-                        tags: ['email', 'labels', 'folders'],
-                        version: 1
-                    }
-                });
-            }
-
-            // Update the existing asset
-            updateAsset(targetAssetId, {
-                content: assetContent,
-                status: response.data.data?.labels ? AssetStatus.READY : AssetStatus.PENDING,
-                metadata: {
-                    updatedAt: new Date().toISOString(),
-                    version: (state.assets[targetAssetId]?.metadata?.version || 0) + 1
-                }
-            });
-
+            // Add a success message
             addMessage({
                 message_id: Date.now().toString(),
                 role: MessageRole.ASSISTANT,
@@ -280,20 +300,22 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             });
 
             toast({
-                title: 'Labels Retrieved',
+                title: 'Success',
                 description: 'Email labels have been successfully retrieved.',
-                variant: 'default'
+                variant: 'default',
+                className: 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg'
             });
 
         } catch (error: any) {
-            console.error('Error fetching email labels:', error);
+            console.error('Error listing email labels:', error);
             toast({
                 title: 'Error',
                 description: error.message || 'Failed to retrieve email labels. Please try again.',
-                variant: 'destructive'
+                variant: 'destructive',
+                className: 'bg-white dark:bg-gray-900 text-red-900 dark:text-red-100 border border-red-200 dark:border-red-800 shadow-lg'
             });
         }
-    }, [state.assets, updateAsset, addMessage, toast]);
+    }, [addAgent, executeAgent, addMessage, toast]);
 
     const value = {
         state,
@@ -309,7 +331,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         resetState,
         processMessage,
         searchEmails,
-        listEmailLabels
+        listEmailLabels,
+        executeAgent
     };
 
     return (

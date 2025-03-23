@@ -1,16 +1,47 @@
-import React from 'react';
-import { Asset, AssetStatus } from '../types/state';
-import { getAssetIcon, getAssetColor } from './AssetsSection';
+import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Asset } from '../types/state';
+import { getAssetIcon, getAssetColor } from '../utils/assetUtils.tsx';
 
 interface AssetModalProps {
     asset: Asset;
     onClose: () => void;
+    isOpen: boolean;
 }
 
-export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4">
+export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, isOpen }) => {
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.body.style.overflow = 'unset';
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    return createPortal(
+        <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={onClose}
+        >
+            <div
+                ref={modalRef}
+                className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4"
+                onClick={e => e.stopPropagation()}
+            >
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
@@ -31,6 +62,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                         </svg>
                     </button>
                 </div>
+
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
                         <div className={`p-2 rounded-lg ${getAssetColor(asset.type)}`}>
@@ -52,6 +84,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }; 
