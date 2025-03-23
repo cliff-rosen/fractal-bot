@@ -41,6 +41,8 @@ class ActionButton(BaseModel):
 
 class Asset(BaseModel):
     asset_id: str
+    name: str
+    description: Optional[str] = None
     type: AssetType
     content: Optional[Any] = None
     metadata: Dict[str, Any] = {

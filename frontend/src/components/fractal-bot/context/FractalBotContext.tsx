@@ -94,6 +94,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             // Format assets for the backend
             const formattedAssets = Object.values(state.assets).map(asset => ({
                 asset_id: asset.asset_id,
+                name: asset.name,
+                description: asset.description,
                 type: asset.type,
                 content: asset.content,
                 status: asset.status,
@@ -145,6 +147,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         if (!state.assets[assetId]) {
             addAsset({
                 asset_id: assetId,
+                name: 'Email Messages',
+                description: 'Collection of email messages from search results',
                 type: AssetType.TEXT,
                 content: 'Fetching email messages...',
                 status: AssetStatus.PENDING,
@@ -237,6 +241,25 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
             // If no assetId provided, create a new one
             const targetAssetId = assetId || `email_labels_${Date.now()}`;
+
+            // Create or update the asset with all required fields
+            if (!state.assets[targetAssetId]) {
+                addAsset({
+                    asset_id: targetAssetId,
+                    name: 'Email Labels List',
+                    description: 'Complete list of email labels and folders',
+                    type: AssetType.TEXT,
+                    content: 'Fetching email labels...',
+                    status: AssetStatus.PENDING,
+                    metadata: {
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        creator: 'email_access_agent',
+                        tags: ['email', 'labels', 'folders'],
+                        version: 1
+                    }
+                });
+            }
 
             // Update the existing asset
             updateAsset(targetAssetId, {

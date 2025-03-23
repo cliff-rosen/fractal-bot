@@ -73,7 +73,8 @@ const demoStates: DemoState[] = [
         addedAssets: [{
             id: ASSET_IDS.INVITATION_DRAFT,
             type: 'file',
-            name: 'Birthday Party Invitation Draft.doc',
+            name: 'Birthday Party Invitation Draft',
+            description: 'Draft version of the birthday party invitation document',
             content: 'Creating invitation draft...',
             ready: false,
             metadata: {

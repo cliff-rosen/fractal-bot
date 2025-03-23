@@ -53,6 +53,8 @@ export interface AssetMetadata {
 
 export interface Asset {
     asset_id: string;
+    name: string;
+    description?: string;
     type: AssetType;
     content: any;
     status: AssetStatus;

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FolderIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronUpIcon, DocumentIcon, DocumentTextIcon, DocumentDuplicateIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Asset, AssetType, AssetStatus } from '../types/state';
 import { AssetModal } from './AssetModal';
 
@@ -105,6 +105,7 @@ export const getAssetIcon = (type: AssetType, metadata?: { type?: string; name?:
 };
 
 export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetClick }) => {
+    const [isExpanded, setIsExpanded] = useState(true);
     const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
     const [previewAsset, setPreviewAsset] = useState<{ asset: Asset; position: { x: number; y: number } } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -134,6 +135,8 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
             // Create a temporary asset from the file
             const tempAsset: Asset = {
                 asset_id: Date.now().toString(),
+                name: file.name,
+                description: `Uploaded file: ${file.name}`,
                 type: file.type.startsWith('image/') ? AssetType.IMAGE :
                     file.type === 'application/pdf' ? AssetType.PDF :
                         file.type.includes('spreadsheet') ? AssetType.SPREADSHEET :
@@ -163,61 +166,93 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
         }
     }));
 
+    const getStatusIcon = (status: AssetStatus) => {
+        switch (status) {
+            case AssetStatus.READY:
+                return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+            case AssetStatus.PENDING:
+                return <DocumentDuplicateIcon className="h-4 w-4 text-yellow-500" />;
+            case AssetStatus.ERROR:
+                return <XCircleIcon className="h-4 w-4 text-red-500" />;
+            default:
+                return <DocumentIcon className="h-4 w-4 text-gray-400" />;
+        }
+    };
+
+    const getAssetTypeIcon = (type: AssetType) => {
+        switch (type) {
+            case AssetType.TEXT:
+                return <DocumentTextIcon className="h-4 w-4 text-blue-500" />;
+            case AssetType.DATA:
+                return <DocumentIcon className="h-4 w-4 text-purple-500" />;
+            case AssetType.PDF:
+                return <DocumentIcon className="h-4 w-4 text-red-500" />;
+            case AssetType.SPREADSHEET:
+                return <DocumentIcon className="h-4 w-4 text-green-500" />;
+            case AssetType.IMAGE:
+                return <DocumentIcon className="h-4 w-4 text-pink-500" />;
+            case AssetType.CODE:
+                return <DocumentIcon className="h-4 w-4 text-orange-500" />;
+            case AssetType.DOCUMENT:
+                return <DocumentIcon className="h-4 w-4 text-gray-500" />;
+            default:
+                return <DocumentIcon className="h-4 w-4 text-gray-400" />;
+        }
+    };
+
     return (
-        <div className="flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden h-full">
-            <div className="flex items-center gap-2 p-4 border-b border-gray-200 dark:border-gray-700">
-                <FolderIcon className="h-5 w-5 text-blue-500" />
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">Assets</h3>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-                {assetList.length === 0 ? (
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                        No assets available
-                    </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="w-full px-4 py-2 flex items-center justify-between text-left text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-t-lg"
+            >
+                <span>Assets</span>
+                {isExpanded ? (
+                    <ChevronUpIcon className="h-5 w-5 text-gray-500" />
                 ) : (
-                    <div className="space-y-2">
+                    <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                )}
+            </button>
+
+            {isExpanded && (
+                <div className="border-t border-gray-200 dark:border-gray-700">
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                         {assetList.map((asset) => (
                             <div
                                 key={asset.asset_id}
-                                className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
-                                onClick={() => onAssetClick?.(asset)}
-                                onMouseEnter={(e) => handleMouseEnter(asset, e)}
-                                onMouseLeave={handleMouseLeave}
+                                onClick={() => {
+                                    setSelectedAsset(asset);
+                                    onAssetClick?.(asset);
+                                }}
+                                className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                             >
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                                            {asset.type}
-                                        </h4>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Created: {new Date(asset.metadata?.createdAt || asset.metadata?.lastModified || Date.now()).toLocaleString()}
-                                        </p>
-                                        {asset.metadata?.tags && asset.metadata.tags.length > 0 && (
-                                            <div className="flex gap-1 mt-1">
-                                                {asset.metadata.tags.map((tag: string) => (
-                                                    <span
-                                                        key={tag}
-                                                        className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full"
-                                                    >
-                                                        {tag}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0">
+                                        {getAssetTypeIcon(asset.type)}
                                     </div>
-                                    <span className={`px-2 py-1 text-xs rounded-full ${asset.status === AssetStatus.READY ? 'bg-green-100 text-green-800' :
-                                        asset.status === AssetStatus.PENDING ? 'bg-yellow-100 text-yellow-800' :
-                                            asset.status === AssetStatus.ERROR ? 'bg-red-100 text-red-800' :
-                                                'bg-gray-100 text-gray-800'
-                                        }`}>
-                                        {asset.status}
-                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                {asset.name || 'Unnamed Asset'}
+                                            </h3>
+                                            {getStatusIcon(asset.status)}
+                                        </div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            {asset.description || 'No description available'}
+                                        </p>
+                                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <span>Type: {asset.type}</span>
+                                            {asset.metadata?.createdAt && (
+                                                <span>• Created: {new Date(asset.metadata.createdAt).toLocaleDateString()}</span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Hidden file input */}
             <input

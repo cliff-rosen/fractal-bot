@@ -435,6 +435,8 @@ You have two possible response formats:
     "assets": [
         {{
             "asset_id": "uuid-string",
+            "name": "Required name for the asset",
+            "description": "Optional description of the asset",
             "type": "text|spreadsheet|pdf|data",
             "content": "The actual content",
             "metadata": {{
@@ -568,6 +570,8 @@ Asset Statuses:
             for asset in assets:
                 assets_section += f"""
 Asset ID: {asset.asset_id}
+Name: {asset.name}
+Description: {asset.description or 'No description provided'}
 Type: {asset.type}
 Status: {asset.metadata.get('status', 'unknown')}
 Content: {asset.content}
