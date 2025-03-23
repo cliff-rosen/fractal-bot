@@ -66,7 +66,8 @@ export enum AgentType {
     DATA_COLLECTION = 'data_collection',
     INFORMATION_RETRIEVAL = 'information_retrieval',
     ANALYSIS = 'analysis',
-    EMAIL_ACCESS = 'email_access'
+    EMAIL_ACCESS = 'email_access',
+    EMAIL_LABELS = 'email_labels'
 }
 
 export enum AgentStatus {

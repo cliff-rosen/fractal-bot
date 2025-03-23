@@ -35,10 +35,10 @@ export const AgentsSection: React.FC<AgentsSectionProps> = ({
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
 
     const recentAgents = agents.filter(agent =>
-        new Date(agent.metadata.createdAt) > fiveMinutesAgo
+        new Date(agent.metadata?.createdAt || '') > fiveMinutesAgo
     );
     const existingAgents = agents.filter(agent =>
-        new Date(agent.metadata.createdAt) <= fiveMinutesAgo
+        new Date(agent.metadata?.createdAt || '') <= fiveMinutesAgo
     );
 
     const renderAgentCard = (agent: Agent, isRecent: boolean = false) => {

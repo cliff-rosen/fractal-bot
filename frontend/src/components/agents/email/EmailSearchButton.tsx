@@ -20,6 +20,7 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
     const { executeAgent } = useFractalBot();
 
     const handleOperation = async () => {
+        console.log('handleOperation', agentId, operation, searchParams);
         try {
             setIsLoading(true);
             await executeAgent(agentId);

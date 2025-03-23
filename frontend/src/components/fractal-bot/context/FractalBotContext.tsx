@@ -19,14 +19,6 @@ interface FractalBotContextType {
     updateMetadata: (updates: Partial<FractalBotState['metadata']>) => void;
     resetState: () => void;
     processMessage: (message: string) => Promise<void>;
-    searchEmails: (assetId: string, params: {
-        folders?: string[];
-        query_terms?: string[];
-        max_results?: number;
-        include_attachments?: boolean;
-        include_metadata?: boolean;
-    }) => Promise<void>;
-    listEmailLabels: (assetId?: string) => Promise<void>;
     executeAgent: (agentId: string) => Promise<AgentExecutionResult>;
 }
 
@@ -208,114 +200,6 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         }
     }, [state.agents, state.assets, addAsset, updateAgent]);
 
-    const searchEmails = useCallback(async (assetId: string, params: {
-        folders?: string[];
-        query_terms?: string[];
-        max_results?: number;
-        include_attachments?: boolean;
-        include_metadata?: boolean;
-    }) => {
-        // Create a new agent for email search
-        const agentId = `email_search_${Date.now()}`;
-        const agent: Agent = {
-            agent_id: agentId,
-            type: AgentType.EMAIL_ACCESS,
-            description: 'Search for email messages',
-            status: AgentStatus.IDLE,
-            input_parameters: params,
-            metadata: {
-                createdAt: new Date().toISOString()
-            }
-        };
-
-        // Add the agent to state
-        addAgent(agent);
-
-        try {
-            // Execute the agent
-            const result = await executeAgent(agentId);
-
-            if (!result.success) {
-                throw new Error(result.error || 'Failed to search emails');
-            }
-
-            // Add a success message
-            addMessage({
-                message_id: Date.now().toString(),
-                role: MessageRole.ASSISTANT,
-                content: `I've retrieved ${result.metadata?.messageCount || 0} email messages. You can find them in the assets panel.`,
-                timestamp: new Date(),
-                metadata: {}
-            });
-
-            toast({
-                title: 'Success',
-                description: `Retrieved ${result.metadata?.messageCount || 0} messages`,
-                variant: 'default',
-                className: 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg'
-            });
-
-        } catch (error: any) {
-            console.error('Error searching emails:', error);
-            toast({
-                title: 'Error',
-                description: error.message || 'Failed to retrieve messages',
-                variant: 'destructive',
-                className: 'bg-white dark:bg-gray-900 text-red-900 dark:text-red-100 border border-red-200 dark:border-red-800 shadow-lg'
-            });
-        }
-    }, [addAgent, executeAgent, addMessage, toast]);
-
-    const listEmailLabels = useCallback(async (assetId?: string) => {
-        // Create a new agent for listing labels
-        const agentId = `email_labels_${Date.now()}`;
-        const agent: Agent = {
-            agent_id: agentId,
-            type: AgentType.EMAIL_ACCESS,
-            description: 'List email labels and folders',
-            status: AgentStatus.IDLE,
-            metadata: {
-                createdAt: new Date().toISOString()
-            }
-        };
-
-        // Add the agent to state
-        addAgent(agent);
-
-        try {
-            // Execute the agent
-            const result = await executeAgent(agentId);
-
-            if (!result.success) {
-                throw new Error(result.error || 'Failed to list email labels');
-            }
-
-            // Add a success message
-            addMessage({
-                message_id: Date.now().toString(),
-                role: MessageRole.ASSISTANT,
-                content: 'I\'ve retrieved your Gmail labels. You can find them in the assets panel.',
-                timestamp: new Date(),
-                metadata: {}
-            });
-
-            toast({
-                title: 'Success',
-                description: 'Email labels have been successfully retrieved.',
-                variant: 'default',
-                className: 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg'
-            });
-
-        } catch (error: any) {
-            console.error('Error listing email labels:', error);
-            toast({
-                title: 'Error',
-                description: error.message || 'Failed to retrieve email labels. Please try again.',
-                variant: 'destructive',
-                className: 'bg-white dark:bg-gray-900 text-red-900 dark:text-red-100 border border-red-200 dark:border-red-800 shadow-lg'
-            });
-        }
-    }, [addAgent, executeAgent, addMessage, toast]);
 
     const value = {
         state,
@@ -330,8 +214,6 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         updateMetadata,
         resetState,
         processMessage,
-        searchEmails,
-        listEmailLabels,
         executeAgent
     };
 
