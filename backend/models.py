@@ -30,6 +30,7 @@ class User(Base):
     workflows = relationship("Workflow", back_populates="user")
     files = relationship("File", back_populates="user", cascade="all, delete-orphan")
     google_credentials = relationship("GoogleOAuth2Credentials", back_populates="user", uselist=False)
+    assets = relationship("Asset", back_populates="user", cascade="all, delete-orphan")
 
 class Topic(Base):
     __tablename__ = "topics"
@@ -378,4 +379,20 @@ class GoogleOAuth2Credentials(Base):
 
     # Relationship
     user = relationship("User", back_populates="google_credentials")
+
+class Asset(Base):
+    __tablename__ = "assets"
+    
+    asset_id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    type = Column(Enum(AssetType), nullable=False)
+    subtype = Column(String(50), nullable=True)  # Additional categorization within type
+    content = Column(JSON, nullable=True)  # Store content as JSON
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="assets")
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
 

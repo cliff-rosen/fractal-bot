@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from routers import search, auth, workflow, tools, files, bot, email
+from routers import search, auth, workflow, tools, files, bot, email, asset
 from database import get_db, init_db, engine, Base
 from models import Base as ModelBase
 from config import settings, setup_logging
@@ -62,6 +62,7 @@ app.include_router(tools.router)
 app.include_router(files.router)
 app.include_router(bot.router)
 app.include_router(email.router, prefix="/api")
+app.include_router(asset.router)
 logger.info("Routers included")
 
 
