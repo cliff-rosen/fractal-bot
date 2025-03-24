@@ -1,4 +1,4 @@
-import { AgentType } from '@/components/fractal-bot/types/state';
+import { AgentType, AssetType, AssetStatus } from '@/components/fractal-bot/types/state';
 import { AgentExecutor, AgentExecutionContext, AgentExecutionResult } from '../types';
 import { api } from '@/lib/api';
 
@@ -6,6 +6,7 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
     type = AgentType.EMAIL_ACCESS;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
+        console.log('EmailAccessAgentExecutor execute');
         try {
             const { agent, state } = context;
 
@@ -25,28 +26,53 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
                 throw new Error(response.data.error || 'Failed to fetch email messages');
             }
 
-            const messages = response.data.data?.messages || [];
+            // Debug logging
+            console.log('API Response:', response.data);
+
+            // Get messages from the correct location in the response
+            const rawMessages = response.data.data.messages?.content
+            if (!Array.isArray(rawMessages)) {
+                console.log('Raw messages are not an array:', rawMessages);
+            }
+            console.log('Raw messages:', rawMessages);
+
+            if (rawMessages.length === 0) {
+                console.log('No messages found in response');
+            }
+
+            // Transform messages into the format expected by EmailListView
+            const transformedMessages = rawMessages.map((msg: any) => {
+                if (!msg || typeof msg !== 'object') {
+                    console.warn('Invalid message object:', msg);
+                    return null;
+                }
+                return {
+                    id: msg.id || String(Date.now()),
+                    date: msg.internalDate || msg.headers?.date || new Date().toISOString(),
+                    from: msg.headers?.from || 'Unknown Sender',
+                    to: msg.headers?.to || 'Unknown Recipient',
+                    subject: msg.headers?.subject || 'No Subject',
+                    body: msg.body,
+                    snippet: msg.snippet || ''
+                };
+            }).filter(Boolean); // Remove any null entries
+
+            console.log('Transformed messages:', transformedMessages);
 
             // Create output asset
             const outputAsset = {
                 asset_id: `email_messages_${Date.now()}`,
-                name: 'Email Messages',
+                name: `Email Messages (${transformedMessages.length})`,
                 description: 'Collection of email messages from search results',
-                type: 'text',
-                content: messages.length > 0
-                    ? `Email Messages:\n${messages.map((msg: any) => {
-                        const subject = msg.headers?.subject || 'No Subject';
-                        const from = msg.headers?.from || 'Unknown Sender';
-                        const date = msg.headers?.date || 'No Date';
-                        const snippet = msg.snippet || '';
-                        return `- Subject: ${subject}\n  From: ${from}\n  Date: ${date}\n  ${snippet ? `Preview: ${snippet}\n` : ''}`;
-                    }).join('\n')}`
-                    : "Email Messages Overview\nNo messages found.",
-                status: messages.length > 0 ? 'ready' : 'pending',
+                type: AssetType.EMAIL_LIST,
+                content: transformedMessages,
+                status: AssetStatus.READY,
                 metadata: {
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
-                    version: 1
+                    version: 1,
+                    creator: "email_service",
+                    tags: ["email", "gmail"]
                 }
             };
 
@@ -54,11 +80,12 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
                 success: true,
                 outputAssets: [outputAsset],
                 metadata: {
-                    messageCount: messages.length
+                    messageCount: transformedMessages.length
                 }
             };
 
         } catch (error: any) {
+            console.error('EmailAccessAgent error:', error);
             return {
                 success: false,
                 error: error.message || 'Failed to execute email access agent'

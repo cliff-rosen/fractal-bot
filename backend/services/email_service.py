@@ -7,6 +7,8 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from models import GoogleOAuth2Credentials
+from schemas.asset import AssetType, AssetStatus
+from schemas.email import DateRange
 from config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -98,74 +100,6 @@ class EmailService:
             logger.error(f"Error listing labels: {str(e)}")
             raise
 
-    async def get_messages(
-        self,
-        folders: Optional[List[str]] = None,
-        date_range: Optional[Dict[str, datetime]] = None,
-        query_terms: Optional[List[str]] = None,
-        max_results: int = 100,
-        include_attachments: bool = False,
-        include_metadata: bool = True
-    ) -> List[Dict[str, Any]]:
-        """
-        Get messages from specified folders
-        
-        Args:
-            folders: List of folder/label IDs
-            date_range: Dict with 'start' and 'end' datetime objects
-            query_terms: List of search terms
-            max_results: Maximum number of results to return
-            include_attachments: Whether to include attachment data
-            include_metadata: Whether to include message metadata
-            
-        Returns:
-            List of message objects
-        """
-        try:
-            if not self.service:
-                raise ValueError("Service not initialized. Call authenticate first.")
-                
-            # Build search query
-            query_parts = []
-            
-            if date_range:
-                if date_range.get('start'):
-                    query_parts.append(f'after:{int(date_range["start"].timestamp())}')
-                if date_range.get('end'):
-                    query_parts.append(f'before:{int(date_range["end"].timestamp())}')
-                    
-            if query_terms:
-                query_parts.extend(query_terms)
-                
-            query = ' '.join(query_parts) if query_parts else None
-            
-            print("Query: ", query)
-
-            # Get messages with proper label handling
-            results = self.service.users().messages().list(
-                userId='me',
-                q=query,
-                maxResults=max_results,
-                labelIds=folders if folders else None  # Pass label IDs directly
-            ).execute()
-            
-            messages = results.get('messages', [])
-            detailed_messages = []
-            
-            for msg in messages:
-                message = await self.get_message(
-                    msg['id'],
-                    include_attachments=include_attachments,
-                    include_metadata=include_metadata
-                )
-                detailed_messages.append(message)
-                
-            return detailed_messages
-            
-        except HttpError as e:
-            logger.error(f"Error getting messages: {str(e)}")
-            raise
-
     async def get_message(
         self,
         message_id: str,
@@ -177,11 +111,11 @@ class EmailService:
         
         Args:
             message_id: Message ID
-            include_attachments: Whether to include attachment data
-            include_metadata: Whether to include message metadata
+            include_attachments: Whether to include attachment data (not used)
+            include_metadata: Whether to include message metadata (not used)
             
         Returns:
-            Message object
+            Message object with essential information
         """
         try:
             if not self.service:
@@ -197,7 +131,6 @@ class EmailService:
             # Parse message parts
             headers = {}
             body = None
-            attachments = []
             
             if 'payload' in message:
                 payload = message['payload']
@@ -209,41 +142,123 @@ class EmailService:
                         for header in payload['headers']
                     }
                 
-                # Get body and attachments
-                if 'parts' in payload:
-                    for part in payload['parts']:
-                        if part.get('mimeType') == 'text/plain':
+                # Get body - handle different message structures
+                def get_body_from_parts(parts):
+                    for part in parts:
+                        # Handle multipart messages
+                        if part.get('mimeType', '').startswith('multipart/'):
+                            if 'parts' in part:
+                                body = get_body_from_parts(part['parts'])
+                                if body:
+                                    return body
+                        # Handle text/plain
+                        elif part.get('mimeType') == 'text/plain':
                             if 'data' in part['body']:
-                                body = part['body']['data']
-                        elif part.get('filename'):
-                            attachment = {
-                                'id': part['body'].get('attachmentId'),
-                                'filename': part['filename'],
-                                'mimeType': part['mimeType'],
-                                'size': part['body'].get('size')
-                            }
-                            if include_attachments and attachment['id']:
-                                attachment['data'] = self.service.users().messages().attachments().get(
-                                    userId='me',
-                                    messageId=message_id,
-                                    id=attachment['id']
-                                ).execute()['data']
-                            attachments.append(attachment)
+                                return part['body']['data']
+                        # Handle text/html
+                        elif part.get('mimeType') == 'text/html':
+                            if 'data' in part['body']:
+                                return part['body']['data']
+                    return None
+                
+                # Try to get body from parts
+                if 'parts' in payload:
+                    body = get_body_from_parts(payload['parts'])
+                # If no parts, try to get body directly
+                elif 'body' in payload and 'data' in payload['body']:
+                    body = payload['body']['data']
                             
+            # Extract essential information
             return {
                 'id': message['id'],
-                'threadId': message['threadId'],
-                'labelIds': message.get('labelIds', []),
-                'snippet': message.get('snippet', ''),
-                'headers': headers if include_metadata else None,
+                'date': message.get('internalDate'),
+                'from': headers.get('from', ''),
+                'to': headers.get('to', ''),
+                'subject': headers.get('subject', '(No Subject)'),
                 'body': body,
-                'attachments': attachments if include_attachments else [],
-                'internalDate': message.get('internalDate'),
-                'sizeEstimate': message.get('sizeEstimate'),
-                'historyId': message.get('historyId'),
-                'raw': message.get('raw') if include_metadata else None
+                'snippet': message.get('snippet', '')
             }
             
         except HttpError as e:
             logger.error(f"Error getting message {message_id}: {str(e)}")
+            raise
+
+    async def get_messages(
+        self,
+        folders: Optional[List[str]] = None,
+        date_range: Optional[DateRange] = None,
+        query_terms: Optional[List[str]] = None,
+        max_results: int = 100,
+        include_attachments: bool = False,
+        include_metadata: bool = True,
+        db: Optional[Session] = None
+    ) -> Dict[str, Any]:
+        """
+        Get messages from specified folders
+        
+        Args:
+            folders: List of folder/label IDs
+            date_range: DateRange object with start and end dates
+            query_terms: List of search terms
+            max_results: Maximum number of results to return
+            include_attachments: Whether to include attachment data (not used)
+            include_metadata: Whether to include message metadata (not used)
+            db: Database session (used only for authentication)
+            
+        Returns:
+            Dict containing the asset data
+        """
+        try:
+            if not self.service:
+                raise ValueError("Service not initialized. Call authenticate first.")
+                
+            # Build search query
+            query_parts = []
+            
+            if date_range:
+                if date_range.start:
+                    query_parts.append(f'after:{int(date_range.start.timestamp())}')
+                if date_range.end:
+                    query_parts.append(f'before:{int(date_range.end.timestamp())}')
+                    
+            if query_terms:
+                query_parts.extend(query_terms)
+                
+            query = ' '.join(query_parts) if query_parts else None
+            
+            # Get messages with proper label handling
+            results = self.service.users().messages().list(
+                userId='me',
+                q=query,
+                maxResults=max_results,
+                labelIds=folders if folders else None
+            ).execute()
+            
+            messages = results.get('messages', [])
+            detailed_messages = []
+            
+            for msg in messages:
+                message = await self.get_message(msg['id'])
+                detailed_messages.append(message)
+                
+            # Create asset data
+            return {
+                'asset_id': f"email_list_{datetime.now().timestamp()}",
+                'name': f"Email List - {len(detailed_messages)} messages",
+                'description': f"List of {len(detailed_messages)} emails from Gmail",
+                'type': AssetType.EMAIL_LIST,
+                'content': detailed_messages,
+                'status': AssetStatus.READY,
+                'metadata': {
+                    "createdAt": datetime.now().isoformat(),
+                    "updatedAt": datetime.now().isoformat(),
+                    "creator": "email_service",
+                    "tags": ["email", "gmail"],
+                    "agent_associations": [],
+                    "version": 1
+                }
+            }
+            
+        except HttpError as e:
+            logger.error(f"Error getting messages: {str(e)}")
             raise 

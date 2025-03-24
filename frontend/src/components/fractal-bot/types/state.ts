@@ -29,7 +29,8 @@ export enum AssetType {
     SPREADSHEET = 'spreadsheet',
     IMAGE = 'image',
     CODE = 'code',
-    DOCUMENT = 'document'
+    DOCUMENT = 'document',
+    EMAIL_LIST = 'email_list'
 }
 
 export enum AssetStatus {

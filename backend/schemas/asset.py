@@ -8,6 +8,7 @@ class AssetType(str, Enum):
     SPREADSHEET = "spreadsheet"
     PDF = "pdf"
     DATA = "data"
+    EMAIL_LIST = "email_list"
 
 class AssetStatus(str, Enum):
     PROPOSED = "proposed"

@@ -161,7 +161,9 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
         try {
             // Execute the agent
+            console.log('Executing agent with context:', context);
             const result: AgentExecutionResult = await executor.execute(context);
+            console.log('Agent execution result:', result);
 
             if (!result.success) {
                 throw new Error(result.error || 'Agent execution failed');

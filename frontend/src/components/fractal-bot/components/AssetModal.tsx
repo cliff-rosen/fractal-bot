@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Asset } from '../types/state';
 import { getAssetIcon, getAssetColor } from '../utils/assetUtils.tsx';
+import { EmailListView } from '../EmailListView';
 
 interface AssetModalProps {
     asset: Asset;
@@ -32,6 +33,21 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, isOpen }
 
     if (!isOpen) return null;
 
+    const renderContent = () => {
+        switch (asset.type) {
+            case 'email_list':
+                return <EmailListView asset={asset} />;
+            default:
+                return (
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                        <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                            {typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}
+                        </pre>
+                    </div>
+                );
+        }
+    };
+
     return createPortal(
         <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -39,7 +55,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, isOpen }
         >
             <div
                 ref={modalRef}
-                className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4"
+                className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 h-[80vh] flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="flex justify-between items-start mb-4">
@@ -63,8 +79,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, isOpen }
                     </button>
                 </div>
 
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2">
+                <div className="flex-1 overflow-hidden">
+                    <div className="flex items-center gap-2 mb-4">
                         <div className={`p-2 rounded-lg ${getAssetColor(asset.type)}`}>
                             {getAssetIcon(asset.type)}
                         </div>
@@ -72,15 +88,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, isOpen }
                             {asset.type}
                         </span>
                     </div>
-                    <div className="mt-4">
-                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Content
-                        </h3>
-                        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                            <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                                {typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}
-                            </pre>
-                        </div>
+                    <div className="mt-4 h-full">
+                        {renderContent()}
                     </div>
                 </div>
             </div>

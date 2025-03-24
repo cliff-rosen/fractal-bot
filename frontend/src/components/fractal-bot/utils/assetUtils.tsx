@@ -1,5 +1,5 @@
 import { AssetType } from '../types/state';
-import { DocumentIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { DocumentIcon, DocumentTextIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 export const getAssetColor = (type: AssetType) => {
     switch (type) {
@@ -17,6 +17,8 @@ export const getAssetColor = (type: AssetType) => {
             return 'bg-orange-100 dark:bg-orange-900';
         case AssetType.DOCUMENT:
             return 'bg-gray-100 dark:bg-gray-900';
+        case AssetType.EMAIL_LIST:
+            return 'bg-yellow-100 dark:bg-yellow-900';
         default:
             return 'bg-gray-100 dark:bg-gray-900';
     }
@@ -38,6 +40,8 @@ export const getAssetIcon = (type: AssetType) => {
             return <DocumentIcon className="h-6 w-6 text-orange-500 dark:text-orange-400" />;
         case AssetType.DOCUMENT:
             return <DocumentIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />;
+        case AssetType.EMAIL_LIST:
+            return <EnvelopeIcon className="h-6 w-6 text-yellow-500 dark:text-yellow-400" />;
         default:
             return <DocumentIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />;
     }
