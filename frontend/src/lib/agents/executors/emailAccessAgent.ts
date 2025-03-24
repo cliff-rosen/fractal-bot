@@ -46,15 +46,20 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
                     console.warn('Invalid message object:', msg);
                     return null;
                 }
-                return {
-                    id: msg.id || String(Date.now()),
-                    date: msg.internalDate || msg.headers?.date || new Date().toISOString(),
-                    from: msg.headers?.from || 'Unknown Sender',
-                    to: msg.headers?.to || 'Unknown Recipient',
-                    subject: msg.headers?.subject || 'No Subject',
+
+                // The backend already formats these fields correctly
+                const transformed = {
+                    id: msg.id,
+                    date: msg.date || msg.internalDate,
+                    from: msg.from,
+                    to: msg.to,
+                    subject: msg.subject,
                     body: msg.body,
                     snippet: msg.snippet || ''
                 };
+
+                console.log('Transformed email:', transformed);
+                return transformed;
             }).filter(Boolean); // Remove any null entries
 
             console.log('Transformed messages:', transformedMessages);

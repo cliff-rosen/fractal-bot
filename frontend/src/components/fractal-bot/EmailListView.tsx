@@ -57,28 +57,28 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
     };
 
     return (
-        <div className="flex h-full">
+        <div className="flex h-full bg-white dark:bg-gray-900">
             {/* Email List Sidebar */}
             <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
                 <div className="p-4">
-                    <h2 className="text-lg font-semibold mb-4">Emails</h2>
+                    <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Emails</h2>
                     <div className="space-y-2">
                         {currentEmails.map((email) => (
                             <div
                                 key={email.id}
                                 className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedEmail?.id === email.id
-                                    ? 'bg-blue-100 dark:bg-blue-900'
-                                    : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                    ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-900 dark:text-blue-100'
+                                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
                                     }`}
                                 onClick={() => handleEmailClick(email)}
                             >
                                 <div className="font-medium truncate">
                                     {email.subject}
                                 </div>
-                                <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                                <div className="text-sm text-gray-600 dark:text-gray-300 truncate">
                                     {email.from}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-500">
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
                                     {formatDate(email.date)}
                                 </div>
                             </div>
@@ -90,17 +90,17 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
                         <button
                             onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
                             disabled={currentPage === 0}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 text-gray-600 dark:text-gray-300"
                         >
                             <ChevronLeftIcon className="h-5 w-5" />
                         </button>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                             Page {currentPage + 1} of {totalPages}
                         </span>
                         <button
                             onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
                             disabled={currentPage === totalPages - 1}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 text-gray-600 dark:text-gray-300"
                         >
                             <ChevronRightIcon className="h-5 w-5" />
                         </button>
@@ -109,25 +109,25 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
             </div>
 
             {/* Email Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
                 {selectedEmail ? (
                     <div className="p-6">
                         <div className="mb-6">
-                            <h1 className="text-2xl font-bold mb-2">
+                            <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
                                 {selectedEmail.subject}
                             </h1>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-sm text-gray-600 dark:text-gray-300">
                                 <div>From: {selectedEmail.from}</div>
                                 <div>To: {selectedEmail.to}</div>
                                 <div>Date: {formatDate(selectedEmail.date)}</div>
                             </div>
                         </div>
-                        <div className="prose dark:prose-invert max-w-none">
+                        <div className="prose dark:prose-invert max-w-none text-gray-900 dark:text-gray-100">
                             {getEmailBody(selectedEmail)}
                         </div>
                         <button
                             onClick={handleCloseEmail}
-                            className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                            className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
                         >
                             Back to list
                         </button>
