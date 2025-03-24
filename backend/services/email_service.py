@@ -10,6 +10,8 @@ from models import GoogleOAuth2Credentials
 from schemas.asset import AssetType, AssetStatus
 from schemas.email import DateRange
 from config.settings import settings
+import base64
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +102,49 @@ class EmailService:
             logger.error(f"Error listing labels: {str(e)}")
             raise
 
+
+    # Get body - handle different message structures
+    def get_body_from_parts(self, parts):
+        for part in parts:
+            # Handle multipart messages
+            if part.get('mimeType', '').startswith('multipart/'):
+                if 'parts' in part:
+                    body = self.get_body_from_parts(part['parts'])
+                    if body:
+                        return body
+            # Handle text/plain
+            elif part.get('mimeType') == 'text/plain':
+                if 'data' in part['body']:
+                    return part['body']['data']
+            # Handle text/html
+            elif part.get('mimeType') == 'text/html':
+                if 'data' in part['body']:
+                    return part['body']['data']
+        return None
+            
+    def get_best_body_from_parts(self, parts):
+        plain = None
+        html = None
+
+        for part in parts:
+            mime = part.get('mimeType', '')
+            body_data = part.get('body', {}).get('data')
+
+            if mime.startswith('multipart/') and 'parts' in part:
+                result = self.get_best_body_from_parts(part['parts'])
+                if result:
+                    return result
+
+            elif mime == 'text/plain' and body_data and not plain:
+                plain = base64.urlsafe_b64decode(body_data).decode('utf-8', errors='replace')
+
+            elif mime == 'text/html' and body_data and not html:
+                html_raw = base64.urlsafe_b64decode(body_data).decode('utf-8', errors='replace')
+                html = BeautifulSoup(html_raw, "html.parser").get_text(separator="\n")
+
+        return plain or html
+
+
     async def get_message(
         self,
         message_id: str,
@@ -141,29 +186,10 @@ class EmailService:
                         header['name'].lower(): header['value']
                         for header in payload['headers']
                     }
-                
-                # Get body - handle different message structures
-                def get_body_from_parts(parts):
-                    for part in parts:
-                        # Handle multipart messages
-                        if part.get('mimeType', '').startswith('multipart/'):
-                            if 'parts' in part:
-                                body = get_body_from_parts(part['parts'])
-                                if body:
-                                    return body
-                        # Handle text/plain
-                        elif part.get('mimeType') == 'text/plain':
-                            if 'data' in part['body']:
-                                return part['body']['data']
-                        # Handle text/html
-                        elif part.get('mimeType') == 'text/html':
-                            if 'data' in part['body']:
-                                return part['body']['data']
-                    return None
-                
+               
                 # Try to get body from parts
                 if 'parts' in payload:
-                    body = get_body_from_parts(payload['parts'])
+                    body = self.get_body_from_parts(payload['parts'])
                 # If no parts, try to get body directly
                 elif 'body' in payload and 'data' in payload['body']:
                     body = payload['body']['data']
