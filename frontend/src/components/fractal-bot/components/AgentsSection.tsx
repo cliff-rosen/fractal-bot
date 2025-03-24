@@ -45,8 +45,8 @@ export const AgentsSection: React.FC<AgentsSectionProps> = ({
         const isExpanded = expandedAgents.has(agent.agent_id);
         const isProposed = agent.status === AgentStatus.IDLE;
 
-        // Special handling for email access agent
-        if (agent.type === AgentType.EMAIL_ACCESS) {
+        // Special handling for email agents
+        if (agent.type === AgentType.EMAIL_ACCESS || agent.type === AgentType.EMAIL_LABELS) {
             return <EmailSearchAgent key={agent.agent_id} agent={agent} />;
         }
 

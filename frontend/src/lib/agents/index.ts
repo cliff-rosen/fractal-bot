@@ -5,8 +5,8 @@ import { EmailLabelsAgentExecutor } from './executors/emailLabelsAgent';
 // Register all agent executors
 export function registerAgentExecutors() {
     // Register email access agents
-    agentRegistry.registerExecutor(new EmailAccessAgentExecutor());
-    agentRegistry.registerExecutor(new EmailLabelsAgentExecutor());
+    agentRegistry.registerExecutor(new EmailAccessAgentExecutor(), 'email_access');
+    agentRegistry.registerExecutor(new EmailLabelsAgentExecutor(), 'email_labels');
 
     // Add more agent registrations here as they are implemented
 }

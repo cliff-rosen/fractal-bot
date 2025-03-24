@@ -30,7 +30,8 @@ export enum AssetType {
     IMAGE = 'image',
     CODE = 'code',
     DOCUMENT = 'document',
-    EMAIL_LIST = 'email_list'
+    EMAIL_LIST = 'email_list',
+    EMAIL_RESULT = 'email_result'
 }
 
 export enum AssetStatus {
@@ -46,10 +47,21 @@ export interface AssetMetadata {
     lastModified?: number;
     createdAt?: string;
     updatedAt?: string;
+    lastUpdated?: string;
     creator?: string;
     tags?: string[];
     agent_associations?: string[];
     version?: number;
+    operation?: string;
+    searchParams?: {
+        folders?: string[];
+        query_terms?: string[];
+        max_results?: number;
+        include_attachments?: boolean;
+        include_metadata?: boolean;
+    };
+    error?: string;
+    agentId?: string;
 }
 
 export interface Asset {
@@ -83,17 +95,16 @@ export interface Agent {
     type: AgentType;
     description: string;
     status: AgentStatus;
-    metadata?: {
-        createdAt?: string;
-        progress?: number;
-        estimatedCompletion?: string;
+    input_parameters: Record<string, any>;
+    input_asset_ids?: string[];
+    output_asset_ids?: string[];
+    metadata: {
         lastRunAt?: string;
         completionTime?: string;
         lastError?: string;
+        [key: string]: any;
     };
-    input_parameters?: Record<string, any>;
-    input_asset_ids?: string[];
-    output_asset_ids?: string[];
+    name: string;
 }
 
 // Message Types

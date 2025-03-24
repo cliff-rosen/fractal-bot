@@ -30,7 +30,7 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
             console.log('API Response:', response.data);
 
             // Get messages from the correct location in the response
-            const rawMessages = response.data.data.messages?.content
+            const rawMessages = response.data.data.messages?.content;
             if (!Array.isArray(rawMessages)) {
                 console.log('Raw messages are not an array:', rawMessages);
             }
@@ -58,15 +58,20 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
                     snippet: msg.snippet || ''
                 };
 
-                console.log('Transformed email:', transformed);
                 return transformed;
             }).filter(Boolean); // Remove any null entries
 
             console.log('Transformed messages:', transformedMessages);
 
-            // Create output asset
+            // Get the pre-created asset ID from context
+            const targetAssetId = context.agent.output_asset_ids?.[0];
+            if (!targetAssetId) {
+                throw new Error('No output asset ID provided in agent context');
+            }
+
+            // Create output asset using the pre-created ID
             const outputAsset = {
-                asset_id: `email_messages_${Date.now()}`,
+                asset_id: targetAssetId,
                 name: `Email Messages (${transformedMessages.length})`,
                 description: 'Collection of email messages from search results',
                 type: AssetType.EMAIL_LIST,

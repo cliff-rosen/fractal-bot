@@ -23,7 +23,7 @@ export interface AgentExecutor {
 }
 
 export interface AgentRegistry {
-    registerExecutor: (executor: AgentExecutor) => void;
-    getExecutor: (type: AgentType) => AgentExecutor | undefined;
-    listRegisteredTypes: () => AgentType[];
+    registerExecutor: (executor: AgentExecutor, agentId: string) => void;
+    getExecutor: (agentId: string) => AgentExecutor | undefined;
+    listRegisteredAgents: () => string[];
 } 

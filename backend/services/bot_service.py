@@ -452,7 +452,7 @@ You have two possible response formats:
     ],
     "agents": [
         {{
-            "agent_id": "uuid-string",
+            "agent_id": "email_labels" | "email_access",
             "type": "email_access",
             "description": "What this agent does",
             "status": "proposed|in_progress|completed|error",
@@ -536,8 +536,7 @@ IMPORTANT DISTINCTION:
 
    CRITICAL: When recommending an agent, you MUST do TWO things:
    1. Add the agent to the "agents" array in your response with:
-      - A unique agent_id
-      - Type set to "email_access"
+      - A unique agent_id (must be either 'email_access' or 'email_labels')
       - A clear description of the specific email access task
       - Status set to "proposed"
       - input_parameters object with:

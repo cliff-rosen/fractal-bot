@@ -47,22 +47,9 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white">Assets</h3>
-                <button
-                    onClick={handleUploadClick}
-                    className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                >
-                    <PlusIcon className="h-4 w-4 mr-1" />
-                    Upload
-                </button>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileChange}
-                />
+        <div className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Assets</h2>
             </div>
             <div className="p-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -82,20 +69,29 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
                                             <h3 className="font-medium text-gray-900 dark:text-white truncate">
                                                 {asset.name || 'Unnamed Asset'}
                                             </h3>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteClick(e, asset.asset_id);
-                                                }}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${asset.status === AssetStatus.PENDING ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                                    asset.status === AssetStatus.READY ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                                        asset.status === AssetStatus.ERROR ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                                            'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                                                    }`}>
+                                                    {asset.status}
+                                                </span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteClick(e, asset.asset_id);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                                             {asset.description || 'No description available'}
                                         </p>
-                                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                                        <div className="flex flex-wrap gap-2 mt-2">
                                             <span className="px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700">
                                                 {asset.type}
                                             </span>

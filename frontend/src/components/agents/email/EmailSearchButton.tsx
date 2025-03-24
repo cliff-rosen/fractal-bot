@@ -17,15 +17,40 @@ interface EmailSearchButtonProps {
 
 export default function EmailSearchButton({ agentId, operation, searchParams }: EmailSearchButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const { executeAgent } = useFractalBot();
+    const { executeAgent, updateAgent, state } = useFractalBot();
 
     const handleOperation = async () => {
-        console.log('handleOperation', agentId, operation, searchParams);
+        if (!agentId) return;
+
+        console.log('Executing operation:', {
+            agentId,
+            operation,
+            searchParams
+        });
+
+        setIsLoading(true);
+
         try {
-            setIsLoading(true);
+            // Update the agent with current parameters
+            const currentAgent = state.agents[agentId];
+            if (!currentAgent) {
+                console.error('Agent not found:', agentId);
+                return;
+            }
+
+            // Update the agent with current parameters while preserving existing ones
+            updateAgent(agentId, {
+                input_parameters: {
+                    ...currentAgent.input_parameters,
+                    ...searchParams,
+                    operation
+                }
+            });
+
+            // Execute the agent using its ID
             await executeAgent(agentId);
-        } catch (error: any) {
-            console.error('Error in email operation:', error);
+        } catch (error) {
+            console.error('Error executing agent:', error);
         } finally {
             setIsLoading(false);
         }
@@ -37,17 +62,9 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
             disabled={isLoading}
             variant="secondary"
             size="sm"
-            className="flex items-center justify-center gap-2"
         >
-            <Search className="h-4 w-4" />
-            <span className="text-sm">
-                {isLoading
-                    ? 'Processing...'
-                    : operation === 'list_labels'
-                        ? 'List Labels'
-                        : 'Search Emails'
-                }
-            </span>
+            <Search className="h-4 w-4 mr-2" />
+            {isLoading ? 'Running...' : 'Run'}
         </Button>
     );
 } 
