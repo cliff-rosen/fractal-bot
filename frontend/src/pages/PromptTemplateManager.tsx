@@ -30,6 +30,7 @@ const PromptTemplateManager: React.FC = () => {
     };
 
     const handleEdit = (templateId: string) => {
+        console.log('Editing template:', templateId);
         navigate(`/prompt/${templateId}`);
     };
 

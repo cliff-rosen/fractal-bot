@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Asset } from './types/state';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import DOMPurify from 'dompurify';
 
 interface EmailMessage {
     id: string;
@@ -43,7 +44,18 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
 
     const getEmailBody = (email: EmailMessage) => {
         if (email.body) {
-            return decodeBase64(email.body);
+            const decodedBody = decodeBase64(email.body);
+            // Check if the content is HTML by looking for common HTML tags
+            const isHtml = /<[a-z][\s\S]*>/i.test(decodedBody);
+            if (isHtml) {
+                return DOMPurify.sanitize(decodedBody, {
+                    ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'em', 'strong', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                        'table', 'thead', 'tbody', 'tr', 'td', 'th',
+                        'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'hr', 'div', 'span', 'img'],
+                    ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class']
+                });
+            }
+            return decodedBody;
         }
         return email.snippet;
     };
@@ -123,7 +135,11 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
                             </div>
                         </div>
                         <div className="prose dark:prose-invert max-w-none text-gray-900 dark:text-gray-100">
-                            {getEmailBody(selectedEmail)}
+                            {getEmailBody(selectedEmail).includes('<') ? (
+                                <div dangerouslySetInnerHTML={{ __html: getEmailBody(selectedEmail) }} />
+                            ) : (
+                                getEmailBody(selectedEmail)
+                            )}
                         </div>
                         <button
                             onClick={handleCloseEmail}

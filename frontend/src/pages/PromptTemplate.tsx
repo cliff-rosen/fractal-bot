@@ -18,7 +18,9 @@ const defaultOutputSchema: Schema = {
 
 const PromptTemplate: React.FC = () => {
     const { templateId } = useParams();
+    const id = templateId
     const navigate = useNavigate();
+
     const {
         templates,
         selectedTemplate: template,
@@ -48,7 +50,19 @@ const PromptTemplate: React.FC = () => {
 
     // Initialize template based on URL parameter
     useEffect(() => {
+        console.log('Template ID:', templateId);
+        console.log('ID:', id);
+
+        if (!templateId && !id) {
+            console.log('No template ID, navigating to id');
+            navigate(`/prompts/${id}`);
+            return;
+        } else {
+            console.log('No template ID or id:', templateId);
+        }
+
         if (!templateId) {
+            console.log('No template ID, navigating to /prompts');
             navigate('/prompts');
             return;
         }
@@ -95,7 +109,7 @@ const PromptTemplate: React.FC = () => {
             };
             loadTemplate();
         }
-    }, [templateId, navigate, templates, template, setSelectedTemplate]);
+    }, [templateId, id, navigate, templates, template, setSelectedTemplate]);
 
     // Update test parameters when template text changes
     useEffect(() => {
