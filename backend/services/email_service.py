@@ -102,9 +102,11 @@ class EmailService:
             logger.error(f"Error listing labels: {str(e)}")
             raise
 
-
     # Get body - handle different message structures
     def get_body_from_parts(self, parts):
+        plain = None
+        html = None
+
         for part in parts:
             # Handle multipart messages
             if part.get('mimeType', '').startswith('multipart/'):
@@ -115,18 +117,22 @@ class EmailService:
             # Handle text/plain
             elif part.get('mimeType') == 'text/plain':
                 if 'data' in part['body']:
-                    return part['body']['data']
+                    plain = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8', errors='replace')
             # Handle text/html
             elif part.get('mimeType') == 'text/html':
                 if 'data' in part['body']:
-                    return part['body']['data']
-        return None
+                    html = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8', errors='replace')
+        if html:    
+            return BeautifulSoup(html, "html.parser").get_text(separator="\n")
+        return plain
             
     def get_best_body_from_parts(self, parts):
         plain = None
         html = None
 
         for part in parts:
+            print("********************************************************************`")
+            print("part mtype: ", part.get('mimeType', ''))
             mime = part.get('mimeType', '')
             body_data = part.get('body', {}).get('data')
 
@@ -143,7 +149,6 @@ class EmailService:
                 html = BeautifulSoup(html_raw, "html.parser").get_text(separator="\n")
 
         return plain or html
-
 
     async def get_message(
         self,

@@ -5,6 +5,7 @@ from schemas.asset import AssetType, AssetStatus, Asset
 from datetime import datetime
 from fastapi import UploadFile
 import uuid
+import json
 
 class AssetService:
     def __init__(self, db: Session):
@@ -17,7 +18,7 @@ class AssetService:
             name=model.name,
             description=model.description,
             type=model.type,
-            content=model.content,
+            content= model.content,
             metadata={
                 "status": AssetStatus.READY,  # Default to READY since we don't store status in DB
                 "createdAt": model.created_at.isoformat(),
