@@ -108,34 +108,9 @@ const FractalBotContent: React.FC = () => {
     };
 
     const handleRetrieveAsset = (asset: Asset) => {
-        addAsset(asset);
+        addAsset({ ...asset, is_in_db: true, status: AssetStatus.READY });
     };
 
-    // Helper function to process the file
-    const processFile = async (file: File, assetId: string) => {
-        try {
-            // Read the file content
-            const content = 'abcdefg'
-
-            // Update the asset with the content and ready status
-            updateAsset(assetId, {
-                content: content,
-                status: AssetStatus.READY,
-                metadata: {
-                    lastUpdated: new Date().toISOString()
-                }
-            });
-        } catch (error) {
-            // Update the asset with error status
-            updateAsset(assetId, {
-                status: AssetStatus.ERROR,
-                metadata: {
-                    error: error instanceof Error ? error.message : 'Failed to process file'
-                }
-            });
-            throw error;
-        }
-    };
 
     return (
         <div className="flex h-screen gap-4 p-4 bg-gray-50 dark:bg-gray-900">
