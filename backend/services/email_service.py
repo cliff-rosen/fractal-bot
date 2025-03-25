@@ -122,9 +122,12 @@ class EmailService:
             elif part.get('mimeType') == 'text/html':
                 if 'data' in part['body']:
                     html = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8', errors='replace')
-        if html:    
-            return BeautifulSoup(html, "html.parser").get_text(separator="\n")
-        return plain
+        
+        # Return both formats if available
+        return {
+            'html': html,
+            'plain': plain
+        }
             
     def get_best_body_from_parts(self, parts):
         plain = None

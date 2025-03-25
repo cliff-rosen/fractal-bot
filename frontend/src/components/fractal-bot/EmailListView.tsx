@@ -9,7 +9,10 @@ interface EmailMessage {
     from: string;
     to: string;
     subject: string;
-    body: string | null;
+    body: {
+        html?: string;
+        plain?: string;
+    };
     snippet: string;
 }
 
@@ -33,31 +36,16 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
         return new Date(parseInt(dateString)).toLocaleString();
     };
 
-    const decodeBase64 = (str: string) => {
-        try {
-            return decodeURIComponent(escape(atob(str.replace(/-/g, '+').replace(/_/g, '/'))));
-        } catch (e) {
-            console.error('Error decoding base64:', e);
-            return str;
-        }
-    };
-
     const getEmailBody = (email: EmailMessage) => {
-        if (email.body) {
-            const decodedBody = decodeBase64(email.body);
-            // Check if the content is HTML by looking for common HTML tags
-            const isHtml = /<[a-z][\s\S]*>/i.test(decodedBody);
-            if (isHtml) {
-                return DOMPurify.sanitize(decodedBody, {
-                    ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'em', 'strong', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                        'table', 'thead', 'tbody', 'tr', 'td', 'th',
-                        'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'hr', 'div', 'span', 'img'],
-                    ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class']
-                });
-            }
-            return decodedBody;
+        if (email.body.html) {
+            return DOMPurify.sanitize(email.body.html, {
+                ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'em', 'strong', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                    'table', 'thead', 'tbody', 'tr', 'td', 'th',
+                    'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'hr', 'div', 'span', 'img'],
+                ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class', 'style']
+            });
         }
-        return email.snippet;
+        return email.body.plain || email.snippet;
     };
 
     const handleEmailClick = (email: EmailMessage) => {
@@ -121,7 +109,7 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
             </div>
 
             {/* Email Content */}
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+            <div className="flex-1 overflow-y-auto">
                 {selectedEmail ? (
                     <div className="p-6">
                         <div className="mb-6">
@@ -135,10 +123,15 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
                             </div>
                         </div>
                         <div className="prose dark:prose-invert max-w-none text-gray-900 dark:text-gray-100">
-                            {getEmailBody(selectedEmail).includes('<') ? (
-                                <div dangerouslySetInnerHTML={{ __html: getEmailBody(selectedEmail) }} />
+                            {selectedEmail.body.html ? (
+                                <div
+                                    className="email-content"
+                                    dangerouslySetInnerHTML={{ __html: getEmailBody(selectedEmail) }}
+                                />
                             ) : (
-                                getEmailBody(selectedEmail)
+                                <pre className="whitespace-pre-wrap font-sans">
+                                    {getEmailBody(selectedEmail)}
+                                </pre>
                             )}
                         </div>
                         <button
