@@ -47,8 +47,11 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         // Set is_in_db to false for new assets unless it's explicitly set
         const assetWithDbFlag = {
             ...asset,
-            is_in_db: asset.is_in_db ?? false
+            is_in_db: asset.is_in_db ?? false,
+            // Ensure we have a valid asset_id
+            asset_id: asset.asset_id || `temp_${Date.now()}`
         };
+        // Use the asset_id as the key in the state
         dispatch({ type: 'ADD_ASSET', payload: { asset: assetWithDbFlag } });
     }, []);
 
@@ -66,53 +69,47 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             throw new Error(`Asset ${assetId} not found`);
         }
 
-        try {
-            // Convert the state Asset type to the API Asset type
-            const apiAsset = {
-                asset_id: asset.asset_id,
+        // Ensure required fields are present
+        if (!asset.name) {
+            throw new Error('Asset name is required');
+        }
+        if (!asset.type) {
+            throw new Error('Asset type is required');
+        }
+
+        // Convert the state Asset type to the API Asset type
+        const assetType = asset.type === AssetType.FILE ? AssetType.TEXT : asset.type;
+
+        let savedAsset;
+        if (asset.is_in_db) {
+            // Update existing asset - use Asset interface
+            savedAsset = await assetApi.updateAsset(assetId, {
                 name: asset.name,
+                type: assetType,
                 description: asset.description,
-                type: asset.type,
                 content: asset.content,
-                status: asset.status,
                 metadata: {
                     ...asset.metadata,
-                    status: asset.status,
-                    is_in_db: asset.is_in_db
-                },
-                is_in_db: asset.is_in_db
-            };
-
-            const savedAsset = await assetApi.saveAsset(apiAsset);
-
-            // Convert back to state Asset type
-            const stateAsset = {
-                asset_id: savedAsset.asset_id,
-                name: savedAsset.name,
-                description: savedAsset.description,
-                type: savedAsset.type,
-                content: savedAsset.content,
-                status: savedAsset.metadata?.status || AssetStatus.PENDING,
-                metadata: {
-                    ...savedAsset.metadata,
-                    status: undefined, // Remove status from metadata since it's a top-level field
-                    creator: savedAsset.metadata?.creator || undefined // Convert null to undefined
-                },
-                is_in_db: true
-            };
-
-            updateAsset(assetId, stateAsset);
-        } catch (error) {
-            console.error('Error saving asset:', error);
-            toast({
-                title: 'Error',
-                description: 'Failed to save asset. Please try again.',
-                variant: 'destructive',
-                className: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
+                    subtype: asset.metadata?.subtype
+                }
             });
-            throw error;
+        } else {
+            // Create new asset - use exact interface expected by createAsset
+            savedAsset = await assetApi.createAsset({
+                name: asset.name,
+                type: assetType,
+                description: asset.description,
+                subtype: asset.metadata?.subtype,
+                content: asset.content
+            });
         }
-    }, [state.assets, updateAsset, toast]);
+
+        // Convert back to state Asset type and update
+        updateAsset(assetId, {
+            ...savedAsset,
+            is_in_db: true
+        });
+    }, [state.assets, updateAsset]);
 
     const addAgent = useCallback((agent: Agent) => {
         dispatch({ type: 'ADD_AGENT', payload: { agent } });

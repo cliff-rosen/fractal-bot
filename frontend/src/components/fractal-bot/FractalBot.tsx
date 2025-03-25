@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 const FractalBotContent: React.FC = () => {
     const [inputMessage, setInputMessage] = useState('');
     const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
-    const { state, processMessage, removeAsset, addAsset, updateAsset } = useFractalBot();
+    const { state, processMessage, removeAsset, addAsset, updateAsset, saveAsset } = useFractalBot();
     const { messages, agents, assets } = state;
     const { toast } = useToast();
 
@@ -29,6 +29,7 @@ const FractalBotContent: React.FC = () => {
     };
 
     const handleDeleteAsset = (assetId: string) => {
+        console.log('handleDeleteAsset', assetId)
         try {
             removeAsset(assetId);
             toast({
@@ -53,7 +54,7 @@ const FractalBotContent: React.FC = () => {
         try {
             // Create a new asset from the file
             newAsset = {
-                asset_id: `file_${Date.now()}`,
+                asset_id: `temp_${Date.now()}`,
                 name: file.name,
                 description: `Uploaded file: ${file.name}`,
                 type: AssetType.FILE,
@@ -73,13 +74,13 @@ const FractalBotContent: React.FC = () => {
             addAsset(newAsset);
 
             // Process the file and update asset
-            // await processFile(file, newAsset.asset_id);
             const fileContent = await file.text();
 
             updateAsset(newAsset.asset_id, {
                 content: fileContent,
                 status: AssetStatus.READY,
                 metadata: {
+                    ...newAsset.metadata,
                     lastUpdated: new Date().toISOString()
                 }
             });
@@ -95,7 +96,8 @@ const FractalBotContent: React.FC = () => {
                     status: AssetStatus.ERROR,
                     metadata: {
                         ...newAsset.metadata,
-                        error: error instanceof Error ? error.message : 'Failed to process file'
+                        lastUpdated: new Date().toISOString(),
+                        error: error instanceof Error ? error.message : 'Unknown error occurred'
                     }
                 });
             }
@@ -108,9 +110,35 @@ const FractalBotContent: React.FC = () => {
     };
 
     const handleRetrieveAsset = (asset: Asset) => {
-        addAsset({ ...asset, is_in_db: true, status: AssetStatus.READY });
+        // Make sure we're using the asset's ID from the database
+        const assetToAdd = {
+            ...asset,
+            is_in_db: true,
+            status: AssetStatus.READY
+        };
+        // Use the asset_id from the database asset as the key
+        addAsset(assetToAdd);
     };
 
+    const handleSaveAsset = async (asset: Asset) => {
+        try {
+            await saveAsset(asset.asset_id);
+            toast({
+                title: 'Asset Saved',
+                description: 'Successfully saved to database',
+                variant: 'default',
+                className: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
+            });
+        } catch (error) {
+            console.error('Error saving asset:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to save asset. Please try again.',
+                variant: 'destructive',
+                className: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
+            });
+        }
+    };
 
     return (
         <div className="flex h-screen gap-4 p-4 bg-gray-50 dark:bg-gray-900">
@@ -150,6 +178,7 @@ const FractalBotContent: React.FC = () => {
                     asset={selectedAsset}
                     onClose={() => setSelectedAsset(null)}
                     isOpen={!!selectedAsset}
+                    onSaveToDb={handleSaveAsset}
                 />
             )}
         </div>
