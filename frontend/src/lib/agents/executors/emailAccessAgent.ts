@@ -1,4 +1,5 @@
-import { AgentType, AssetType, AssetStatus } from '@/components/fractal-bot/types/state';
+import { FileType, DataType, AssetStatus } from '@/types/asset';
+import { Agent, AgentType } from '@/types/agent';
 import { AgentExecutor, AgentExecutionContext, AgentExecutionResult } from '../types';
 import { api } from '@/lib/api';
 
@@ -6,99 +7,57 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
     type = AgentType.EMAIL_ACCESS;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
-        console.log('EmailAccessAgentExecutor execute');
         try {
-            const { agent, state } = context;
+            const { agent } = context;
+            const { input_parameters } = agent;
+            const { query, max_results = 10, include_attachments = false } = input_parameters;
 
-            // Get the search parameters from agent input
-            const params = agent.input_parameters || {};
-
-            // Call the email API
-            const response = await api.post('/api/email/messages', {
-                folders: params.folders,
-                query_terms: params.query_terms,
-                max_results: params.max_results || 100,
-                include_attachments: params.include_attachments,
-                include_metadata: params.include_metadata
+            const response = await api.post('/api/email/search', {
+                query,
+                max_results,
+                include_attachments
             });
 
-            if (!response.data.success) {
-                throw new Error(response.data.error || 'Failed to fetch email messages');
-            }
+            const messages = response.data.messages;
+            const transformedMessages = messages.map((msg: any) => ({
+                id: msg.id,
+                subject: msg.subject,
+                from: msg.from,
+                to: msg.to,
+                date: msg.date,
+                body: msg.body,
+                attachments: msg.attachments || []
+            }));
 
-            // Debug logging
-            console.log('API Response:', response.data);
-
-            // Get messages from the correct location in the response
-            const rawMessages = response.data.data.messages?.content;
-            if (!Array.isArray(rawMessages)) {
-                console.log('Raw messages are not an array:', rawMessages);
-            }
-            console.log('Raw messages:', rawMessages);
-
-            if (rawMessages.length === 0) {
-                console.log('No messages found in response');
-            }
-
-            // Transform messages into the format expected by EmailListView
-            const transformedMessages = rawMessages.map((msg: any) => {
-                if (!msg || typeof msg !== 'object') {
-                    console.warn('Invalid message object:', msg);
-                    return null;
-                }
-
-                // The backend already formats these fields correctly
-                const transformed = {
-                    id: msg.id,
-                    date: msg.date || msg.internalDate,
-                    from: msg.from,
-                    to: msg.to,
-                    subject: msg.subject,
-                    body: msg.body,
-                    snippet: msg.snippet || ''
-                };
-
-                return transformed;
-            }).filter(Boolean); // Remove any null entries
-
-            console.log('Transformed messages:', transformedMessages);
-
-            // Get the pre-created asset ID from context
-            const targetAssetId = context.agent.output_asset_ids?.[0];
-            if (!targetAssetId) {
-                throw new Error('No output asset ID provided in agent context');
-            }
-
-            // Create output asset using the pre-created ID
-            const outputAsset = {
-                asset_id: targetAssetId,
+            const asset = {
+                asset_id: `email_list_${Date.now()}`,
                 name: `Email Messages (${transformedMessages.length})`,
                 description: 'Collection of email messages from search results',
-                type: AssetType.EMAIL_LIST,
+                fileType: FileType.JSON,
+                dataType: DataType.EMAIL_LIST,
                 content: transformedMessages,
                 status: AssetStatus.READY,
                 metadata: {
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     version: 1,
-                    creator: "email_service",
-                    tags: ["email", "gmail"]
+                    creator: 'email_access_agent',
+                    tags: ['email', 'search_results']
+                },
+                persistence: {
+                    isInDb: false
                 }
             };
 
             return {
                 success: true,
-                outputAssets: [outputAsset],
-                metadata: {
-                    messageCount: transformedMessages.length
-                }
+                outputAssets: [asset]
             };
-
-        } catch (error: any) {
-            console.error('EmailAccessAgent error:', error);
+        } catch (error) {
+            console.error('Error in EmailAccessAgentExecutor:', error);
             return {
                 success: false,
-                error: error.message || 'Failed to execute email access agent'
+                error: error instanceof Error ? error.message : 'Unknown error in EmailAccessAgentExecutor'
             };
         }
     }

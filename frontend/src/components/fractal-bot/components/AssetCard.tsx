@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, XCircleIcon, TrashIcon, CloudIcon } from '@heroicons/react/24/outline';
-import { Asset, AssetStatus } from '../types/state';
+import { Asset, AssetStatus } from '@/types/asset';
 import { getAssetIcon } from '../utils/assetUtils';
 
 interface AssetCardProps {
@@ -10,11 +10,11 @@ interface AssetCardProps {
 }
 
 export const AssetCard: React.FC<AssetCardProps> = ({ asset, onClick, onDelete }) => {
-    const [localIsInDb, setLocalIsInDb] = useState(asset.is_in_db);
+    const [isDirty, setIsDirty] = useState(asset.persistence.isDirty || false);
 
     useEffect(() => {
-        setLocalIsInDb(asset.is_in_db);
-    }, [asset.is_in_db]);
+        setIsDirty(asset.persistence.isDirty || false);
+    }, [asset.persistence.isDirty]);
 
     const getStatusIcon = (status: AssetStatus) => {
         switch (status) {
@@ -45,7 +45,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onClick, onDelete }
                 <div className="flex items-center w-full gap-3">
                     {/* Left: Icon */}
                     <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
-                        {getAssetIcon(asset.type)}
+                        {getAssetIcon(asset.fileType, asset.dataType)}
                     </div>
 
                     {/* Middle: Name and Description */}
@@ -63,8 +63,13 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onClick, onDelete }
                     {/* Right: Status Icons */}
                     <div className="flex items-center gap-2 flex-shrink-0">
                         {getStatusIcon(asset.status)}
-                        {localIsInDb ? (
-                            <CloudIcon className="h-4 w-4 text-blue-500" />
+                        {asset.persistence.isInDb ? (
+                            <div className="relative">
+                                <CloudIcon className={`h-4 w-4 ${isDirty ? 'text-yellow-500' : 'text-blue-500'}`} />
+                                {isDirty && (
+                                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-500 rounded-full" />
+                                )}
+                            </div>
                         ) : (
                             <div className="relative">
                                 <CloudIcon className="h-4 w-4 text-red-500" />

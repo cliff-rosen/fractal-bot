@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { FractalBotState, createInitialState, Asset, MessageRole, Message, Agent, AgentType, AgentStatus, AssetStatus, AssetType } from '../types/state';
+import { FractalBotState, createInitialState } from '../types/state';
+import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
+import { Agent, AgentType, AgentStatus } from '@/types/agent';
+import { Message, MessageRole } from '@/types/message';
 import { fractalBotReducer } from '../state/reducer';
 import { botApi } from '@/lib/api/botApi';
 import { assetApi } from '@/lib/api/assetApi';
@@ -44,15 +47,16 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
     }, []);
 
     const addAsset = useCallback((asset: Asset) => {
-        // Set is_in_db to false for new assets unless it's explicitly set
-        const assetWithDbFlag = {
+        // Ensure we have a valid asset_id and persistence info
+        const assetWithDefaults = {
             ...asset,
-            is_in_db: asset.is_in_db ?? false,
-            // Ensure we have a valid asset_id
-            asset_id: asset.asset_id || `temp_${Date.now()}`
+            asset_id: asset.asset_id || `temp_${Date.now()}`,
+            persistence: {
+                ...asset.persistence,
+                isInDb: asset.persistence?.isInDb ?? false
+            }
         };
-        // Use the asset_id as the key in the state
-        dispatch({ type: 'ADD_ASSET', payload: { asset: assetWithDbFlag } });
+        dispatch({ type: 'ADD_ASSET', payload: { asset: assetWithDefaults } });
     }, []);
 
     const updateAsset = useCallback((assetId: string, updates: Partial<Asset>) => {
@@ -73,41 +77,38 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         if (!asset.name) {
             throw new Error('Asset name is required');
         }
-        if (!asset.type) {
-            throw new Error('Asset type is required');
-        }
-
-        // Convert the state Asset type to the API Asset type
-        const assetType = asset.type === AssetType.FILE ? AssetType.TEXT : asset.type;
 
         let savedAsset;
-        if (asset.is_in_db) {
-            // Update existing asset - use Asset interface
+        if (asset.persistence.isInDb) {
+            // Update existing asset
             savedAsset = await assetApi.updateAsset(assetId, {
                 name: asset.name,
-                type: assetType,
+                fileType: asset.fileType,
+                dataType: asset.dataType,
                 description: asset.description,
                 content: asset.content,
-                metadata: {
-                    ...asset.metadata,
-                    subtype: asset.metadata?.subtype
-                }
+                metadata: asset.metadata
             });
         } else {
-            // Create new asset - use exact interface expected by createAsset
+            // Create new asset
             savedAsset = await assetApi.createAsset({
                 name: asset.name,
-                type: assetType,
+                fileType: asset.fileType,
+                dataType: asset.dataType,
                 description: asset.description,
-                subtype: asset.metadata?.subtype,
-                content: asset.content
+                content: asset.content,
+                metadata: asset.metadata,
+                status: asset.status
             });
         }
 
-        // Convert back to state Asset type and update
+        // Update with saved asset data
         updateAsset(assetId, {
             ...savedAsset,
-            is_in_db: true
+            persistence: {
+                ...savedAsset.persistence,
+                isInDb: true
+            }
         });
     }, [state.assets, updateAsset]);
 
@@ -148,20 +149,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         updateMetadata({ isProcessing: true });
 
         try {
-            // Format assets for the backend
-            const formattedAssets = Object.values(state.assets).map(asset => ({
-                asset_id: asset.asset_id,
-                name: asset.name,
-                description: asset.description,
-                type: asset.type,
-                content: asset.content,
-                status: asset.status,
-                metadata: asset.metadata,
-                is_in_db: asset.is_in_db
-            }));
-
             // Send message to backend with history and assets
-            const response = await botApi.sendMessage(message, state.messages, formattedAssets);
+            const response = await botApi.sendMessage(message, state.messages, Object.values(state.assets));
 
             // Add bot's response to messages
             addMessage(response.message);
@@ -171,8 +160,13 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             const newAssets = sideEffects.assets || [];
             const newAgents = sideEffects.agents || [];
 
-            // Add new assets
-            newAssets.forEach(asset => addAsset({ ...asset, is_in_db: false }));
+            // Add new assets with default persistence
+            newAssets.forEach(asset => addAsset({
+                ...asset,
+                persistence: {
+                    isInDb: false
+                }
+            }));
 
             // Add new agents
             newAgents.forEach(agent => addAgent(agent));
@@ -202,8 +196,9 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             throw new Error(`No executor found for agent ${agentId}`);
         }
 
-        // Determine asset type based on agent type
-        const assetType = agent.type === AgentType.EMAIL_LABELS ? AssetType.EMAIL_LIST : AssetType.EMAIL_RESULT;
+        // Determine asset types based on agent type
+        const fileType = FileType.JSON;
+        const dataType = agent.type === AgentType.EMAIL_LABELS ? DataType.EMAIL_LIST : DataType.UNSTRUCTURED;
 
         // Ensure all output assets exist and are in PENDING state
         if (agent.output_asset_ids) {
@@ -217,25 +212,29 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                         status: AssetStatus.PENDING,
                         metadata: {
                             ...existingAsset.metadata,
-                            lastUpdated: new Date().toISOString()
+                            updatedAt: new Date().toISOString()
                         }
                     });
                 } else {
                     console.log('Creating new asset:', assetId);
+                    const now = new Date().toISOString();
                     // Create new asset with the exact ID
                     addAsset({
                         asset_id: assetId,
                         name: `Output from ${agent.name}`,
                         description: `Output asset from agent ${agent.name}`,
-                        type: assetType,
+                        fileType,
+                        dataType,
                         content: null,
                         status: AssetStatus.PENDING,
                         metadata: {
-                            createdAt: new Date().toISOString(),
-                            lastUpdated: new Date().toISOString(),
+                            createdAt: now,
+                            updatedAt: now,
                             agentId
                         },
-                        is_in_db: false
+                        persistence: {
+                            isInDb: false
+                        }
                     });
                 }
             }
@@ -280,7 +279,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             metadata: {
                                 ...existingAsset.metadata,
                                 ...outputAsset.metadata,
-                                lastUpdated: new Date().toISOString()
+                                updatedAt: new Date().toISOString()
                             }
                         });
                     } else {
@@ -290,7 +289,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             status: AssetStatus.READY,
                             metadata: {
                                 ...outputAsset.metadata,
-                                lastUpdated: new Date().toISOString()
+                                updatedAt: new Date().toISOString()
                             }
                         });
                     }
@@ -320,7 +319,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             status: AssetStatus.ERROR,
                             metadata: {
                                 ...existingAsset.metadata,
-                                lastUpdated: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
                                 error: error.message
                             }
                         });

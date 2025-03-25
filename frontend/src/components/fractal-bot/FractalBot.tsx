@@ -3,7 +3,8 @@ import { ChatSection } from './components/ChatSection';
 import { AssetsSection } from './components/AssetsSection';
 import { AgentsSection } from './components/AgentsSection';
 import { AssetModal } from './components/AssetModal';
-import { Asset, Agent, AssetType, AssetStatus } from './types/state';
+import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
+import { Agent } from '@/types/agent';
 import { FractalBotProvider, useFractalBot } from './context/FractalBotContext';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -53,21 +54,24 @@ const FractalBotContent: React.FC = () => {
         let newAsset: Asset | null = null;
         try {
             // Create a new asset from the file
+            const now = new Date().toISOString();
             newAsset = {
                 asset_id: `temp_${Date.now()}`,
                 name: file.name,
                 description: `Uploaded file: ${file.name}`,
-                type: AssetType.FILE,
+                fileType: FileType.TXT,
+                dataType: DataType.UNSTRUCTURED,
                 content: null, // Will be set by processFile
                 status: AssetStatus.PENDING,
                 metadata: {
-                    createdAt: new Date().toISOString(),
-                    lastUpdated: new Date().toISOString(),
+                    createdAt: now,
+                    updatedAt: now,
                     size: file.size,
-                    type: file.type,
                     lastModified: file.lastModified
                 },
-                is_in_db: false
+                persistence: {
+                    isInDb: false
+                }
             };
 
             // Add the asset to state
@@ -81,7 +85,7 @@ const FractalBotContent: React.FC = () => {
                 status: AssetStatus.READY,
                 metadata: {
                     ...newAsset.metadata,
-                    lastUpdated: new Date().toISOString()
+                    updatedAt: new Date().toISOString()
                 }
             });
             toast({
@@ -96,7 +100,7 @@ const FractalBotContent: React.FC = () => {
                     status: AssetStatus.ERROR,
                     metadata: {
                         ...newAsset.metadata,
-                        lastUpdated: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
                         error: error instanceof Error ? error.message : 'Unknown error occurred'
                     }
                 });
@@ -113,7 +117,10 @@ const FractalBotContent: React.FC = () => {
         // Make sure we're using the asset's ID from the database
         const assetToAdd = {
             ...asset,
-            is_in_db: true,
+            persistence: {
+                ...asset.persistence,
+                isInDb: true
+            },
             status: AssetStatus.READY
         };
         // Use the asset_id from the database asset as the key

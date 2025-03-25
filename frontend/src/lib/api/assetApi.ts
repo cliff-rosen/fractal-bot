@@ -1,66 +1,40 @@
-import { api } from './index';
-import { Asset, AssetType } from '@/types/asset';
-
-export interface AssetUploadResponse {
-    asset: Asset;
-}
+import { Asset, FileType, DataType } from '@/types/asset';
+import { api } from '@/lib/api';
 
 export const assetApi = {
     // Get all assets
-    async getAssets(type?: AssetType, subtype?: string): Promise<Asset[]> {
-        const params = new URLSearchParams();
-        if (type) params.append('type', type);
-        if (subtype) params.append('subtype', subtype);
-
-        const response = await api.get(`/api/assets?${params.toString()}`);
-        return response.data.map((asset: Asset) => ({ ...asset, is_in_db: true }));
+    async getAssets(fileType?: FileType, dataType?: DataType): Promise<Asset[]> {
+        const response = await api.get('/api/assets', {
+            params: {
+                fileType,
+                dataType
+            }
+        });
+        return response.data;
     },
 
     // Get a specific asset
-    async getAsset(assetId: string): Promise<Asset> {
-        const response = await api.get(`/api/assets/${assetId}`);
-        return { ...response.data, is_in_db: true };
+    async getAsset(id: string): Promise<Asset> {
+        const response = await api.get(`/api/assets/${id}`);
+        return response.data;
     },
 
     // Create a new asset
-    async createAsset(data: {
-        name: string;
-        type: AssetType;
-        description?: string;
-        subtype?: string;
-        content?: any;
-    }): Promise<Asset> {
-        const { name, type, description, subtype, content } = data;
-
-        // Build query parameters
-        const params = new URLSearchParams();
-        params.append('name', name);
-        params.append('type', type.toLowerCase());  // Convert type to lowercase
-        if (description) params.append('description', description);
-        if (subtype) params.append('subtype', subtype);
-
-        // Send content in body
-        const response = await api.post(`/api/assets?${params.toString()}`, { content });
-        return { ...response.data, is_in_db: true };
+    async createAsset(asset: Omit<Asset, 'asset_id' | 'persistence'>): Promise<Asset> {
+        const assetWithPersistence = {
+            ...asset,
+            persistence: {
+                isInDb: false
+            }
+        };
+        const response = await api.post('/api/assets', assetWithPersistence);
+        return response.data;
     },
 
     // Update an asset
-    async updateAsset(assetId: string, updates: Partial<Asset>): Promise<Asset> {
-        const { name, type, description, content, metadata } = updates;
-
-        // Build query parameters
-        const params = new URLSearchParams();
-        if (name) params.append('name', name);
-        if (type) params.append('type', type.toLowerCase());  // Convert type to lowercase
-        if (description) params.append('description', description);
-        if (metadata?.subtype) params.append('subtype', metadata.subtype);
-
-        // Send content and metadata in body
-        const response = await api.put(`/api/assets/${assetId}?${params.toString()}`, {
-            content,
-            metadata
-        });
-        return { ...response.data, is_in_db: true };
+    async updateAsset(id: string, updates: Partial<Omit<Asset, 'asset_id' | 'persistence'>>): Promise<Asset> {
+        const response = await api.patch(`/api/assets/${id}`, updates);
+        return response.data;
     },
 
     // Save an asset (create or update based on is_in_db flag)
@@ -79,8 +53,8 @@ export const assetApi = {
     },
 
     // Delete an asset
-    async deleteAsset(assetId: string): Promise<void> {
-        await api.delete(`/api/assets/${assetId}`);
+    async deleteAsset(id: string): Promise<void> {
+        await api.delete(`/api/assets/${id}`);
     },
 
     // Upload a file as an asset

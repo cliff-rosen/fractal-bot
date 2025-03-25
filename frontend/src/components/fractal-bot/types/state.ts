@@ -1,162 +1,33 @@
-// Basic types
+// Import from centralized type files
+import { Asset, FileType, DataType, AssetStatus, AssetMetadata, AssetPersistence } from '@/types/asset';
+import { Agent, AgentType, AgentStatus } from '@/types/agent';
+import { Message, MessageType, MessageRole, ChatMessage, ChatResponse } from '@/types/message';
+import { ActionType, ActionButton } from '@/types/action';
+
 export type Phase = 'setup' | 'execution' | 'complete';
 
-export type MessageType =
-    | 'text'
-    | 'action_prompt'
-    | 'agent_update'
-    | 'asset_added';
+// Re-export all types for backward compatibility
+export type {
+    Asset,
+    AssetMetadata,
+    AssetPersistence,
+    Agent,
+    Message,
+    ChatMessage,
+    ChatResponse,
+    MessageType,
+    ActionButton
+};
 
-// Message types
-export interface ChatMessage {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: string;
-    type: MessageType;
-    actionButton?: {
-        label: string;
-        action: string;
-        disabled?: boolean;
-    };
-}
-
-// Asset Types
-export enum AssetType {
-    FILE = 'FILE',
-    TEXT = 'TEXT',
-    IMAGE = 'IMAGE',
-    AUDIO = 'AUDIO',
-    VIDEO = 'VIDEO',
-    DOCUMENT = 'DOCUMENT',
-    OTHER = 'OTHER',
-    EMAIL_LIST = 'EMAIL_LIST',
-    EMAIL_RESULT = 'EMAIL_RESULT'
-}
-
-export enum AssetStatus {
-    PENDING = 'PENDING',
-    PROCESSING = 'PROCESSING',
-    READY = 'READY',
-    ERROR = 'ERROR'
-}
-
-export interface AssetMetadata {
-    status?: AssetStatus;
-    createdAt?: string;
-    updatedAt?: string;
-    creator?: string | null;
-    tags?: string[];
-    agent_associations?: string[];
-    version?: number;
-    subtype?: string;
-    is_in_db?: boolean;
-    name?: string;
-    type?: string;
-    size?: number;
-    lastModified?: number;
-    lastUpdated?: string;
-    operation?: string;
-    searchParams?: {
-        folders?: string[];
-        query_terms?: string[];
-        max_results?: number;
-        include_attachments?: boolean;
-        include_metadata?: boolean;
-    };
-    error?: string;
-    agentId?: string;
-}
-
-export interface Asset {
-    asset_id: string;
-    name: string;
-    description?: string;
-    type: AssetType;
-    content: any;
-    status: AssetStatus;
-    metadata?: AssetMetadata;
-    is_in_db: boolean;
-}
-
-// Agent Types
-export enum AgentType {
-    DATA_COLLECTION = 'data_collection',
-    INFORMATION_RETRIEVAL = 'information_retrieval',
-    ANALYSIS = 'analysis',
-    EMAIL_ACCESS = 'email_access',
-    EMAIL_LABELS = 'email_labels'
-}
-
-export enum AgentStatus {
-    IDLE = 'idle',
-    RUNNING = 'running',
-    COMPLETED = 'completed',
-    ERROR = 'error'
-}
-
-export interface Agent {
-    agent_id: string;
-    type: AgentType;
-    description: string;
-    status: AgentStatus;
-    input_parameters: Record<string, any>;
-    input_asset_ids?: string[];
-    output_asset_ids?: string[];
-    metadata: {
-        lastRunAt?: string;
-        completionTime?: string;
-        lastError?: string;
-        [key: string]: any;
-    };
-    name: string;
-}
-
-// Message Types
-export enum MessageRole {
-    USER = 'user',
-    ASSISTANT = 'assistant'
-}
-
-export enum ActionType {
-    CREATE_ASSET = 'create_asset',
-    START_AGENT = 'start_agent',
-    APPROVE_AGENT = 'approve_agent',
-    REJECT_AGENT = 'reject_agent',
-    LAUNCH_AGENT = 'launch_agent',
-    MODIFY_ASSET = 'modify_asset',
-    NEXT_STEP = 'next_step'
-}
-
-export interface ActionButton {
-    label: string;
-    action: ActionType;
-}
-
-export interface Message {
-    message_id: string;
-    role: MessageRole;
-    content: string;
-    timestamp: Date;
-    metadata?: Record<string, any>;
-}
-
-// Chat Response Types
-export interface ChatResponse {
-    message: Message;
-    sideEffects?: {
-        assets?: Asset[];
-        agents?: Agent[];
-        tool_use_history?: Array<{
-            iteration: number;
-            tool: {
-                name: string;
-                parameters: Record<string, any>;
-            };
-            results: any;
-        }>;
-    };
-}
+export {
+    FileType,
+    DataType,
+    AssetStatus,
+    AgentType,
+    AgentStatus,
+    MessageRole,
+    ActionType
+};
 
 // Main state interface
 export interface FractalBotState {
