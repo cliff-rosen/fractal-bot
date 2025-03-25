@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect } 
 import { FractalBotState, createInitialState, Asset, MessageRole, Message, Agent, AgentType, AgentStatus, AssetStatus, AssetType } from '../types/state';
 import { fractalBotReducer } from '../state/reducer';
 import { botApi } from '@/lib/api/botApi';
+import { assetApi } from '@/lib/api/assetApi';
 import { useToast } from '@/components/ui/use-toast';
 import { agentRegistry, AgentExecutionContext, AgentExecutionResult } from '@/lib/agents';
 import { registerAgentExecutors } from '@/lib/agents';
@@ -13,6 +14,7 @@ interface FractalBotContextType {
     addAsset: (asset: Asset) => void;
     updateAsset: (assetId: string, updates: Partial<Asset>) => void;
     removeAsset: (assetId: string) => void;
+    saveAsset: (assetId: string) => Promise<void>;
     addAgent: (agent: Agent) => void;
     updateAgent: (agentId: string, updates: Partial<Agent>) => void;
     removeAgent: (agentId: string) => void;
@@ -42,7 +44,12 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
     }, []);
 
     const addAsset = useCallback((asset: Asset) => {
-        dispatch({ type: 'ADD_ASSET', payload: { asset } });
+        // Set is_in_db to false for new assets unless it's explicitly set
+        const assetWithDbFlag = {
+            ...asset,
+            is_in_db: asset.is_in_db ?? false
+        };
+        dispatch({ type: 'ADD_ASSET', payload: { asset: assetWithDbFlag } });
     }, []);
 
     const updateAsset = useCallback((assetId: string, updates: Partial<Asset>) => {
@@ -52,6 +59,60 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
     const removeAsset = useCallback((assetId: string) => {
         dispatch({ type: 'REMOVE_ASSET', payload: { assetId } });
     }, []);
+
+    const saveAsset = useCallback(async (assetId: string) => {
+        const asset = state.assets[assetId];
+        if (!asset) {
+            throw new Error(`Asset ${assetId} not found`);
+        }
+
+        try {
+            // Convert the state Asset type to the API Asset type
+            const apiAsset = {
+                asset_id: asset.asset_id,
+                name: asset.name,
+                description: asset.description,
+                type: asset.type,
+                content: asset.content,
+                status: asset.status,
+                metadata: {
+                    ...asset.metadata,
+                    status: asset.status,
+                    is_in_db: asset.is_in_db
+                },
+                is_in_db: asset.is_in_db
+            };
+
+            const savedAsset = await assetApi.saveAsset(apiAsset);
+
+            // Convert back to state Asset type
+            const stateAsset = {
+                asset_id: savedAsset.asset_id,
+                name: savedAsset.name,
+                description: savedAsset.description,
+                type: savedAsset.type,
+                content: savedAsset.content,
+                status: savedAsset.metadata?.status || AssetStatus.PENDING,
+                metadata: {
+                    ...savedAsset.metadata,
+                    status: undefined, // Remove status from metadata since it's a top-level field
+                    creator: savedAsset.metadata?.creator || undefined // Convert null to undefined
+                },
+                is_in_db: true
+            };
+
+            updateAsset(assetId, stateAsset);
+        } catch (error) {
+            console.error('Error saving asset:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to save asset. Please try again.',
+                variant: 'destructive',
+                className: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
+            });
+            throw error;
+        }
+    }, [state.assets, updateAsset, toast]);
 
     const addAgent = useCallback((agent: Agent) => {
         dispatch({ type: 'ADD_AGENT', payload: { agent } });
@@ -98,7 +159,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 type: asset.type,
                 content: asset.content,
                 status: asset.status,
-                metadata: asset.metadata
+                metadata: asset.metadata,
+                is_in_db: asset.is_in_db
             }));
 
             // Send message to backend with history and assets
@@ -113,7 +175,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             const newAgents = sideEffects.agents || [];
 
             // Add new assets
-            newAssets.forEach(asset => addAsset(asset));
+            newAssets.forEach(asset => addAsset({ ...asset, is_in_db: false }));
 
             // Add new agents
             newAgents.forEach(agent => addAgent(agent));
@@ -175,7 +237,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             createdAt: new Date().toISOString(),
                             lastUpdated: new Date().toISOString(),
                             agentId
-                        }
+                        },
+                        is_in_db: false
                     });
                 }
             }
@@ -290,6 +353,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         addAsset,
         updateAsset,
         removeAsset,
+        saveAsset,
         addAgent,
         updateAgent,
         removeAgent,

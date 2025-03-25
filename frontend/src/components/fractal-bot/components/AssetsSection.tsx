@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { DocumentIcon, DocumentTextIcon, DocumentDuplicateIcon, CheckCircleIcon, XCircleIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { DocumentIcon, DocumentTextIcon, DocumentDuplicateIcon, CheckCircleIcon, XCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Asset, AssetStatus, AssetType } from '../types/state';
 import { getAssetIcon } from '../utils/assetUtils.tsx';
+import { AssetUploadButton } from '../AssetUploadButton';
 
 interface AssetsSectionProps {
     assets: Record<string, Asset>;
     onAssetClick?: (asset: Asset) => void;
     onDeleteAsset?: (assetId: string) => void;
-    onUploadAsset?: (file: File) => void;
+    onUploadAsset: (file: File) => Promise<void>;
+    onRetrieveAsset: (asset: Asset) => void;
 }
 
-export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetClick, onDeleteAsset, onUploadAsset }) => {
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
-
+export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetClick, onDeleteAsset, onUploadAsset, onRetrieveAsset }) => {
     const getStatusIcon = (status: AssetStatus) => {
         switch (status) {
             case AssetStatus.READY:
@@ -33,23 +33,11 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
         }
     };
 
-    const handleUploadClick = () => {
-        fileInputRef.current?.click();
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            onUploadAsset?.(file);
-        }
-        // Reset the input value so the same file can be selected again
-        e.target.value = '';
-    };
-
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Assets</h2>
+                <AssetUploadButton onUploadAsset={onUploadAsset} onRetrieveAsset={onRetrieveAsset} />
             </div>
             <div className="p-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -59,7 +47,7 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
                             className="group relative bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 cursor-pointer overflow-hidden"
                             onClick={() => onAssetClick?.(asset)}
                         >
-                            <div className="p-4 space-y-2">
+                            <div className="p-4">
                                 <div className="flex items-start gap-3">
                                     <div className="flex-shrink-0">
                                         {getAssetIcon(asset.type)}
@@ -78,29 +66,18 @@ export const AssetsSection: React.FC<AssetsSectionProps> = ({ assets, onAssetCli
                                                     {asset.status}
                                                 </span>
                                                 <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDeleteClick(e, asset.asset_id);
-                                                    }}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                                                    onClick={(e) => handleDeleteClick(e, asset.asset_id)}
+                                                    className="p-1 text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <TrashIcon className="h-4 w-4" />
                                                 </button>
                                             </div>
                                         </div>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                                            {asset.description || 'No description available'}
-                                        </p>
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            <span className="px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700">
-                                                {asset.type}
-                                            </span>
-                                            {asset.metadata?.createdAt && (
-                                                <span className="px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700">
-                                                    Created: {new Date(asset.metadata.createdAt).toLocaleDateString()}
-                                                </span>
-                                            )}
-                                        </div>
+                                        {asset.description && (
+                                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                                                {asset.description}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>

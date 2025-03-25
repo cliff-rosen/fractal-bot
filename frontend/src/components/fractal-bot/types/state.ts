@@ -23,35 +23,39 @@ export interface ChatMessage {
 
 // Asset Types
 export enum AssetType {
-    TEXT = 'text',
-    DATA = 'data',
-    PDF = 'pdf',
-    SPREADSHEET = 'spreadsheet',
-    IMAGE = 'image',
-    CODE = 'code',
-    DOCUMENT = 'document',
-    EMAIL_LIST = 'email_list',
-    EMAIL_RESULT = 'email_result'
+    FILE = 'FILE',
+    TEXT = 'TEXT',
+    IMAGE = 'IMAGE',
+    AUDIO = 'AUDIO',
+    VIDEO = 'VIDEO',
+    DOCUMENT = 'DOCUMENT',
+    OTHER = 'OTHER',
+    EMAIL_LIST = 'EMAIL_LIST',
+    EMAIL_RESULT = 'EMAIL_RESULT'
 }
 
 export enum AssetStatus {
-    PENDING = 'pending',
-    READY = 'ready',
-    ERROR = 'error'
+    PENDING = 'PENDING',
+    PROCESSING = 'PROCESSING',
+    READY = 'READY',
+    ERROR = 'ERROR'
 }
 
 export interface AssetMetadata {
+    status?: AssetStatus;
+    createdAt?: string;
+    updatedAt?: string;
+    creator?: string | null;
+    tags?: string[];
+    agent_associations?: string[];
+    version?: number;
+    subtype?: string;
+    is_in_db?: boolean;
     name?: string;
     type?: string;
     size?: number;
     lastModified?: number;
-    createdAt?: string;
-    updatedAt?: string;
     lastUpdated?: string;
-    creator?: string;
-    tags?: string[];
-    agent_associations?: string[];
-    version?: number;
     operation?: string;
     searchParams?: {
         folders?: string[];
@@ -72,6 +76,7 @@ export interface Asset {
     content: any;
     status: AssetStatus;
     metadata?: AssetMetadata;
+    is_in_db: boolean;
 }
 
 // Agent Types

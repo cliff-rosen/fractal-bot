@@ -1,8 +1,10 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from models import Asset as AssetModel
+from models import Asset as AssetModel, File
 from schemas.asset import AssetType, AssetStatus, Asset
 from datetime import datetime
+from fastapi import UploadFile
+import uuid
 
 class AssetService:
     def __init__(self, db: Session):
@@ -119,4 +121,69 @@ class AssetService:
 
         self.db.delete(asset_model)
         self.db.commit()
-        return True 
+        return True
+
+    async def upload_file_asset(
+        self,
+        user_id: int,
+        file: UploadFile,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        subtype: Optional[str] = None
+    ) -> Asset:
+        """Upload a file as an asset"""
+        content = await file.read()
+        
+        # Create file record
+        db_file = File(
+            file_id=str(uuid.uuid4()),
+            user_id=user_id,
+            name=file.filename,
+            description=description,
+            content=content,
+            mime_type=file.content_type,
+            size=len(content)
+        )
+        self.db.add(db_file)
+        self.db.commit()
+        self.db.refresh(db_file)
+
+        # Create asset record
+        asset_model = AssetModel(
+            user_id=user_id,
+            name=name or file.filename,
+            description=description,
+            type=AssetType.FILE,
+            subtype=subtype,
+            content={
+                "file_id": db_file.file_id,
+                "mime_type": file.content_type,
+                "size": len(content)
+            }
+        )
+        self.db.add(asset_model)
+        self.db.commit()
+        self.db.refresh(asset_model)
+        return self._model_to_schema(asset_model)
+
+    def download_file_asset(self, asset_id: str, user_id: int) -> Optional[tuple[bytes, str, str]]:
+        """Download a file asset"""
+        asset_model = self.db.query(AssetModel).filter(
+            AssetModel.asset_id == asset_id,
+            AssetModel.user_id == user_id,
+            AssetModel.type == AssetType.FILE
+        ).first()
+        
+        if not asset_model or not asset_model.content or "file_id" not in asset_model.content:
+            return None
+
+        file_id = asset_model.content["file_id"]
+        file_model = self.db.query(File).filter(
+            File.file_id == file_id,
+            File.user_id == user_id
+        ).first()
+        
+        if not file_model:
+            return None
+
+        return file_model.content, file_model.mime_type, file_model.name 
