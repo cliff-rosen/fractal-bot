@@ -4,11 +4,11 @@ from datetime import datetime
 from enum import Enum
 
 class AssetType(str, Enum):
-    TEXT = "text"
-    SPREADSHEET = "spreadsheet"
-    PDF = "pdf"
-    DATA = "data"
-    EMAIL_LIST = "email_list"
+    TEXT = "TEXT"
+    SPREADSHEET = "SPREADSHEET"
+    PDF = "PDF"
+    DATA = "DATA"
+    EMAIL_LIST = "EMAIL_LIST"
 
 class AssetStatus(str, Enum):
     PROPOSED = "proposed"

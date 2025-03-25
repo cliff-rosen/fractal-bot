@@ -13,12 +13,18 @@ class AssetService:
 
     def _model_to_schema(self, model: AssetModel) -> Asset:
         """Convert database model to Pydantic schema"""
+        print("********************************************************************`")
+        content = model.content
+        for key, value in content.items():
+            payload = value
+            print(payload)
+
         return Asset(
             asset_id=model.asset_id,
             name=model.name,
             description=model.description,
             type=model.type,
-            content= model.content,
+            content= payload,
             metadata={
                 "status": AssetStatus.READY,  # Default to READY since we don't store status in DB
                 "createdAt": model.created_at.isoformat(),
