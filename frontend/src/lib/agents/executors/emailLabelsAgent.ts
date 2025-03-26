@@ -8,7 +8,7 @@ export class EmailLabelsAgentExecutor implements AgentExecutor {
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
         try {
-            const { agent } = context;
+            const { agent, outputAssets } = context;
             const { input_parameters } = agent;
             const { operation = 'list_labels', include_system_labels = true } = input_parameters || {};
 
@@ -19,8 +19,14 @@ export class EmailLabelsAgentExecutor implements AgentExecutor {
             });
             const labels = response.data.labels;
 
+            // Use the existing asset ID from the first output asset
+            const outputAsset = outputAssets[0];
+            if (!outputAsset) {
+                throw new Error('No output asset found in context');
+            }
+
             const asset = {
-                asset_id: `email_labels_${Date.now()}`,
+                ...outputAsset,
                 name: 'Email Labels',
                 description: 'List of available email labels',
                 fileType: FileType.JSON,
@@ -28,14 +34,11 @@ export class EmailLabelsAgentExecutor implements AgentExecutor {
                 content: labels,
                 status: AssetStatus.READY,
                 metadata: {
-                    createdAt: new Date().toISOString(),
+                    ...outputAsset.metadata,
                     updatedAt: new Date().toISOString(),
                     version: 1,
                     creator: 'email_labels_agent',
                     tags: ['email', 'labels']
-                },
-                persistence: {
-                    isInDb: false
                 }
             };
 
