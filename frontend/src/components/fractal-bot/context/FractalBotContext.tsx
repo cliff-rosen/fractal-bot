@@ -3,6 +3,7 @@ import { FractalBotState, createInitialState } from '../types/state';
 import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent, AgentType, AgentStatus } from '@/types/agent';
 import { Message, MessageRole } from '@/types/message';
+import { AgentJob, AssetConfig } from '@/types/agent-job';
 import { fractalBotReducer } from '../state/reducer';
 import { botApi } from '@/lib/api/botApi';
 import { assetApi } from '@/lib/api/assetApi';
@@ -28,6 +29,22 @@ interface FractalBotContextType {
 }
 
 const FractalBotContext = createContext<FractalBotContextType | undefined>(undefined);
+
+interface ChatResponseSideEffects {
+    final_response?: string;
+    assets?: Asset[];
+    agent_jobs?: AgentJob[];
+    tool_use_history?: Array<{
+        iteration: number;
+        tool: { name: string; parameters: Record<string, any> };
+        results: any;
+    }>;
+}
+
+interface ChatResponse {
+    message: Message;
+    sideEffects: ChatResponseSideEffects;
+}
 
 export function FractalBotProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(fractalBotReducer, createInitialState());
@@ -147,7 +164,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
         try {
             // Send message to backend with history and assets
-            const response = await botApi.sendMessage(message, state.messages, Object.values(state.assets));
+            const response = await botApi.sendMessage(message, state.messages, Object.values(state.assets)) as ChatResponse;
 
             // Add bot's response to messages
             addMessage(response.message);
@@ -155,7 +172,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             // Handle side effects
             const sideEffects = response.sideEffects || {};
             const newAssets = sideEffects.assets || [];
-            const newAgents = sideEffects.agents || [];
+            const agentJobs = sideEffects.agent_jobs || [];
 
             // Add new assets with default persistence
             newAssets.forEach(asset => addAsset({
@@ -165,8 +182,50 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 }
             }));
 
-            // Add new agents
-            newAgents.forEach(agent => addAgent(agent));
+            // Process agent jobs and create agents
+            agentJobs.forEach((job: AgentJob) => {
+                const agentId = crypto.randomUUID();
+                const outputAssetIds = job.output_asset_configs.map(() => crypto.randomUUID());
+
+                // Create the agent
+                const agent: Agent = {
+                    agent_id: agentId,
+                    type: job.agentType as AgentType,
+                    name: `${job.agentType} Agent`,
+                    description: `Agent to execute ${job.agentType} operation`,
+                    status: AgentStatus.IDLE,
+                    input_parameters: job.input_parameters,
+                    output_asset_ids: outputAssetIds,
+                    metadata: {
+                        createdAt: new Date().toISOString(),
+                        output_asset_configs: job.output_asset_configs
+                    }
+                };
+                addAgent(agent);
+
+                // Create placeholder output assets
+                job.output_asset_configs.forEach((config: AssetConfig, index: number) => {
+                    const assetId = outputAssetIds[index];
+                    addAsset({
+                        asset_id: assetId,
+                        name: config.name,
+                        description: config.description,
+                        fileType: config.fileType,
+                        dataType: config.dataType,
+                        content: null,
+                        status: AssetStatus.PENDING,
+                        metadata: {
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            creator: 'bot',
+                            agentId
+                        },
+                        persistence: {
+                            isInDb: false
+                        }
+                    });
+                });
+            });
 
         } catch (error) {
             console.error('Error processing message:', error);
@@ -187,21 +246,21 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             throw new Error(`Agent ${agentId} not found`);
         }
 
-        // Get the executor for this agent ID
-        const executor = agentRegistry.getExecutor(agentId);
+        // Get the executor for this agent type
+        const executor = agentRegistry.getExecutor(agent.type);
         if (!executor) {
-            throw new Error(`No executor found for agent ${agentId}`);
+            throw new Error(`No executor found for agent type ${agent.type}`);
         }
-
-        // Determine asset types based on agent type
-        const fileType = FileType.JSON;
-        const dataType = agent.type === AgentType.EMAIL_LABELS ? DataType.EMAIL_LIST : DataType.UNSTRUCTURED;
 
         // Ensure all output assets exist and are in PENDING state
         if (agent.output_asset_ids) {
             for (const assetId of agent.output_asset_ids) {
                 console.log('Checking asset:', assetId);
+
                 const existingAsset = state.assets[assetId];
+                const fileType = existingAsset?.fileType || FileType.JSON;
+                const dataType = existingAsset?.dataType || DataType.GENERIC_LIST;
+
                 if (existingAsset) {
                     // Update existing asset to PENDING
                     console.log('Updating existing asset:', assetId);

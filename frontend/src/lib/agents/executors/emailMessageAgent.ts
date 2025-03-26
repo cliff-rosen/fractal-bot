@@ -5,6 +5,8 @@ import { api } from '@/lib/api';
 
 export class EmailMessageAgentExecutor implements AgentExecutor {
     type = AgentType.GET_MESSAGE;
+    dataType = DataType.EMAIL_LIST;
+    fileType = FileType.JSON;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
         try {
@@ -39,8 +41,8 @@ export class EmailMessageAgentExecutor implements AgentExecutor {
                 asset_id: `email_message_${Date.now()}`,
                 name: `Email Message: ${transformedMessage.subject}`,
                 description: 'Single email message',
-                fileType: FileType.JSON,
-                dataType: DataType.EMAIL_LIST,
+                fileType: this.fileType,
+                dataType: this.dataType,
                 content: [transformedMessage], // Keep consistent with email list format
                 status: AssetStatus.READY,
                 metadata: {

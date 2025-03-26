@@ -191,29 +191,24 @@ class BotService:
                         # Process final response
                         logger.info(f'Iteration {iteration + 1}: Received final response')
                         
-                        # Add asset_id to each asset
-                        assets = response_data.get("assets", [])
-                        for asset in assets:
-                            if "asset_id" not in asset:
-                                asset["asset_id"] = str(uuid.uuid4())
+                        # Process agent jobs and direct assets
+                        processed_response = await self._process_ai_response(response)
                         
-                        side_effects = {
-                            "final_response": response_data["response"],
-                            "assets": assets,
-                            "agents": response_data.get("agents", []),
-                            "tool_use_history": tool_use_history
-                        }
-                        
-                        # Create chat response
+                        # Create chat response with processed side effects
                         return ChatResponse(
                             message=Message(
                                 message_id=str(uuid.uuid4()),
                                 role=MessageRole.ASSISTANT,
                                 content=response_data["response"],
                                 timestamp=datetime.now(),
-                                metadata=self._get_message_metadata(side_effects)
+                                metadata=self._get_message_metadata(processed_response)
                             ),
-                            sideEffects=side_effects
+                            sideEffects={
+                                "final_response": response_data["response"],
+                                "agent_jobs": processed_response.get("agent_jobs", []),  # Pass raw agent jobs
+                                "assets": processed_response.get("assets", []),
+                                "tool_use_history": tool_use_history
+                            }
                         )
                     else:
                         raise ValueError(f"Invalid response type: {response_data.get('type')}")
@@ -274,11 +269,29 @@ class BotService:
                     "tool_results": tool_results
                 }
             elif response_data.get("type") == "final_response":
-                # Handle final response with any asset/agent details
+                # Handle final response with any agent job recommendations and direct assets
+                agent_jobs = response_data.get("agent_jobs", [])
+                direct_assets = response_data.get("assets", [])
+                
+                # Process direct assets
+                for asset in direct_assets:
+                    if "asset_id" not in asset:
+                        asset["asset_id"] = str(uuid.uuid4())
+                    if "metadata" not in asset:
+                        asset["metadata"] = {}
+                    if "createdAt" not in asset["metadata"]:
+                        asset["metadata"]["createdAt"] = datetime.now().isoformat()
+                    if "updatedAt" not in asset["metadata"]:
+                        asset["metadata"]["updatedAt"] = datetime.now().isoformat()
+                    if "creator" not in asset["metadata"]:
+                        asset["metadata"]["creator"] = "bot"
+                    if "version" not in asset["metadata"]:
+                        asset["metadata"]["version"] = 1
+                
                 return {
                     "final_response": response_data["response"],
-                    "assets": response_data.get("assets", []),
-                    "agents": response_data.get("agents", [])
+                    "agent_jobs": agent_jobs,  # Pass raw agent jobs
+                    "assets": direct_assets
                 }
             else:
                 raise ValueError(f"Invalid response type: {response_data.get('type')}")
@@ -395,8 +408,8 @@ class BotService:
             metadata["final_response"] = side_effects["final_response"]
             if side_effects.get("assets"):
                 metadata["asset_references"] = [asset["asset_id"] for asset in side_effects["assets"]]
-            if side_effects.get("agents"):
-                metadata["agent_references"] = [agent["agent_id"] for agent in side_effects["agents"]]
+            if side_effects.get("agent_jobs"):
+                metadata["agent_jobs"] = side_effects["agent_jobs"]
             
         # Add tool use history to metadata if it exists
         if side_effects.get("tool_use_history"):
@@ -426,18 +439,35 @@ You have two possible response formats:
     }}
 }}
 
-2. To give a final response (which can include recommending agents and/or supplying assets to the user):
+2. To give a final response (which can include recommending agent jobs and/or directly generating assets):
 {{
     "type": "final_response",
     "response": "Your response text here",
-    "assets": [
+    "agent_jobs": [
         {{
-            "asset_id": "uuid-string",
+            "agentType": "list_labels|get_messages|get_message",  // The agentType MUST be one of these exact values
+            "input_parameters": {{
+                "operation": "list_labels|get_messages|get_message",  // Must match agentType
+                // Operation-specific parameters as shown below
+            }},
+            "output_asset_configs": [
+                {{
+                    "name": "Required name for the output asset",
+                    "description": "Description of what this asset will contain",
+                    "fileType": "txt|pdf|csv|json|png|jpg|jpeg|gif|mp3|mp4|wav|unknown",
+                    "dataType": "unstructured|email_list|generic_list|generic_table"
+                }}
+            ]
+        }}
+    ],
+    "assets": [  // Optional: For directly generated assets like poems, summaries, etc.
+        {{
+            "asset_id": "uuid-string",  // Will be auto-generated if not provided
             "name": "Required name for the asset",
-            "description": "Optional description of the asset",
+            "description": "Description of the asset",
             "fileType": "txt|pdf|csv|json|png|jpg|jpeg|gif|mp3|mp4|wav|unknown",
             "dataType": "unstructured|email_list|generic_list|generic_table",
-            "content": "The actual content",
+            "content": "The actual content of the asset",
             "metadata": {{
                 "createdAt": "timestamp",
                 "updatedAt": "timestamp",
@@ -446,32 +476,6 @@ You have two possible response formats:
                 "agent_associations": ["agent_id1", "agent_id2"],
                 "version": 1
             }}
-        }}
-    ],
-    "agents": [
-        {{
-            "agent_id": "list_labels|get_messages|get_message",  // The agent_id MUST be one of these exact values
-            "type": "list_labels|get_messages|get_message",      // The type MUST match the agent_id
-            "description": "What this agent does",
-            "status": "proposed|in_progress|completed|error",
-            "metadata": {{
-                "createdAt": "timestamp",
-                "lastRunAt": "timestamp",
-                "completionTime": "timestamp",
-                "progress": 0-100,
-                "estimatedCompletion": "timestamp"
-            }},
-            "input_parameters": {{
-                "folders": ["folder1", "folder2"],
-                "date_range": {{
-                    "start": "2024-03-01T00:00:00Z",
-                    "end": "2024-03-23T23:59:59Z"
-                }},
-                "query_terms": ["term1", "term2"],
-                "max_results": 100,
-                "include_attachments": false
-            }},
-            "output_asset_ids": ["asset_id3"]
         }}
     ]
 }}
@@ -482,23 +486,33 @@ IMPORTANT DISTINCTION:
    - Currently available tools:
 {json.dumps(TOOLS, indent=2)}
 
-2. Agents (Recommendable):
+2. Agent Jobs (Recommendable):
    - These are specialized workers you can recommend to the user
-   - You CANNOT directly execute agents
-   - You can only propose them in the "agents" array of a final_response
+   - You CANNOT directly execute agent jobs
+   - You can only propose them in the "agent_jobs" array of a final_response
    - The user must approve and launch them
    
-   Available Agent Types (these are also the agent_ids):
+   Available Agent Types:
    - list_labels: Lists all email folders/labels
-     * Input Parameters:
+     * General inputs:
+       - agentType: list_labels
+       - input_parameters:
        {{
            "operation": "list_labels",
            "include_system_labels": true  // Whether to include system labels like INBOX, SENT, etc.
        }}
-     * Example: "I'll create a list_labels agent to list all your email folders and labels"
+       - output_asset_configs: [{{  // Will contain the list of labels
+           "name": "Email Labels List",
+           "description": "List of all email folders and labels",
+           "fileType": "json",
+           "dataType": "generic_list"
+       }}]
+     * Example: "I'll create a list_labels agent job to list all your email folders and labels"
 
    - get_messages: Retrieves messages from specified folders
-     * Input Parameters:
+     * General inputs:
+       - agentType: get_messages
+       - input_parameters:
        {{
            "operation": "get_messages",
            "folders": ["folder1", "folder2"],  // List of folders/labels to search
@@ -511,41 +525,69 @@ IMPORTANT DISTINCTION:
            "include_attachments": false,         // Whether to include email attachments
            "include_metadata": true              // Whether to include email metadata (headers, etc.)
        }}
-     * Example: "I'll create a get_messages agent to retrieve your recent work emails from the past month"
+       - output_asset_configs: [{{  // Will contain the retrieved messages
+           "name": "Retrieved Emails",
+           "description": "List of emails matching the search criteria",
+           "fileType": "json",
+           "dataType": "email_list"
+       }}]
+     * Example: "I'll create a get_messages agent job to retrieve your recent work emails from the past month"
 
    - get_message: Retrieves a specific message by ID
-     * Input Parameters:
+     * General inputs:
+       - agentType: get_message
+       - input_parameters:
        {{
            "operation": "get_message",
            "message_id": "message_id_here",      // The ID of the specific message
            "include_attachments": true,          // Whether to include email attachments
            "include_metadata": true              // Whether to include email metadata
        }}
-     * Example: "I'll create a get_message agent to retrieve the specific email with ID 'abc123'"
+       - output_asset_configs: [{{  // Will contain the specific message
+           "name": "Retrieved Email",
+           "description": "The specific email message with ID",
+           "fileType": "json",
+           "dataType": "email_list"
+       }}]
+     * Example: "I'll create a get_message agent job to retrieve the specific email with ID 'abc123'"
 
-   Agent Statuses:
-   - proposed: Initial state when agent is first created
-   - in_progress: Agent is currently running
-   - completed: Agent has finished successfully
-   - error: Agent execution failed
+3. Direct Asset Generation:
+   - You can directly generate assets in your final response
+   - Use the "assets" array in your final_response
+   - Include all required fields (name, description, fileType, dataType, content)
+   - Example: Generating a poem
+     {{
+         "type": "final_response",
+         "response": "Here's a poem I wrote for you:",
+         "assets": [
+             {{
+                 "name": "Generated Poem",
+                 "description": "A poem generated by the bot",
+                 "fileType": "txt",
+                 "dataType": "unstructured",
+                 "content": "Roses are red...",
+                 "metadata": {{
+                     "createdAt": "2024-03-23T12:00:00Z",
+                     "creator": "bot",
+                     "tags": ["poem", "generated"]
+                 }}
+             }}
+         ]
+     }}
 
-   CRITICAL: When recommending an agent, you MUST do TWO things:
-   1. Add the agent to the "agents" array in your response with:
-      - agent_id: MUST be one of: list_labels, get_messages, or get_message
-      - type: MUST match the agent_id exactly
-      - A clear description of the specific task
-      - Status set to "idle"
-      - input_parameters object with:
-        * operation: The specific operation to perform
-        * Operation-specific parameters as shown above
-      - output_asset_ids: Array of asset IDs for storing results
-      - Required metadata
-   
-   2. EXPLAIN THE AGENT IN YOUR RESPONSE TEXT. This is MANDATORY. Include:
-      - Which operation it will perform
-      - All relevant parameters and their values
-      - What outputs it will produce
-      - How it will help solve the user's problem
+CRITICAL: When recommending an agent job, you MUST do TWO things:
+1. Add the agent job to the "agent_jobs" array in your response with:
+   - agentType: MUST be one of: list_labels, get_messages, or get_message
+   - input_parameters object with:
+     * operation: The specific operation to perform (must match agentType)
+     * Operation-specific parameters as shown above
+   - output_asset_configs: Array of asset configurations that will be created
+
+2. EXPLAIN THE AGENT JOB IN YOUR RESPONSE TEXT. This is MANDATORY. Include:
+   - Which operation it will perform
+   - All relevant parameters and their values
+   - What outputs it will produce
+   - How it will help solve the user's problem
 
 Asset Types:
 - fileType: The format of the file (txt, pdf, csv, json, png, jpg, jpeg, gif, mp3, mp4, wav, unknown)

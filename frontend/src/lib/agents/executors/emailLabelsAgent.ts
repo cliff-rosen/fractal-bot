@@ -5,6 +5,8 @@ import { api } from '@/lib/api';
 
 export class EmailLabelsAgentExecutor implements AgentExecutor {
     type = AgentType.LIST_LABELS;
+    dataType = DataType.GENERIC_LIST;
+    fileType = FileType.JSON;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
         try {
@@ -17,7 +19,9 @@ export class EmailLabelsAgentExecutor implements AgentExecutor {
                     include_system_labels
                 }
             });
-            const labels = response.data.labels;
+            const labels = response.data.data.labels;
+            console.log('Email Labels Response:', response.data);
+            console.log('Email Labels:', labels);
 
             // Use the existing asset ID from the first output asset
             const outputAsset = outputAssets[0];
@@ -29,8 +33,8 @@ export class EmailLabelsAgentExecutor implements AgentExecutor {
                 ...outputAsset,
                 name: 'Email Labels',
                 description: 'List of available email labels',
-                fileType: FileType.JSON,
-                dataType: DataType.GENERIC_LIST,
+                fileType: this.fileType,
+                dataType: this.dataType,
                 content: labels,
                 status: AssetStatus.READY,
                 metadata: {

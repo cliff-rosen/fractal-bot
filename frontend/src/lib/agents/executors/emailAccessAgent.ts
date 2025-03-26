@@ -5,6 +5,8 @@ import { api } from '@/lib/api';
 
 export class EmailAccessAgentExecutor implements AgentExecutor {
     type = AgentType.GET_MESSAGES;
+    dataType = DataType.EMAIL_LIST;
+    fileType = FileType.JSON;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
         try {
@@ -42,8 +44,8 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
                 asset_id: `email_list_${Date.now()}`,
                 name: `Email Messages (${transformedMessages.length})`,
                 description: 'Collection of email messages from search results',
-                fileType: FileType.JSON,
-                dataType: DataType.EMAIL_LIST,
+                fileType: this.fileType,
+                dataType: this.dataType,
                 content: transformedMessages,
                 status: AssetStatus.READY,
                 metadata: {

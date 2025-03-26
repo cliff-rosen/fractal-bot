@@ -1,20 +1,21 @@
 import { AgentExecutor, AgentRegistry } from './types';
+import { AgentType } from '@/types/agent';
 
 class AgentRegistryImpl implements AgentRegistry {
-    private executors: Map<string, AgentExecutor> = new Map();
+    private executors: Map<AgentType, AgentExecutor> = new Map();
 
-    registerExecutor(executor: AgentExecutor, agentId: string): void {
-        if (this.executors.has(agentId)) {
-            console.warn(`Executor for agent ${agentId} already exists. Overwriting...`);
+    registerExecutor(executor: AgentExecutor): void {
+        if (this.executors.has(executor.type)) {
+            console.warn(`Executor for agent type ${executor.type} already exists. Overwriting...`);
         }
-        this.executors.set(agentId, executor);
+        this.executors.set(executor.type, executor);
     }
 
-    getExecutor(agentId: string): AgentExecutor | undefined {
-        return this.executors.get(agentId);
+    getExecutor(agentType: AgentType): AgentExecutor | undefined {
+        return this.executors.get(agentType);
     }
 
-    listRegisteredAgents(): string[] {
+    listRegisteredTypes(): AgentType[] {
         return Array.from(this.executors.keys());
     }
 }
