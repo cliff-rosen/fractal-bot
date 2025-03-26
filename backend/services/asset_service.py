@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from models import Asset as AssetModel, File
-from schemas.asset import AssetType, AssetStatus, Asset
+from schemas.asset import FileType, Asset, DataType
 from datetime import datetime
 from fastapi import UploadFile
 import uuid
@@ -12,48 +12,60 @@ class AssetService:
         self.db = db
 
     def _model_to_schema(self, model: AssetModel) -> Asset:
-        """Convert database model to Pydantic schema"""
-        print("********************************************************************`")
+        """Convert database model to schema"""
         content = model.content
-        for key, value in content.items():
-            payload = value
-            print(payload)
-
+        # If content is a string and dataType is not unstructured, wrap it
+        if isinstance(content, str) and model.dataType != DataType.UNSTRUCTURED:
+            content = {model.dataType.value: content}
+        
+        # Ensure metadata is a dictionary
+        metadata = model.metadata if isinstance(model.metadata, dict) else {}
+        
         return Asset(
-            asset_id=model.asset_id,
+            asset_id=str(model.asset_id),
             name=model.name,
             description=model.description,
-            type=model.type,
-            content= payload,
-            metadata={
-                "status": AssetStatus.READY,  # Default to READY since we don't store status in DB
-                "createdAt": model.created_at.isoformat(),
-                "updatedAt": model.updated_at.isoformat(),
-                "creator": None,  # We don't store creator in DB
-                "tags": [],  # We don't store tags in DB
-                "agent_associations": [],  # We don't store agent associations in DB
-                "version": 1,  # Default version
-                "subtype": model.subtype  # Store subtype in metadata since it's not in schema
-            }
+            fileType=model.fileType,
+            dataType=model.dataType,
+            content=content,
+            metadata=metadata
         )
 
     def create_asset(
         self,
-        user_id: int,
+        user_id: str,
         name: str,
-        type: AssetType,
         description: Optional[str] = None,
-        subtype: Optional[str] = None,
-        content: Optional[Any] = None
+        fileType: FileType = FileType.TXT,
+        dataType: Optional[DataType] = None,
+        content: Optional[Any] = None,
+        metadata: Optional[Dict[str, Any]] = None
     ) -> Asset:
         """Create a new asset"""
+        # If content is provided and dataType is not unstructured, wrap it
+        if content is not None and dataType and dataType != DataType.UNSTRUCTURED:
+            content = {dataType.value: content}
+
+        # Ensure metadata is a dictionary
+        metadata_dict = metadata if isinstance(metadata, dict) else {}
+        if not metadata_dict:
+            metadata_dict = {
+                "createdAt": datetime.utcnow().isoformat(),
+                "updatedAt": datetime.utcnow().isoformat(),
+                "creator": None,
+                "tags": [],
+                "agent_associations": [],
+                "version": 1
+            }
+
         asset_model = AssetModel(
             user_id=user_id,
             name=name,
             description=description,
-            type=type,
-            subtype=subtype,
-            content=content
+            fileType=fileType,
+            dataType=dataType or DataType.UNSTRUCTURED,
+            content=content,
+            metadata=metadata_dict
         )
         self.db.add(asset_model)
         self.db.commit()
@@ -73,16 +85,16 @@ class AssetService:
     def get_user_assets(
         self,
         user_id: int,
-        type: Optional[AssetType] = None,
-        subtype: Optional[str] = None
+        fileType: Optional[FileType] = None,
+        dataType: Optional[DataType] = None
     ) -> List[Asset]:
-        """Get all assets for a user, optionally filtered by type and subtype"""
+        """Get all assets for a user, optionally filtered by fileType and dataType"""
         query = self.db.query(AssetModel).filter(AssetModel.user_id == user_id)
         
-        if type:
-            query = query.filter(AssetModel.type == type)
-        if subtype:
-            query = query.filter(AssetModel.subtype == subtype)
+        if fileType:
+            query = query.filter(AssetModel.fileType == fileType)
+        if dataType:
+            query = query.filter(AssetModel.dataType == dataType)
             
         return [self._model_to_schema(model) for model in query.all()]
 
@@ -102,15 +114,21 @@ class AssetService:
 
         # Handle special cases for updates
         if 'content' in updates:
+            # If dataType exists and not unstructured, wrap content in object with dataType as key
+            if asset_model.dataType and asset_model.dataType != DataType.UNSTRUCTURED:
+                updates['content'] = {asset_model.dataType: updates['content']}
             asset_model.content = updates['content']
         if 'name' in updates:
             asset_model.name = updates['name']
         if 'description' in updates:
             asset_model.description = updates['description']
-        if 'type' in updates:
-            asset_model.type = updates['type']
-        if 'subtype' in updates:
-            asset_model.subtype = updates['subtype']
+        if 'fileType' in updates:
+            asset_model.fileType = updates['fileType']
+        if 'dataType' in updates:
+            asset_model.dataType = updates['dataType']
+            # If content exists and new dataType is not unstructured, rewrap content
+            if asset_model.content and updates['dataType'] != DataType.UNSTRUCTURED:
+                asset_model.content = {updates['dataType']: asset_model.content}
 
         asset_model.updated_at = datetime.utcnow()
         self.db.commit()
@@ -136,7 +154,7 @@ class AssetService:
         file: UploadFile,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        subtype: Optional[str] = None
+        dataType: Optional[DataType] = None
     ) -> Asset:
         """Upload a file as an asset"""
         content = await file.read()
@@ -160,8 +178,8 @@ class AssetService:
             user_id=user_id,
             name=name or file.filename,
             description=description,
-            type=AssetType.FILE,
-            subtype=subtype,
+            fileType=FileType.FILE,
+            dataType=dataType,
             content={
                 "file_id": db_file.file_id,
                 "mime_type": file.content_type,
@@ -178,7 +196,7 @@ class AssetService:
         asset_model = self.db.query(AssetModel).filter(
             AssetModel.asset_id == asset_id,
             AssetModel.user_id == user_id,
-            AssetModel.type == AssetType.FILE
+            AssetModel.fileType == FileType.FILE
         ).first()
         
         if not asset_model or not asset_model.content or "file_id" not in asset_model.content:

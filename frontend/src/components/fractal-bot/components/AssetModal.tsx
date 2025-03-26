@@ -9,9 +9,10 @@ interface AssetModalProps {
     asset: Asset;
     onClose: () => void;
     onSaveToDb?: (asset: Asset) => Promise<void>;
+    onUpdate?: (asset: Asset) => void;
 }
 
-export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveToDb }) => {
+export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveToDb, onUpdate }) => {
     const getStatusIcon = (status: AssetStatus) => {
         switch (status) {
             case AssetStatus.READY:
@@ -26,8 +27,51 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
     };
 
     const handleSaveToDb = async () => {
-        if (onSaveToDb) {
-            await onSaveToDb(asset);
+        if (!onSaveToDb || !onUpdate) return;
+
+        // Update status to processing before save
+        const processingAsset = {
+            ...asset,
+            status: AssetStatus.PROCESSING,
+            metadata: {
+                ...asset.metadata,
+                updatedAt: new Date().toISOString()
+            }
+        };
+        onUpdate(processingAsset);
+
+        try {
+            // Pass the processing asset to onSaveToDb, not the original
+            await onSaveToDb(processingAsset);
+
+            // Update status to ready after successful save
+            const savedAsset = {
+                ...processingAsset,  // Use processingAsset as base
+                status: AssetStatus.READY,
+                persistence: {
+                    ...processingAsset.persistence,
+                    isInDb: true,
+                    isDirty: false,
+                    lastSyncedAt: new Date().toISOString()
+                },
+                metadata: {
+                    ...processingAsset.metadata,
+                    updatedAt: new Date().toISOString()
+                }
+            };
+            onUpdate(savedAsset);
+        } catch (error) {
+            // Update status to error if save fails
+            const errorAsset = {
+                ...processingAsset,  // Use processingAsset as base
+                status: AssetStatus.ERROR,
+                metadata: {
+                    ...processingAsset.metadata,
+                    updatedAt: new Date().toISOString(),
+                    error: error instanceof Error ? error.message : 'Failed to save asset'
+                }
+            };
+            onUpdate(errorAsset);
         }
     };
 

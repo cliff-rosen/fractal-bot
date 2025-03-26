@@ -1,58 +1,120 @@
-import { Asset, FileType, DataType } from '@/types/asset';
+import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { api } from '@/lib/api';
+
+// Type for creating an asset
+interface CreateAssetParams {
+    name: string;
+    description?: string;
+    fileType: FileType;
+    dataType: DataType;
+    content?: any;
+}
+
+// Type for updating an asset
+interface UpdateAssetParams {
+    name?: string;
+    description?: string;
+    fileType?: FileType;
+    dataType?: DataType;
+    content?: any;
+}
 
 export const assetApi = {
     // Get all assets
     async getAssets(fileType?: FileType, dataType?: DataType): Promise<Asset[]> {
         const response = await api.get('/api/assets', {
             params: {
-                fileType,
-                dataType
+                type: fileType,
+                subtype: dataType
             }
         });
-        return response.data;
+        return response.data.map((asset: any) => ({
+            ...asset,
+            fileType: asset.type,
+            dataType: asset.subtype || DataType.UNSTRUCTURED,
+            persistence: {
+                isInDb: true,
+                dbId: asset.asset_id,
+                isDirty: false,
+                lastSyncedAt: new Date().toISOString(),
+                version: 1
+            }
+        }));
     },
 
     // Get a specific asset
     async getAsset(id: string): Promise<Asset> {
         const response = await api.get(`/api/assets/${id}`);
-        return response.data;
+        return {
+            ...response.data,
+            fileType: response.data.type,
+            dataType: response.data.subtype || DataType.UNSTRUCTURED,
+            persistence: {
+                isInDb: true,
+                dbId: response.data.asset_id,
+                isDirty: false,
+                lastSyncedAt: new Date().toISOString(),
+                version: 1
+            }
+        };
     },
 
     // Create a new asset
-    async createAsset(asset: Omit<Asset, 'asset_id' | 'persistence'>): Promise<Asset> {
-        const assetWithPersistence = {
-            ...asset,
+    async createAsset(params: CreateAssetParams): Promise<Asset> {
+        // Map frontend types to backend format
+        const backendParams = {
+            name: params.name,
+            fileType: params.fileType,
+            dataType: params.dataType,
+            description: params.description,
+            content: params.content
+        };
+
+        const response = await api.post('/api/assets', backendParams);
+
+        // Map backend response to frontend format
+        return {
+            ...response.data,
+            fileType: response.data.type,
+            dataType: response.data.subtype || DataType.UNSTRUCTURED,
             persistence: {
-                isInDb: false
+                isInDb: true,
+                dbId: response.data.asset_id,
+                isDirty: false,
+                lastSyncedAt: new Date().toISOString(),
+                version: 1
             }
         };
-        const response = await api.post('/api/assets', assetWithPersistence);
-        return response.data;
     },
 
     // Update an asset
-    async updateAsset(id: string, updates: Partial<Omit<Asset, 'asset_id' | 'persistence'>>): Promise<Asset> {
-        const response = await api.patch(`/api/assets/${id}`, updates);
-        return response.data;
+    async updateAsset(id: string, updates: UpdateAssetParams): Promise<Asset> {
+        // Map frontend types to backend format
+        const backendUpdates = {
+            name: updates.name,
+            fileType: updates.fileType,
+            dataType: updates.dataType,
+            description: updates.description,
+            content: updates.content
+        };
+
+        const response = await api.put(`/api/assets/${id}`, backendUpdates);
+
+        // Map backend response to frontend format
+        return {
+            ...response.data,
+            fileType: response.data.type,
+            dataType: response.data.subtype || DataType.UNSTRUCTURED,
+            persistence: {
+                isInDb: true,
+                dbId: response.data.asset_id,
+                isDirty: false,
+                lastSyncedAt: new Date().toISOString(),
+                version: 1
+            }
+        };
     },
 
-    // Save an asset (create or update based on is_in_db flag)
-    async saveAsset(asset: Asset): Promise<Asset> {
-        if (asset.is_in_db) {
-            return this.updateAsset(asset.asset_id, asset);
-        } else {
-            return this.createAsset({
-                name: asset.name,
-                type: asset.type,
-                description: asset.description,
-                subtype: asset.metadata?.subtype,
-                content: asset.content
-            });
-        }
-    },
-
-    // Delete an asset
     async deleteAsset(id: string): Promise<void> {
         await api.delete(`/api/assets/${id}`);
     },
@@ -78,7 +140,18 @@ export const assetApi = {
                 'Content-Type': 'multipart/form-data',
             },
         });
-        return { ...response.data, is_in_db: true };
+
+        // Add persistence info to response
+        return {
+            ...response.data,
+            persistence: {
+                isInDb: true,
+                dbId: response.data.asset_id,
+                isDirty: false,
+                lastSyncedAt: new Date().toISOString(),
+                version: 1
+            }
+        };
     },
 
     // Download a file asset

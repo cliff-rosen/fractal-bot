@@ -3,18 +3,61 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from enum import Enum
 
-class AssetType(str, Enum):
-    TEXT = "TEXT"
-    SPREADSHEET = "SPREADSHEET"
-    PDF = "PDF"
-    DATA = "DATA"
-    EMAIL_LIST = "EMAIL_LIST"
+class FileType(str, Enum):
+    """File type representing the file format"""
+    # Common file types
+    PDF = "pdf"
+    DOC = "doc"
+    DOCX = "docx"
+    TXT = "txt"
+    CSV = "csv"
+    JSON = "json"
+    # Image types
+    PNG = "png"
+    JPG = "jpg"
+    JPEG = "jpeg"
+    GIF = "gif"
+    # Audio/Video types
+    MP3 = "mp3"
+    MP4 = "mp4"
+    WAV = "wav"
+    # Other
+    UNKNOWN = "unknown"
 
-class AssetStatus(str, Enum):
-    PROPOSED = "proposed"
-    PENDING = "pending"
-    READY = "ready"
-    ERROR = "error"
+    @classmethod
+    def _missing_(cls, value):
+        if value is None:
+            return None
+        # Try exact match first
+        try:
+            return cls(value)
+        except ValueError:
+            # Try case-insensitive match
+            try:
+                return cls(value.lower())
+            except ValueError:
+                return None
+
+class DataType(str, Enum):
+    """Data type for structured content"""
+    UNSTRUCTURED = "unstructured"
+    EMAIL_LIST = "email_list"
+    GENERIC_LIST = "generic_list"
+    GENERIC_TABLE = "generic_table"
+
+    @classmethod
+    def _missing_(cls, value):
+        if value is None:
+            return None
+        # Try exact match first
+        try:
+            return cls(value)
+        except ValueError:
+            # Try case-insensitive match
+            try:
+                return cls(value.lower())
+            except ValueError:
+                return None
 
 class AgentType(str, Enum):
     DATA_COLLECTION = "data_collection"
@@ -44,17 +87,10 @@ class Asset(BaseModel):
     asset_id: str
     name: str
     description: Optional[str] = None
-    type: AssetType
+    fileType: FileType
+    dataType: Optional[DataType] = None
     content: Optional[Any] = None
-    metadata: Dict[str, Any] = {
-        "status": AssetStatus.PROPOSED,
-        "createdAt": datetime.now(),
-        "updatedAt": datetime.now(),
-        "creator": None,
-        "tags": [],
-        "agent_associations": [],
-        "version": 1
-    }
+    metadata: Dict[str, Any] = {}
 
 class Agent(BaseModel):
     agent_id: str
@@ -69,4 +105,12 @@ class Agent(BaseModel):
         "estimatedCompletion": None
     }
     input_asset_ids: List[str] = []
-    output_asset_ids: List[str] = [] 
+    output_asset_ids: List[str] = []
+
+class CreateAssetRequest(BaseModel):
+    name: str
+    description: Optional[str] = None
+    fileType: FileType
+    dataType: Optional[DataType] = None
+    content: Optional[Any] = None
+    metadata: Optional[Dict[str, Any]] = None 

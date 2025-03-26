@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from database import get_db
 from services.asset_service import AssetService
-from schemas.asset import AssetType, Asset
+from schemas.asset import FileType, Asset, CreateAssetRequest
 from services import auth_service
 from models import User
 
@@ -11,11 +11,7 @@ router = APIRouter(prefix="/api/assets", tags=["assets"])
 
 @router.post("/", response_model=Asset)
 async def create_asset(
-    name: str,
-    type: AssetType,
-    description: Optional[str] = None,
-    subtype: Optional[str] = None,
-    content: Optional[dict] = None,
+    request: CreateAssetRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.validate_token)
 ):
@@ -23,11 +19,11 @@ async def create_asset(
     asset_service = AssetService(db)
     return asset_service.create_asset(
         user_id=current_user.user_id,
-        name=name,
-        type=type,
-        description=description,
-        subtype=subtype,
-        content=content
+        name=request.name,
+        fileType=request.fileType,
+        dataType=request.dataType,
+        description=request.description,
+        content=request.content
     )
 
 @router.get("/{asset_id}", response_model=Asset)
@@ -45,8 +41,8 @@ async def get_asset(
 
 @router.get("/", response_model=List[Asset])
 async def get_user_assets(
-    type: Optional[AssetType] = None,
-    subtype: Optional[str] = None,
+    fileType: Optional[FileType] = None,
+    dataType: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.validate_token)
 ):
@@ -54,8 +50,8 @@ async def get_user_assets(
     asset_service = AssetService(db)
     return asset_service.get_user_assets(
         user_id=current_user.user_id,
-        type=type,
-        subtype=subtype
+        fileType=fileType,
+        dataType=dataType
     )
 
 @router.put("/{asset_id}", response_model=Asset)

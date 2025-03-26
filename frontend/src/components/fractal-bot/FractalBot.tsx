@@ -48,8 +48,8 @@ const FractalBotContent: React.FC = () => {
         }
     };
 
-    const handleUploadAsset = async (file: File): Promise<void> => {
-        console.log('handleUploadAsset', file)
+    const handleUploadAndAddAsset = async (file: File): Promise<void> => {
+        console.log('handleUploadAndAddAsset', file)
 
         let newAsset: Asset | null = null;
         try {
@@ -166,7 +166,7 @@ const FractalBotContent: React.FC = () => {
                     assets={assets}
                     onAssetClick={handleAssetClick}
                     onDeleteAsset={handleDeleteAsset}
-                    onUploadAsset={handleUploadAsset}
+                    onUploadAndAddAsset={handleUploadAndAddAsset}
                     onRetrieveAsset={handleRetrieveAsset}
                 />
             </div>
@@ -184,8 +184,10 @@ const FractalBotContent: React.FC = () => {
                 <AssetModal
                     asset={selectedAsset}
                     onClose={() => setSelectedAsset(null)}
-                    isOpen={!!selectedAsset}
                     onSaveToDb={handleSaveAsset}
+                    onUpdate={(updatedAsset) => {
+                        updateAsset(updatedAsset.asset_id, updatedAsset);
+                    }}
                 />
             )}
         </div>

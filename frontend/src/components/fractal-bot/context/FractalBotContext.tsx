@@ -87,7 +87,6 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 dataType: asset.dataType,
                 description: asset.description,
                 content: asset.content,
-                metadata: asset.metadata
             });
         } else {
             // Create new asset
@@ -97,8 +96,6 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 dataType: asset.dataType,
                 description: asset.description,
                 content: asset.content,
-                metadata: asset.metadata,
-                status: asset.status
             });
         }
 

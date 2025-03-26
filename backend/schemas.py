@@ -72,8 +72,8 @@ from .schemas.prompt import (
     LLMExecuteResponse
 )
 from .schemas.asset import (
-    AssetType,
-    AssetStatus,
+    FileType,
+    DataType,
     AgentType,
     AgentStatus,
     ActionType,
@@ -154,8 +154,8 @@ __all__ = [
     'LLMExecuteResponse',
 
     # Asset schemas
-    'AssetType',
-    'AssetStatus',
+    'FileType',
+    'DataType',
     'AgentType',
     'AgentStatus',
     'ActionType',

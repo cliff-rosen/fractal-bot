@@ -10,7 +10,7 @@ from schemas.email import (
     EmailSearchParams,
     EmailAgentResponse
 )
-from schemas.asset import Asset, AssetType, AssetStatus
+from schemas.asset import Asset, FileType
 from database import get_db
 import logging
 from fastapi.responses import RedirectResponse

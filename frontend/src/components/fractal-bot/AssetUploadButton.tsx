@@ -5,15 +5,15 @@ import { AddAssetModal } from './components/AddAssetModal';
 import { Asset } from './types/state';
 
 interface AssetUploadButtonProps {
-    onUploadAsset: (file: File) => Promise<void>
+    onUploadAndAddAsset: (file: File) => Promise<void>
     onRetrieveAsset: (asset: Asset) => void
 }
 
-export function AssetUploadButton({ onUploadAsset, onRetrieveAsset }: AssetUploadButtonProps) {
+export function AssetUploadButton({ onUploadAndAddAsset, onRetrieveAsset }: AssetUploadButtonProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleAddAsset = async (x: any) => {
-        await onUploadAsset(x);
+    const handleUploadAndAddAsset = async (x: any) => {
+        await onUploadAndAddAsset(x);
     };
 
     return (
@@ -29,7 +29,7 @@ export function AssetUploadButton({ onUploadAsset, onRetrieveAsset }: AssetUploa
             <AddAssetModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                onAddAsset={handleAddAsset}
+                onUploadAndAddAsset={handleUploadAndAddAsset}
                 onRetrieveAsset={onRetrieveAsset}
             />
         </>

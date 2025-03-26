@@ -7,7 +7,7 @@ from sqlalchemy.sql import text
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKeyConstraint
 from uuid import uuid4
 import json
-from schemas.asset import AssetType, AssetStatus
+from schemas.asset import FileType, DataType
 
 Base = declarative_base()
 
@@ -386,9 +386,9 @@ class Asset(Base):
     asset_id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    type = Column(Enum(AssetType), nullable=False)
-    subtype = Column(String(50), nullable=True)  # Additional categorization within type
-    content = Column(JSON, nullable=True)  # Store content as JSON
+    fileType = Column(Enum(FileType), nullable=False)
+    dataType = Column(Enum(DataType), nullable=True)
+    content = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -3,18 +3,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Upload, Database } from 'lucide-react';
-import { Asset, AssetType, AssetStatus } from '../types/state';
+import { Asset, FileType, AssetStatus } from '../types/state';
 import { assetApi } from '@/lib/api/assetApi';
 import { useToast } from '@/components/ui/use-toast';
 
 interface AddAssetModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAddAsset: (file: File) => void;
+    onUploadAndAddAsset: (file: File) => void;
     onRetrieveAsset: (asset: Asset) => void;
 }
 
-export function AddAssetModal({ isOpen, onClose, onAddAsset, onRetrieveAsset }: AddAssetModalProps) {
+export function AddAssetModal({ isOpen, onClose, onUploadAndAddAsset, onRetrieveAsset }: AddAssetModalProps) {
     const [existingAssets, setExistingAssets] = useState<Asset[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
@@ -43,13 +43,13 @@ export function AddAssetModal({ isOpen, onClose, onAddAsset, onRetrieveAsset }: 
         }
     };
 
-    const handleFileUpload = async (files: FileList | null) => {
+    const handleUploadAndAddAsset = async (files: FileList | null) => {
         if (!files || files.length === 0) return;
 
         const file = files[0];
         try {
             console.log('handleFileUpload', file)
-            onAddAsset(file);
+            onUploadAndAddAsset(file);
             onClose();
             toast({
                 title: 'Success',
@@ -105,7 +105,7 @@ export function AddAssetModal({ isOpen, onClose, onAddAsset, onRetrieveAsset }: 
                                     ref={fileInputRef}
                                     type="file"
                                     className="hidden"
-                                    onChange={(e) => handleFileUpload(e.target.files)}
+                                    onChange={(e) => handleUploadAndAddAsset(e.target.files)}
                                     accept="*/*"
                                 />
                                 <Button

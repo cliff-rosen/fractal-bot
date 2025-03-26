@@ -79,8 +79,7 @@ from .prompt import (
 )
 
 from .asset import (
-    AssetType,
-    AssetStatus,
+    FileType,
     AgentType,
     AgentStatus,
     ActionType,
@@ -151,8 +150,7 @@ __all__ = [
     'LLMExecuteResponse',
 
     # Asset schemas
-    'AssetType',
-    'AssetStatus',
+    'FileType',
     'AgentType',
     'AgentStatus',
     'ActionType',

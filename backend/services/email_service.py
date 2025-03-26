@@ -7,7 +7,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from models import GoogleOAuth2Credentials
-from schemas.asset import AssetType, AssetStatus
+from schemas.asset import FileType
 from schemas.email import DateRange
 from config.settings import settings
 import base64
@@ -280,9 +280,9 @@ class EmailService:
                 'asset_id': f"email_list_{datetime.now().timestamp()}",
                 'name': f"Email List - {len(detailed_messages)} messages",
                 'description': f"List of {len(detailed_messages)} emails from Gmail",
-                'type': AssetType.EMAIL_LIST,
+                'type': FileType.EMAIL_LIST,
                 'content': detailed_messages,
-                'status': AssetStatus.READY,
+                'status': "READY",
                 'metadata': {
                     "createdAt": datetime.now().isoformat(),
                     "updatedAt": datetime.now().isoformat(),
