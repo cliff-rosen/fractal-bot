@@ -435,10 +435,10 @@ You have two possible response formats:
             "asset_id": "uuid-string",
             "name": "Required name for the asset",
             "description": "Optional description of the asset",
-            "type": "text|spreadsheet|pdf|data",
+            "fileType": "txt|pdf|csv|json|png|jpg|jpeg|gif|mp3|mp4|wav|unknown",
+            "dataType": "unstructured|email_list|generic_list|generic_table",
             "content": "The actual content",
             "metadata": {{
-                "status": "proposed|pending|ready|error",
                 "createdAt": "timestamp",
                 "updatedAt": "timestamp",
                 "creator": "user/bot/agent",
@@ -450,8 +450,8 @@ You have two possible response formats:
     ],
     "agents": [
         {{
-            "agent_id": "email_labels" | "email_access",
-            "type": "email_access",
+            "agent_id": "list_labels|get_messages|get_message",  // The agent_id MUST be one of these exact values
+            "type": "list_labels|get_messages|get_message",      // The type MUST match the agent_id
             "description": "What this agent does",
             "status": "proposed|in_progress|completed|error",
             "metadata": {{
@@ -488,43 +488,40 @@ IMPORTANT DISTINCTION:
    - You can only propose them in the "agents" array of a final_response
    - The user must approve and launch them
    
-   Available Agent Type:
-   - email_access: Google Mail API Integration Agent
-     * Purpose: Accesses and retrieves email data from Google Mail API
-     * Operations:
-       1. list_labels: Lists all email folders/labels
-          * Input Parameters:
-            {{
-                "operation": "list_labels",
-                "include_system_labels": true  // Whether to include system labels like INBOX, SENT, etc.
-            }}
-          * Example: "I'll create an email access agent to list all your email folders and labels"
+   Available Agent Types (these are also the agent_ids):
+   - list_labels: Lists all email folders/labels
+     * Input Parameters:
+       {{
+           "operation": "list_labels",
+           "include_system_labels": true  // Whether to include system labels like INBOX, SENT, etc.
+       }}
+     * Example: "I'll create a list_labels agent to list all your email folders and labels"
 
-       2. get_messages: Retrieves messages from specified folders
-          * Input Parameters:
-            {{
-                "operation": "get_messages",
-                "folders": ["folder1", "folder2"],  // List of folders/labels to search
-                "date_range": {{
-                    "start": "2024-03-01T00:00:00Z",  // ISO 8601 format
-                    "end": "2024-03-23T23:59:59Z"     // ISO 8601 format
-                }},
-                "query_terms": ["term1", "term2"],    // Optional search terms
-                "max_results": 100,                   // Maximum number of emails to retrieve
-                "include_attachments": false,         // Whether to include email attachments
-                "include_metadata": true              // Whether to include email metadata (headers, etc.)
-            }}
-          * Example: "I'll create an email access agent to retrieve your recent work emails from the past month"
+   - get_messages: Retrieves messages from specified folders
+     * Input Parameters:
+       {{
+           "operation": "get_messages",
+           "folders": ["folder1", "folder2"],  // List of folders/labels to search
+           "date_range": {{
+               "start": "2024-03-01T00:00:00Z",  // ISO 8601 format
+               "end": "2024-03-23T23:59:59Z"     // ISO 8601 format
+           }},
+           "query_terms": ["term1", "term2"],    // Optional search terms
+           "max_results": 100,                   // Maximum number of emails to retrieve
+           "include_attachments": false,         // Whether to include email attachments
+           "include_metadata": true              // Whether to include email metadata (headers, etc.)
+       }}
+     * Example: "I'll create a get_messages agent to retrieve your recent work emails from the past month"
 
-       3. get_message: Retrieves a specific message by ID
-          * Input Parameters:
-            {{
-                "operation": "get_message",
-                "message_id": "message_id_here",      // The ID of the specific message
-                "include_attachments": true,          // Whether to include email attachments
-                "include_metadata": true              // Whether to include email metadata
-            }}
-          * Example: "I'll create an email access agent to retrieve the specific email with ID 'abc123'"
+   - get_message: Retrieves a specific message by ID
+     * Input Parameters:
+       {{
+           "operation": "get_message",
+           "message_id": "message_id_here",      // The ID of the specific message
+           "include_attachments": true,          // Whether to include email attachments
+           "include_metadata": true              // Whether to include email metadata
+       }}
+     * Example: "I'll create a get_message agent to retrieve the specific email with ID 'abc123'"
 
    Agent Statuses:
    - proposed: Initial state when agent is first created
@@ -534,11 +531,12 @@ IMPORTANT DISTINCTION:
 
    CRITICAL: When recommending an agent, you MUST do TWO things:
    1. Add the agent to the "agents" array in your response with:
-      - A unique agent_id (must be either 'email_access' or 'email_labels')
-      - A clear description of the specific email access task
-      - Status set to "proposed"
+      - agent_id: MUST be one of: list_labels, get_messages, or get_message
+      - type: MUST match the agent_id exactly
+      - A clear description of the specific task
+      - Status set to "idle"
       - input_parameters object with:
-        * operation: The specific operation to perform ("list_labels", "get_messages", or "get_message")
+        * operation: The specific operation to perform
         * Operation-specific parameters as shown above
       - output_asset_ids: Array of asset IDs for storing results
       - Required metadata
@@ -550,16 +548,8 @@ IMPORTANT DISTINCTION:
       - How it will help solve the user's problem
 
 Asset Types:
-- text: Plain text content
-- spreadsheet: Tabular data
-- pdf: PDF documents
-- data: Structured data in any format
-
-Asset Statuses:
-- proposed: Initial state when asset is first created
-- pending: Asset is being processed
-- ready: Asset is complete and available
-- error: Asset processing failed"""
+- fileType: The format of the file (txt, pdf, csv, json, png, jpg, jpeg, gif, mp3, mp4, wav, unknown)
+- dataType: The type of structured data (unstructured, email_list, generic_list, generic_table)"""
 
         if assets:
             # Add current assets to the system prompt
@@ -569,8 +559,8 @@ Asset Statuses:
 Asset ID: {asset.asset_id}
 Name: {asset.name}
 Description: {asset.description or 'No description provided'}
-Type: {asset.type}
-Status: {asset.metadata.get('status', 'unknown')}
+File Type: {asset.fileType}
+Data Type: {asset.dataType}
 Content: {asset.content}
 Metadata: {json.dumps(asset.metadata, indent=2)}
 """

@@ -3,55 +3,52 @@ import { Agent, AgentType } from '@/types/agent';
 import { AgentExecutor, AgentExecutionContext, AgentExecutionResult } from '../types';
 import { api } from '@/lib/api';
 
-export class EmailAccessAgentExecutor implements AgentExecutor {
-    type = AgentType.GET_MESSAGES;
+export class EmailMessageAgentExecutor implements AgentExecutor {
+    type = AgentType.GET_MESSAGE;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
         try {
             const { agent } = context;
             const { input_parameters } = agent;
             const {
-                operation = 'get_messages',
-                folders,
-                query_terms,
-                max_results = 100,
+                operation = 'get_message',
+                message_id,
                 include_attachments = false,
                 include_metadata = true
             } = input_parameters;
 
-            const response = await api.post('/api/email/messages', {
-                folders,
-                query_terms,
-                max_results,
-                include_attachments,
-                include_metadata
+            const response = await api.get(`/api/email/messages/${message_id}`, {
+                params: {
+                    include_attachments,
+                    include_metadata
+                }
             });
 
-            const messages = response.data;
-            const transformedMessages = messages.map((msg: any) => ({
-                id: msg.id,
-                subject: msg.subject,
-                from: msg.from,
-                to: msg.to,
-                date: msg.date,
-                body: msg.body,
-                attachments: msg.attachments || []
-            }));
+            const message = response.data;
+            const transformedMessage = {
+                id: message.id,
+                subject: message.subject,
+                from: message.from,
+                to: message.to,
+                date: message.date,
+                body: message.body,
+                attachments: message.attachments || []
+            };
 
             const asset = {
-                asset_id: `email_list_${Date.now()}`,
-                name: `Email Messages (${transformedMessages.length})`,
-                description: 'Collection of email messages from search results',
+                asset_id: `email_message_${Date.now()}`,
+                name: `Email Message: ${transformedMessage.subject}`,
+                description: 'Single email message',
                 fileType: FileType.JSON,
                 dataType: DataType.EMAIL_LIST,
-                content: transformedMessages,
+                content: [transformedMessage], // Keep consistent with email list format
                 status: AssetStatus.READY,
                 metadata: {
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     version: 1,
-                    creator: 'email_access_agent',
-                    tags: ['email', 'search_results']
+                    creator: 'email_message_agent',
+                    tags: ['email', 'single_message']
                 },
                 persistence: {
                     isInDb: false
@@ -63,17 +60,18 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
                 outputAssets: [asset]
             };
         } catch (error) {
-            console.error('Error in EmailAccessAgentExecutor:', error);
+            console.error('Error in EmailMessageAgentExecutor:', error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Unknown error in EmailAccessAgentExecutor'
+                error: error instanceof Error ? error.message : 'Unknown error in EmailMessageAgentExecutor'
             };
         }
     }
 
     validateInputs(context: AgentExecutionContext): boolean {
         const { agent } = context;
-        return !!agent.input_parameters;
+        const { input_parameters } = agent;
+        return !!input_parameters && !!input_parameters.message_id;
     }
 
     getRequiredInputTypes(): string[] {

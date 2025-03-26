@@ -2,8 +2,9 @@ export enum AgentType {
     DATA_COLLECTION = 'data_collection',
     INFORMATION_RETRIEVAL = 'information_retrieval',
     ANALYSIS = 'analysis',
-    EMAIL_ACCESS = 'email_access',
-    EMAIL_LABELS = 'email_labels'
+    LIST_LABELS = 'list_labels',
+    GET_MESSAGES = 'get_messages',
+    GET_MESSAGE = 'get_message'
 }
 
 export enum AgentStatus {

@@ -4,11 +4,19 @@ import { AgentExecutor, AgentExecutionContext, AgentExecutionResult } from '../t
 import { api } from '@/lib/api';
 
 export class EmailLabelsAgentExecutor implements AgentExecutor {
-    type = AgentType.EMAIL_LABELS;
+    type = AgentType.LIST_LABELS;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
         try {
-            const response = await api.get('/api/email/labels');
+            const { agent } = context;
+            const { input_parameters } = agent;
+            const { operation = 'list_labels', include_system_labels = true } = input_parameters || {};
+
+            const response = await api.get('/api/email/labels', {
+                params: {
+                    include_system_labels
+                }
+            });
             const labels = response.data.labels;
 
             const asset = {
@@ -45,7 +53,7 @@ export class EmailLabelsAgentExecutor implements AgentExecutor {
     }
 
     validateInputs(context: AgentExecutionContext): boolean {
-        return true; // No inputs required for this agent
+        return true; // No required inputs for this agent
     }
 
     getRequiredInputTypes(): string[] {

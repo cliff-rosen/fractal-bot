@@ -1,4 +1,4 @@
-import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
+import { Asset, FileType, DataType } from '@/types/asset';
 import { api } from '@/lib/api';
 
 // Type for creating an asset
