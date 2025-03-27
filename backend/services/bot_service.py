@@ -515,7 +515,7 @@ IMPORTANT DISTINCTION:
        - input_parameters:
        {{
            "operation": "get_messages",
-           "folders": ["folder1", "folder2"],  // List of folders/labels to search
+           "folders": ["folder1", "folder2"],  // List of folder o label IDs to search (must be IDs and not names)
            "date_range": {{
                "start": "2024-03-01T00:00:00Z",  // ISO 8601 format
                "end": "2024-03-23T23:59:59Z"     // ISO 8601 format

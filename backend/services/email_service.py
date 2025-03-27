@@ -217,10 +217,10 @@ class EmailService:
                
                 # Get body
                 if 'parts' in payload:
-                    logger.debug(f"Message {message_id} has multiple parts")
+                    logger.info(f"Message {message_id} has multiple parts")
                     body = self.get_body_from_parts(payload['parts'])
                 elif 'body' in payload and 'data' in payload['body']:
-                    logger.debug(f"Message {message_id} has single part")
+                    logger.info(f"Message {message_id} has single part")
                     # Convert raw body to plain text
                     raw_body = base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8', errors='replace')
                     body = {'plain': raw_body, 'html': None}
