@@ -1,4 +1,5 @@
-import { FileType, DataType } from '@/types/asset';
+import { FileType, DataType, Asset } from '@/types/asset';
+import { EmailMessage } from '@/types/email';
 import { DocumentIcon, DocumentTextIcon, EnvelopeIcon, ListBulletIcon, TableCellsIcon, PhotoIcon, MusicalNoteIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 
 export const getAssetColor = (fileType: FileType, dataType: DataType) => {
@@ -101,3 +102,16 @@ export const getDataType = (file: File): DataType => {
     return DataType.UNSTRUCTURED;
 };
 
+// return the content of an asset converting it if necessary
+export const getAssetContent = (asset: Asset) => {
+
+    // if object with property that matches asset dataType return it
+    if (Object.keys(asset.content).includes(asset.dataType)) {
+        console.log('getAssetContent: dataType: ', asset.dataType);
+        console.log('getAssetContent: asset.content[asset.dataType]: ', asset.content[asset.dataType]);
+        return asset.content[asset.dataType];
+    }
+
+    return asset.content;
+
+};

@@ -3,6 +3,7 @@ import { Asset } from './types/state';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import DOMPurify from 'dompurify';
 import { EmailMessage } from '@/types/email';
+import { getAssetContent } from './utils/assetUtils';
 
 interface EmailListViewProps {
     asset: Asset;
@@ -23,15 +24,7 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
     // cleans emails before rendering
     useEffect(() => {
         console.log('EmailListView: Emails:', emails);
-        const messages = asset.content as EmailMessage[] || [];
-        // if not an array check for object with messages key
-        if (!Array.isArray(messages)) {
-            if (messages['email_list']) {
-                setEmails(messages['email_list']);
-            }
-        } else {
-            setEmails(messages);
-        }
+        setEmails(getAssetContent(asset));
     }, [emails]);
 
     const formatDate = (dateString: string) => {
