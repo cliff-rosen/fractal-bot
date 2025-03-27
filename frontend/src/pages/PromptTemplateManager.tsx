@@ -21,6 +21,7 @@ const PromptTemplateManager: React.FC = () => {
     // Redirect to template page if there's a selected template
     useEffect(() => {
         if (selectedTemplate) {
+            console.log('selectedTemplate: ', selectedTemplate);
             navigate(`/prompt/${selectedTemplate.template_id}`);
         }
     }, [selectedTemplate, navigate]);

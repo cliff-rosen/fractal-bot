@@ -17,8 +17,7 @@ const defaultOutputSchema: Schema = {
 };
 
 const PromptTemplate: React.FC = () => {
-    const { templateId } = useParams();
-    const id = templateId
+    const { id } = useParams();
     const navigate = useNavigate();
 
     const {
@@ -50,28 +49,27 @@ const PromptTemplate: React.FC = () => {
 
     // Initialize template based on URL parameter
     useEffect(() => {
-        console.log('Template ID:', templateId);
-        console.log('ID:', id);
+        console.log('Template ID:', id);
 
-        if (!templateId && !id) {
+        if (!id) {
             console.log('No template ID, navigating to id');
             navigate(`/prompts/${id}`);
             return;
         } else {
-            console.log('No template ID or id:', templateId);
+            console.log('No template ID or id:', id);
         }
 
-        if (!templateId) {
+        if (!id) {
             console.log('No template ID, navigating to /prompts');
             navigate('/prompts');
             return;
         }
 
         // Only load if we don't have this template or it's a different one
-        if (!template || (template?.template_id !== templateId)) {
+        if (!template || (template?.template_id !== id)) {
             const loadTemplate = async () => {
                 try {
-                    if (templateId === 'new') {
+                    if (id === 'new') {
                         // Initialize new template with default values
                         setSelectedTemplate(null);
                         setName('');
@@ -82,7 +80,7 @@ const PromptTemplate: React.FC = () => {
                         setOutputSchema(defaultOutputSchema);
                         setTestParameters({});
                     } else {
-                        const foundTemplate = templates.find(t => t.template_id === templateId);
+                        const foundTemplate = templates.find(t => t.template_id === id);
                         if (foundTemplate) {
                             setSelectedTemplate(foundTemplate);
                             setName(foundTemplate.name);
@@ -109,7 +107,7 @@ const PromptTemplate: React.FC = () => {
             };
             loadTemplate();
         }
-    }, [templateId, id, navigate, templates, template, setSelectedTemplate]);
+    }, [id, navigate, templates, template, setSelectedTemplate]);
 
     // Update test parameters when template text changes
     useEffect(() => {
@@ -263,7 +261,7 @@ const PromptTemplate: React.FC = () => {
         }
     };
 
-    if (!templateId) return null;
+    if (!id) return null;
 
     return (
         <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
