@@ -7,6 +7,7 @@ import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent } from '@/types/agent';
 import { FractalBotProvider, useFractalBot } from './context/FractalBotContext';
 import { useToast } from '@/components/ui/use-toast';
+import { getFileType, getDataType } from './utils/assetUtils';
 
 const FractalBotContent: React.FC = () => {
     const [inputMessage, setInputMessage] = useState('');
@@ -52,6 +53,7 @@ const FractalBotContent: React.FC = () => {
         console.log('handleUploadAndAddAsset', file)
 
         let newAsset: Asset | null = null;
+
         try {
             // Create a new asset from the file
             const now = new Date().toISOString();
@@ -59,8 +61,8 @@ const FractalBotContent: React.FC = () => {
                 asset_id: `temp_${Date.now()}`,
                 name: file.name,
                 description: `Uploaded file: ${file.name}`,
-                fileType: FileType.TXT,
-                dataType: DataType.UNSTRUCTURED,
+                fileType: getFileType(file),
+                dataType: getDataType(file),
                 content: null, // Will be set by processFile
                 status: AssetStatus.PENDING,
                 metadata: {

@@ -76,4 +76,28 @@ export const getAssetIcon = (fileType: FileType, dataType: DataType) => {
         default:
             return <DocumentIcon className={`h-6 w-6 ${getAssetColor(fileType, dataType)}`} />;
     }
-}; 
+};
+
+export const getFileType = (file: File): FileType => {
+    const lowerCaseName = file.name.toLowerCase();
+    if (lowerCaseName.endsWith('.pdf')) return FileType.PDF;
+    if (lowerCaseName.endsWith('.txt')) return FileType.TXT;
+    if (lowerCaseName.endsWith('.csv')) return FileType.CSV;
+    if (lowerCaseName.endsWith('.json')) return FileType.JSON;
+    if (lowerCaseName.endsWith('.docx')) return FileType.DOCX;
+    if (lowerCaseName.endsWith('.doc')) return FileType.DOC;
+    if (lowerCaseName.endsWith('.mp3')) return FileType.MP3;
+    if (lowerCaseName.endsWith('.mp4')) return FileType.MP4;
+    if (lowerCaseName.endsWith('.wav')) return FileType.WAV;
+    if (lowerCaseName.endsWith('.png')) return FileType.PNG;
+    if (lowerCaseName.endsWith('.jpg')) return FileType.JPG;
+    if (lowerCaseName.endsWith('.jpeg')) return FileType.JPEG;
+    if (lowerCaseName.endsWith('.gif')) return FileType.GIF;
+
+    return FileType.UNKNOWN;
+};
+
+export const getDataType = (file: File): DataType => {
+    return DataType.UNSTRUCTURED;
+};
+
