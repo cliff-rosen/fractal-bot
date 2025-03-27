@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Asset } from './types/state';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import DOMPurify from 'dompurify';
@@ -9,16 +9,30 @@ interface EmailListViewProps {
 }
 
 export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
+    const [emails, setEmails] = useState<EmailMessage[]>([]);
     const [selectedEmail, setSelectedEmail] = useState<EmailMessage | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
     const emailsPerPage = 10;
 
-    const emails = asset.content as EmailMessage[] || [];
     const totalPages = Math.ceil(emails.length / emailsPerPage);
     const currentEmails = emails.slice(
         currentPage * emailsPerPage,
         (currentPage + 1) * emailsPerPage
     );
+
+    // cleans emails before rendering
+    useEffect(() => {
+        console.log('EmailListView: Emails:', emails);
+        const messages = asset.content as EmailMessage[] || [];
+        // if not an array check for object with messages key
+        if (!Array.isArray(messages)) {
+            if (messages['email_list']) {
+                setEmails(messages['email_list']);
+            }
+        } else {
+            setEmails(messages);
+        }
+    }, [emails]);
 
     const formatDate = (dateString: string) => {
         try {
@@ -54,6 +68,12 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
     const handleCloseEmail = () => {
         setSelectedEmail(null);
     };
+
+
+    // early exit if emails not array
+    if (!Array.isArray(emails)) {
+        return <div>Processing emails...</div>;
+    }
 
     return (
         <div className="flex h-full bg-white dark:bg-gray-900">

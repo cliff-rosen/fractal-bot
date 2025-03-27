@@ -11,6 +11,8 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
         try {
             const { agent } = context;
+            const targetAssetId = agent.output_asset_ids?.[0] || `email_list_${Date.now()}`;
+
             console.log('EmailAccessAgentExecutor: Starting execution with agent:', {
                 agentId: agent.agent_id,
                 type: agent.type,
@@ -111,7 +113,7 @@ export class EmailAccessAgentExecutor implements AgentExecutor {
             });
 
             const asset = {
-                asset_id: `email_list_${Date.now()}`,
+                asset_id: targetAssetId,
                 name: `Email Messages (${transformedMessages.length})`,
                 description: 'Collection of email messages from search results',
                 fileType: this.fileType,
