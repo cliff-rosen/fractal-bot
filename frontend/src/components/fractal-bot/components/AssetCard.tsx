@@ -38,23 +38,23 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onClick, onDelete }
 
     return (
         <div
-            className="group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer w-full min-h-[80px]"
+            className="group relative bg-white dark:bg-gray-700/50 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 cursor-pointer w-full min-h-[80px]"
             onClick={() => onClick?.(asset)}
         >
             <div className="p-3">
                 <div className="flex items-center w-full gap-3">
                     {/* Left: Icon */}
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-300">
                         {getAssetIcon(asset.fileType, asset.dataType)}
                     </div>
 
                     {/* Middle: Name and Description */}
                     <div className="flex-1 min-w-0 overflow-hidden">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                             {asset.name || 'Unnamed Asset'}
                         </h3>
                         {asset.description && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            <p className="text-xs text-gray-500 dark:text-gray-300 truncate">
                                 {asset.description}
                             </p>
                         )}
@@ -79,7 +79,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onClick, onDelete }
                         {onDelete && (
                             <button
                                 onClick={handleDeleteClick}
-                                className="p-1 text-gray-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="p-1 text-gray-400 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                                 <TrashIcon className="h-4 w-4" />
                             </button>

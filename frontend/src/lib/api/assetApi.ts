@@ -120,7 +120,7 @@ export const assetApi = {
     },
 
     // Upload a file as an asset
-    async uploadFileAsset(
+    async zzDELETEuploadFileAsset(
         file: File,
         options?: {
             name?: string;
@@ -155,7 +155,7 @@ export const assetApi = {
     },
 
     // Download a file asset
-    async downloadFileAsset(assetId: string): Promise<Blob> {
+    async zzDELETEdownloadFileAsset(assetId: string): Promise<Blob> {
         const response = await api.get(`/api/assets/${assetId}/download`, {
             responseType: 'blob'
         });

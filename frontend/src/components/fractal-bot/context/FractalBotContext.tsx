@@ -116,14 +116,23 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             });
         }
 
-        // Update with saved asset data
-        updateAsset(assetId, {
+        const updatedAsset = {
             ...savedAsset,
             persistence: {
                 ...savedAsset.persistence,
-                isInDb: true
+                isInDb: true,
+                isDirty: false,
+                lastSyncedAt: new Date().toISOString()
+            },
+            metadata: {
+                ...savedAsset.metadata,
+                updatedAt: new Date().toISOString()
             }
-        });
+        };
+        console.log('updatedAsset', updatedAsset);
+
+        // Update with saved asset data
+        updateAsset(assetId, updatedAsset);
     }, [state.assets, updateAsset]);
 
     const addAgent = useCallback((agent: Agent) => {

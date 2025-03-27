@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon, DocumentIcon, CheckCircleIcon, DocumentDuplicateIcon, XCircleIcon, CloudIcon, ServerIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { FileType, DataType, Asset, AssetStatus } from '@/types/asset';
@@ -13,6 +13,10 @@ interface AssetModalProps {
 }
 
 export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveToDb, onUpdate }) => {
+    console.log('AssetModal', asset);
+
+    const [isSaving, setIsSaving] = useState(false);
+
     const getStatusIcon = (status: AssetStatus) => {
         switch (status) {
             case AssetStatus.READY:
@@ -28,8 +32,9 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
 
     const handleSaveToDb = async () => {
         if (!onSaveToDb || !onUpdate) return;
+        setIsSaving(true);
 
-        // Update status to processing before save
+        // Create processing asset
         const processingAsset = {
             ...asset,
             status: AssetStatus.PROCESSING,
@@ -41,12 +46,12 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
         onUpdate(processingAsset);
 
         try {
-            // Pass the processing asset to onSaveToDb, not the original
+            // Pass the processing asset to onSaveToDb
             await onSaveToDb(processingAsset);
 
             // Update status to ready after successful save
             const savedAsset = {
-                ...processingAsset,  // Use processingAsset as base
+                ...processingAsset,
                 status: AssetStatus.READY,
                 persistence: {
                     ...processingAsset.persistence,
@@ -63,7 +68,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
         } catch (error) {
             // Update status to error if save fails
             const errorAsset = {
-                ...processingAsset,  // Use processingAsset as base
+                ...processingAsset,
                 status: AssetStatus.ERROR,
                 metadata: {
                     ...processingAsset.metadata,
@@ -72,6 +77,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
                 }
             };
             onUpdate(errorAsset);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -81,10 +88,10 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
             return <EmailListView asset={asset} />;
         }
 
-        // Default JSON view for other types
+        // Default view for other types
         return (
-            <pre className="whitespace-pre-wrap overflow-auto max-h-[60vh] p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                {JSON.stringify(asset.content, null, 2)}
+            <pre className="h-full overflow-auto p-4 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 rounded-lg font-mono text-sm whitespace-pre">
+                {typeof asset.content === 'string' ? asset.content : JSON.stringify(asset.content, null, 2)}
             </pre>
         );
     };
@@ -95,20 +102,20 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
     return (
         <Dialog open={true} onClose={onClose} className="relative z-50">
             <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-            <div className="fixed inset-0 flex items-center justify-center p-4">
-                <Dialog.Panel className="mx-auto max-w-3xl w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+            <div className="fixed inset-0 flex items-center justify-center p-8">
+                <Dialog.Panel className="h-[calc(100vh-4rem)] max-w-4xl w-full bg-white dark:bg-gray-900 rounded-xl shadow-lg flex flex-col">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                         <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+                            <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-300">
                                 {getAssetIcon(asset.fileType, asset.dataType)}
                             </div>
                             <div>
-                                <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-white">
+                                <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                     {asset.name}
                                 </Dialog.Title>
                                 {asset.description && (
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500 dark:text-gray-300">
                                         {asset.description}
                                     </p>
                                 )}
@@ -116,16 +123,16 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                            className="text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300"
                         >
                             <XMarkIcon className="h-6 w-6" />
                         </button>
                     </div>
 
                     {/* Content */}
-                    <div className="p-4">
+                    <div className="flex-1 p-4 overflow-hidden flex flex-col">
                         {/* Metadata */}
-                        <div className="mb-4 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="mb-4 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-300 flex-shrink-0">
                             <div className="flex items-center gap-1">
                                 {getStatusIcon(asset.status)}
                                 <span>{asset.status}</span>
@@ -148,10 +155,14 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
                                 {showSaveButton && onSaveToDb && (
                                     <button
                                         onClick={handleSaveToDb}
-                                        className="ml-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                                        disabled={isSaving}
+                                        className={`ml-2 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md transition-colors ${isSaving
+                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 cursor-not-allowed'
+                                            : 'text-blue-700 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30'
+                                            }`}
                                     >
-                                        <ArrowDownTrayIcon className="h-4 w-4" />
-                                        Save to DB
+                                        <ArrowDownTrayIcon className={`h-4 w-4 ${isSaving ? 'animate-bounce' : ''}`} />
+                                        {isSaving ? 'Saving...' : 'Save to DB'}
                                     </button>
                                 )}
                             </div>
@@ -164,7 +175,9 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
                         </div>
 
                         {/* Asset Content */}
-                        {renderContent()}
+                        <div className="flex-1 overflow-hidden">
+                            {renderContent()}
+                        </div>
                     </div>
                 </Dialog.Panel>
             </div>

@@ -128,6 +128,7 @@ const FractalBotContent: React.FC = () => {
     };
 
     const handleSaveAsset = async (asset: Asset) => {
+        console.log('handleSaveAsset', asset)
         try {
             await saveAsset(asset.asset_id);
             toast({
@@ -187,6 +188,7 @@ const FractalBotContent: React.FC = () => {
                     onSaveToDb={handleSaveAsset}
                     onUpdate={(updatedAsset) => {
                         updateAsset(updatedAsset.asset_id, updatedAsset);
+                        setSelectedAsset(updatedAsset);
                     }}
                 />
             )}
