@@ -1,6 +1,6 @@
 import React from 'react';
 import { Asset } from '../types/state';
-import { AssetUploadButton } from '../AssetUploadButton';
+import { AssetUploadButton } from './AssetUploadButton';
 import { AssetCard } from './AssetCard';
 
 interface AssetsSectionProps {

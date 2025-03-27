@@ -5,7 +5,7 @@ import { AgentsSection } from './components/AgentsSection';
 import { AssetModal } from './components/AssetModal';
 import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent } from '@/types/agent';
-import { FractalBotProvider, useFractalBot } from './context/FractalBotContext';
+import { FractalBotProvider, useFractalBot } from '@/context/FractalBotContext';
 import { useToast } from '@/components/ui/use-toast';
 import { getFileType, getDataType } from './utils/assetUtils';
 

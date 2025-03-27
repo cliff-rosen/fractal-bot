@@ -3,7 +3,7 @@ import { Dialog } from '@headlessui/react';
 import { XMarkIcon, DocumentIcon, CheckCircleIcon, DocumentDuplicateIcon, XCircleIcon, CloudIcon, ServerIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { FileType, DataType, Asset, AssetStatus } from '@/types/asset';
 import { getAssetIcon } from '../utils/assetUtils';
-import { EmailListView } from '../EmailListView';
+import { EmailListView } from './EmailListView';
 
 interface AssetModalProps {
     asset: Asset;

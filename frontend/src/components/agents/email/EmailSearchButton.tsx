@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
-import { useFractalBot } from '@/components/fractal-bot/context/FractalBotContext';
+import { useFractalBot } from '@/context/FractalBotContext';
 
 interface EmailSearchButtonProps {
     agentId: string;

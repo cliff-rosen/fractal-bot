@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useFractalBot } from '@/components/fractal-bot/context/FractalBotContext';
+import { useFractalBot } from '@/context/FractalBotContext';
 import { Button } from '@/components/ui/button';
 import { Pencil, Save } from 'lucide-react';
 

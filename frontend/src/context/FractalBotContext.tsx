@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { FractalBotState, createInitialState } from '../types/state';
+import { FractalBotState, createInitialState } from '@/components/fractal-bot/types/state';
 import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent, AgentType, AgentStatus } from '@/types/agent';
 import { Message, MessageRole } from '@/types/message';
 import { AgentJob, AssetConfig } from '@/types/agent-job';
-import { fractalBotReducer } from '../state/reducer';
+import { fractalBotReducer } from '@/components/fractal-bot/state/reducer';
 import { botApi } from '@/lib/api/botApi';
 import { assetApi } from '@/lib/api/assetApi';
 import { useToast } from '@/components/ui/use-toast';
@@ -249,163 +249,63 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         }
     }, [state.messages, state.assets, addMessage, addAsset, addAgent, updateMetadata, toast]);
 
-    const executeAgent = useCallback(async (agentId: string) => {
+    const executeAgent = useCallback(async (agentId: string): Promise<AgentExecutionResult> => {
         const agent = state.agents[agentId];
         if (!agent) {
             throw new Error(`Agent ${agentId} not found`);
-        }
-
-        // Get the executor for this agent type
-        const executor = agentRegistry.getExecutor(agent.type);
-        if (!executor) {
-            throw new Error(`No executor found for agent type ${agent.type}`);
-        }
-
-        // Ensure all output assets exist and are in PENDING state
-        if (agent.output_asset_ids) {
-            for (const assetId of agent.output_asset_ids) {
-                console.log('Checking asset:', assetId);
-
-                const existingAsset = state.assets[assetId];
-                const fileType = existingAsset?.fileType || FileType.JSON;
-                const dataType = existingAsset?.dataType || DataType.GENERIC_LIST;
-
-                if (existingAsset) {
-                    // Update existing asset to PENDING
-                    console.log('Updating existing asset:', assetId);
-                    updateAsset(assetId, {
-                        status: AssetStatus.PENDING,
-                        metadata: {
-                            ...existingAsset.metadata,
-                            updatedAt: new Date().toISOString()
-                        }
-                    });
-                } else {
-                    console.log('Creating new asset:', assetId);
-                    const now = new Date().toISOString();
-                    // Create new asset with the exact ID
-                    addAsset({
-                        asset_id: assetId,
-                        name: `Output from ${agent.name}`,
-                        description: `Output asset from agent ${agent.name}`,
-                        fileType,
-                        dataType,
-                        content: null,
-                        status: AssetStatus.PENDING,
-                        metadata: {
-                            createdAt: now,
-                            updatedAt: now,
-                            agentId
-                        },
-                        persistence: {
-                            isInDb: false
-                        }
-                    });
-                }
-            }
-        }
-
-        // Prepare execution context
-        const context: AgentExecutionContext = {
-            agent,
-            inputAssets: agent.input_asset_ids?.map(id => state.assets[id]).filter(Boolean) || [],
-            outputAssets: agent.output_asset_ids?.map(id => state.assets[id]).filter(Boolean) || [],
-            state
-        };
-
-        // Validate inputs if the executor provides validation
-        if (executor.validateInputs && !executor.validateInputs(context)) {
-            throw new Error(`Invalid inputs for agent ${agentId}`);
         }
 
         // Update agent status to running
         updateAgent(agentId, { status: AgentStatus.RUNNING });
 
         try {
-            // Execute the agent
-            console.log('Executing agent with context:', context);
-            const result: AgentExecutionResult = await executor.execute(context);
-            console.log('Agent execution result:', result);
-
-            if (!result.success) {
-                throw new Error(result.error || 'Agent execution failed');
+            // Get the agent executor
+            const executor = agentRegistry.getExecutor(agent.type);
+            if (!executor) {
+                throw new Error(`No executor found for agent type: ${agent.type}`);
             }
 
-            // Update output assets with content and ready status
-            if (result.outputAssets) {
-                for (const outputAsset of result.outputAssets) {
-                    const existingAsset = state.assets[outputAsset.asset_id];
-                    console.log('Existing asset:', outputAsset.asset_id, existingAsset);
-                    if (existingAsset) {
-                        console.log('Updating output asset:', outputAsset);
-                        updateAsset(outputAsset.asset_id, {
-                            ...outputAsset,
-                            status: AssetStatus.READY,
-                            metadata: {
-                                ...existingAsset.metadata,
-                                ...outputAsset.metadata,
-                                updatedAt: new Date().toISOString()
-                            }
-                        });
-                    } else {
-                        console.log('Adding new output asset:', outputAsset);
-                        addAsset({
-                            ...outputAsset,
-                            status: AssetStatus.READY,
-                            metadata: {
-                                ...outputAsset.metadata,
-                                updatedAt: new Date().toISOString()
-                            }
-                        });
-                    }
+            // Create execution context
+            const context: AgentExecutionContext = {
+                agent,
+                inputParameters: agent.input_parameters,
+                outputAssetIds: agent.output_asset_ids,
+                assets: state.assets,
+                updateAsset: (assetId: string, updates: Partial<Asset>) => {
+                    updateAsset(assetId, updates);
                 }
-            }
+            };
 
-            // Update agent status and metadata
+            // Execute the agent
+            const result = await executor.execute(context);
+
+            // Update agent status to completed
             updateAgent(agentId, {
                 status: AgentStatus.COMPLETED,
                 metadata: {
                     ...agent.metadata,
-                    lastRunAt: new Date().toISOString(),
-                    completionTime: new Date().toISOString(),
-                    ...result.metadata
+                    lastExecutedAt: new Date().toISOString(),
+                    lastExecutionResult: result
                 }
             });
 
             return result;
+        } catch (error) {
+            console.error(`Error executing agent ${agentId}:`, error);
 
-        } catch (error: any) {
-            // Update output assets to error status
-            if (agent.output_asset_ids) {
-                for (const assetId of agent.output_asset_ids) {
-                    const existingAsset = state.assets[assetId];
-                    if (existingAsset) {
-                        updateAsset(assetId, {
-                            status: AssetStatus.ERROR,
-                            metadata: {
-                                ...existingAsset.metadata,
-                                updatedAt: new Date().toISOString(),
-                                error: error.message
-                            }
-                        });
-                    }
-                }
-            }
-
-            // Update agent status to error
+            // Update agent status to failed
             updateAgent(agentId, {
-                status: AgentStatus.ERROR,
+                status: AgentStatus.FAILED,
                 metadata: {
                     ...agent.metadata,
-                    lastError: error.message,
-                    lastRunAt: new Date().toISOString()
+                    lastExecutedAt: new Date().toISOString(),
+                    lastError: error instanceof Error ? error.message : 'Unknown error'
                 }
             });
 
             throw error;
         }
-    }, [state.agents, state.assets, addAsset, updateAsset, updateAgent]);
-
+    }, [state.agents, state.assets, updateAgent, updateAsset]);
 
     const value = {
         state,
