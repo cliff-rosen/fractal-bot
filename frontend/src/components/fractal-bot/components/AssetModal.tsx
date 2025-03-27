@@ -13,7 +13,6 @@ interface AssetModalProps {
 }
 
 export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveToDb, onUpdate }) => {
-    console.log('AssetModal', asset);
 
     const [isSaving, setIsSaving] = useState(false);
 
