@@ -6,6 +6,7 @@ import { useAuth } from './context/AuthContext';
 import { WorkflowProvider, useWorkflows } from './context/WorkflowContext';
 import { PromptTemplateProvider } from './context/PromptTemplateContext';
 import { JobsProvider } from './context/JobsContext';
+import { FractalBotProvider } from './context/FractalBotContext';
 // utils
 import { setStreamSessionExpiredHandler } from './lib/api/streamUtils';
 // components
@@ -172,8 +173,10 @@ function App() {
         <WorkflowProvider>
           <PromptTemplateProvider>
             <JobsProvider>
-              <AuthenticatedApp />
-              <Toaster />
+              <FractalBotProvider>
+                <AuthenticatedApp />
+                <Toaster />
+              </FractalBotProvider>
             </JobsProvider>
           </PromptTemplateProvider>
         </WorkflowProvider>
