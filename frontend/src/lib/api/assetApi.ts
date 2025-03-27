@@ -30,8 +30,8 @@ export const assetApi = {
         });
         return response.data.map((asset: any) => ({
             ...asset,
-            fileType: asset.type,
-            dataType: asset.subtype || DataType.UNSTRUCTURED,
+            fileType: asset.fileType,
+            dataType: asset.dataType,
             persistence: {
                 isInDb: true,
                 dbId: asset.asset_id,

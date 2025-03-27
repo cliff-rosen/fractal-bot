@@ -42,6 +42,10 @@ export default function EmailAgentOAuthButton() {
                 'width=600,height=700,menubar=no,toolbar=no,location=no,status=no'
             );
 
+            if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                throw new Error('Popup was blocked. Please allow popups for this site.');
+            }
+
             const checkPopup = setInterval(() => {
                 if (popup?.closed) {
                     clearInterval(checkPopup);
@@ -51,7 +55,16 @@ export default function EmailAgentOAuthButton() {
 
         } catch (error: any) {
             console.error('Error initiating Google OAuth:', error);
-            setError(error.response?.data?.detail || error.message || 'Failed to connect to Google');
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to connect to Google';
+
+            if (errorMessage.includes('Scope has changed')) {
+                setError('Gmail permissions have changed. Please reconnect your account.');
+            } else if (errorMessage.includes('Popup was blocked')) {
+                setError('Please allow popups for this site to connect your Gmail account.');
+            } else {
+                setError(errorMessage);
+            }
+
             setIsConnecting(false);
         }
     };

@@ -2,19 +2,7 @@ import React, { useState } from 'react';
 import { Asset } from './types/state';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import DOMPurify from 'dompurify';
-
-interface EmailMessage {
-    id: string;
-    date: string;
-    from: string;
-    to: string;
-    subject: string;
-    body: {
-        html?: string;
-        plain?: string;
-    };
-    snippet: string;
-}
+import { EmailMessage } from '@/types/email';
 
 interface EmailListViewProps {
     asset: Asset;
@@ -25,7 +13,7 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const emailsPerPage = 10;
 
-    const emails = asset.content as EmailMessage[];
+    const emails = asset.content as EmailMessage[] || [];
     const totalPages = Math.ceil(emails.length / emailsPerPage);
     const currentEmails = emails.slice(
         currentPage * emailsPerPage,
@@ -33,7 +21,18 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
     );
 
     const formatDate = (dateString: string) => {
-        return new Date(parseInt(dateString)).toLocaleString();
+        try {
+            // Try parsing as timestamp first
+            const timestamp = parseInt(dateString);
+            if (!isNaN(timestamp)) {
+                return new Date(timestamp).toLocaleString();
+            }
+            // If not a timestamp, try parsing as ISO string
+            return new Date(dateString).toLocaleString();
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return 'Invalid Date';
+        }
     };
 
     const getEmailBody = (email: EmailMessage) => {

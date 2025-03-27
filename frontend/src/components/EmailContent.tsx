@@ -1,6 +1,7 @@
 import React from 'react';
 import DOMPurify from 'dompurify';
 import styled from 'styled-components';
+import { EmailMessage } from '@/types/email';
 
 const EmailContainer = styled.div`
   padding: 1rem;
@@ -49,47 +50,49 @@ const EmailBody = styled.div`
 `;
 
 interface EmailContentProps {
-    email: {
-        subject: string;
-        from: string;
-        to: string;
-        date: string;
-        body: {
-            html?: string;
-            plain?: string;
-        };
-    };
+  email: EmailMessage;
 }
 
 export const EmailContent: React.FC<EmailContentProps> = ({ email }) => {
-    const formatDate = (timestamp: string) => {
-        return new Date(parseInt(timestamp)).toLocaleString();
-    };
+  const formatDate = (dateString: string) => {
+    try {
+      // Try parsing as timestamp first
+      const timestamp = parseInt(dateString);
+      if (!isNaN(timestamp)) {
+        return new Date(timestamp).toLocaleString();
+      }
+      // If not a timestamp, try parsing as ISO string
+      return new Date(dateString).toLocaleString();
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
+  };
 
-    const renderBody = () => {
-        if (email.body.html) {
-            // Sanitize HTML content before rendering
-            const sanitizedHtml = DOMPurify.sanitize(email.body.html);
-            return <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
-        }
+  const renderBody = () => {
+    if (email.body.html) {
+      // Sanitize HTML content before rendering
+      const sanitizedHtml = DOMPurify.sanitize(email.body.html);
+      return <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />;
+    }
 
-        // Fallback to plain text with preserved newlines
-        return <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{email.body.plain}</pre>;
-    };
+    // Fallback to plain text with preserved newlines
+    return <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{email.body.plain}</pre>;
+  };
 
-    return (
-        <EmailContainer>
-            <EmailHeader>
-                <Subject>{email.subject}</Subject>
-                <MetaInfo>
-                    <div>From: {email.from}</div>
-                    <div>To: {email.to}</div>
-                    <div>Date: {formatDate(email.date)}</div>
-                </MetaInfo>
-            </EmailHeader>
-            <EmailBody>
-                {renderBody()}
-            </EmailBody>
-        </EmailContainer>
-    );
+  return (
+    <EmailContainer>
+      <EmailHeader>
+        <Subject>{email.subject}</Subject>
+        <MetaInfo>
+          <div>From: {email.from}</div>
+          <div>To: {email.to}</div>
+          <div>Date: {formatDate(email.date)}</div>
+        </MetaInfo>
+      </EmailHeader>
+      <EmailBody>
+        {renderBody()}
+      </EmailBody>
+    </EmailContainer>
+  );
 }; 

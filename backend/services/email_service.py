@@ -7,7 +7,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from models import GoogleOAuth2Credentials
-from schemas.asset import FileType
+from schemas.asset import FileType, DataType
 from schemas.email import DateRange
 from config.settings import settings
 import base64
@@ -17,15 +17,22 @@ logger = logging.getLogger(__name__)
 
 class EmailService:
     SCOPES = [
-        'https://www.googleapis.com/auth/gmail.readonly',  # Allows reading emails and performing searches
-        'openid',
-        'https://www.googleapis.com/auth/userinfo.profile',
-        'https://www.googleapis.com/auth/userinfo.email'
+        'https://www.googleapis.com/auth/userinfo.profile',  # Match the order from error
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/gmail.readonly',
+        'openid'
     ]
+
 
     def __init__(self):
         self.service = None
         self.credentials = None
+
+    def has_full_access(self) -> bool:
+        """
+        Check if we have full access to message content or just metadata
+        """
+        return 'https://www.googleapis.com/auth/gmail.readonly' in self.credentials.scopes
 
     async def authenticate(self, user_id: int, db: Session) -> bool:
         """
@@ -169,21 +176,33 @@ class EmailService:
             
         Returns:
             Message object with essential information
+            
+        Raises:
+            ValueError: If full access is not available
         """
         try:
+            logger.info(f"Fetching message {message_id}")
+            
             if not self.service:
+                logger.error("Service not initialized. Call authenticate first.")
                 raise ValueError("Service not initialized. Call authenticate first.")
                 
-            # Get message details
+            # Check for full access
+            if not self.has_full_access():
+                logger.error("Full access to Gmail is required")
+                raise ValueError("Full access to Gmail is required. Please reconnect with the correct permissions.")
+                
+            # Get full message details
+            logger.debug(f"Making Gmail API request for message {message_id}")
             message = self.service.users().messages().get(
                 userId='me',
                 id=message_id,
-                format='full'
+                format='full'  # Changed from 'metadata' to 'full' to get body
             ).execute()
             
             # Parse message parts
             headers = {}
-            body = None
+            body = {'html': None, 'plain': None}
             
             if 'payload' in message:
                 payload = message['payload']
@@ -194,27 +213,37 @@ class EmailService:
                         header['name'].lower(): header['value']
                         for header in payload['headers']
                     }
+                    logger.debug(f"Extracted headers: {list(headers.keys())}")
                
-                # Try to get body from parts
+                # Get body
                 if 'parts' in payload:
+                    logger.debug(f"Message {message_id} has multiple parts")
                     body = self.get_body_from_parts(payload['parts'])
-                # If no parts, try to get body directly
                 elif 'body' in payload and 'data' in payload['body']:
-                    body = payload['body']['data']
+                    logger.debug(f"Message {message_id} has single part")
+                    # Convert raw body to plain text
+                    raw_body = base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8', errors='replace')
+                    body = {'plain': raw_body, 'html': None}
                             
             # Extract essential information
-            return {
+            result = {
                 'id': message['id'],
-                'date': message.get('internalDate'),
+                'date': str(message.get('internalDate', '')),  # Convert to string
                 'from': headers.get('from', ''),
                 'to': headers.get('to', ''),
                 'subject': headers.get('subject', '(No Subject)'),
-                'body': body,
+                'body': body,  # Now always returns {html, plain} structure
                 'snippet': message.get('snippet', '')
             }
             
+            logger.info(f"Successfully processed message {message_id}")
+            return result
+            
         except HttpError as e:
-            logger.error(f"Error getting message {message_id}: {str(e)}")
+            logger.error(f"Gmail API error getting message {message_id}: {str(e)}", exc_info=True)
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error getting message {message_id}: {str(e)}", exc_info=True)
             raise
 
     async def get_messages(
@@ -226,7 +255,7 @@ class EmailService:
         include_attachments: bool = False,
         include_metadata: bool = True,
         db: Optional[Session] = None
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         """
         Get messages from specified folders
         
@@ -240,10 +269,13 @@ class EmailService:
             db: Database session (used only for authentication)
             
         Returns:
-            Dict containing the asset data
+            List of message objects
         """
         try:
+            logger.info(f"Starting get_messages with params: folders={folders}, date_range={date_range}, query_terms={query_terms}, max_results={max_results}")
+            
             if not self.service:
+                logger.error("Service not initialized. Call authenticate first.")
                 raise ValueError("Service not initialized. Call authenticate first.")
                 
             # Build search query
@@ -259,8 +291,10 @@ class EmailService:
                 query_parts.extend(query_terms)
                 
             query = ' '.join(query_parts) if query_parts else None
+            logger.info(f"Built search query: {query}")
             
             # Get messages with proper label handling
+            logger.info(f"Making Gmail API request with query={query}, folders={folders}")
             results = self.service.users().messages().list(
                 userId='me',
                 q=query,
@@ -269,30 +303,25 @@ class EmailService:
             ).execute()
             
             messages = results.get('messages', [])
-            detailed_messages = []
+            logger.info(f"Retrieved {len(messages)} messages from Gmail API")
             
-            for msg in messages:
-                message = await self.get_message(msg['id'])
-                detailed_messages.append(message)
+            detailed_messages = []
+            for i, msg in enumerate(messages):
+                try:
+                    logger.debug(f"Fetching details for message {i+1}/{len(messages)}: {msg['id']}")
+                    message = await self.get_message(msg['id'])
+                    detailed_messages.append(message)
+                    logger.debug(f"Successfully fetched message {i+1}")
+                except Exception as e:
+                    logger.error(f"Error fetching message {msg['id']}: {str(e)}")
+                    continue
                 
-            # Create asset data
-            return {
-                'asset_id': f"email_list_{datetime.now().timestamp()}",
-                'name': f"Email List - {len(detailed_messages)} messages",
-                'description': f"List of {len(detailed_messages)} emails from Gmail",
-                'type': FileType.EMAIL_LIST,
-                'content': detailed_messages,
-                'status': "READY",
-                'metadata': {
-                    "createdAt": datetime.now().isoformat(),
-                    "updatedAt": datetime.now().isoformat(),
-                    "creator": "email_service",
-                    "tags": ["email", "gmail"],
-                    "agent_associations": [],
-                    "version": 1
-                }
-            }
+            logger.info(f"Successfully fetched {len(detailed_messages)} detailed messages")
+            return detailed_messages
             
         except HttpError as e:
-            logger.error(f"Error getting messages: {str(e)}")
+            logger.error(f"Gmail API error getting messages: {str(e)}", exc_info=True)
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error getting messages: {str(e)}", exc_info=True)
             raise 

@@ -77,7 +77,7 @@ async def init_oauth2(
         # Generate authorization URL
         auth_url, state = flow.authorization_url(
             access_type='offline',
-            include_granted_scopes='true',
+            include_granted_scopes='false',
             prompt='consent'
         )
         
@@ -191,9 +191,18 @@ async def oauth2_callback(
         ).first()
         
         if existing_credentials:
-            for key, value in db_credentials.__dict__.items():
-                if key != '_sa_instance_state':
-                    setattr(existing_credentials, key, value)
+            # Check if scopes have changed
+            if set(existing_credentials.scopes) != set(credentials.scopes):
+                logger.info(f"Scopes have changed for user {user.user_id}. Updating credentials.")
+                # Update all fields including scopes
+                for key, value in db_credentials.__dict__.items():
+                    if key != '_sa_instance_state':
+                        setattr(existing_credentials, key, value)
+            else:
+                # Only update token-related fields if scopes haven't changed
+                existing_credentials.token = credentials.token
+                existing_credentials.refresh_token = credentials.refresh_token
+                existing_credentials.expiry = credentials.expiry
         else:
             db.add(db_credentials)
             
