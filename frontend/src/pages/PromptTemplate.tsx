@@ -50,6 +50,8 @@ const PromptTemplate: React.FC = () => {
     const [selectedTokenName, setSelectedTokenName] = useState<string | null>(null);
     const [fileNames, setFileNames] = useState<Record<string, string>>({});
     const [isOutputSchemaCollapsed, setIsOutputSchemaCollapsed] = useState(false);
+    const [isResponseCollapsed, setIsResponseCollapsed] = useState(false);
+    const [isMessagesCollapsed, setIsMessagesCollapsed] = useState(false);
 
     // Add refs for focus management
     const nameInputRef = React.useRef<HTMLInputElement>(null);
@@ -407,112 +409,169 @@ const PromptTemplate: React.FC = () => {
                     isOpen={showTestDialog}
                     onClose={() => setShowTestDialog(false)}
                     title="Test Template"
-                    maxWidth="4xl"
-                >
-                    <div className="flex flex-col h-[80vh]">
-                        {/* Test Parameters */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                            {tokens.map((token) => (
-                                <div key={token.name}>
-                                    <label htmlFor={`test-${token.name}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        {token.name}
-                                    </label>
-                                    {token.type === 'file' ? (
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                id={`test-${token.name}`}
-                                                value={testParameters[token.name] || ''}
-                                                readOnly
-                                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
-                                                placeholder="Select a file"
-                                            />
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedTokenName(token.name);
-                                                    setShowFileSelector(true);
-                                                }}
-                                                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                                            >
-                                                Select
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <input
-                                            type="text"
-                                            id={`test-${token.name}`}
-                                            value={testParameters[token.name] || ''}
-                                            onChange={(e) => setTestParameters({ ...testParameters, [token.name]: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-gray-300 focus:border-gray-300 dark:bg-gray-800 dark:text-white"
-                                            placeholder={`Enter ${token.name}`}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Test Results */}
-                        <div className="flex-1 overflow-hidden flex flex-col">
-                            {testResult && (
-                                <div className="flex-1 overflow-hidden flex flex-col space-y-4">
-                                    {/* Response Section */}
-                                    <div className="flex-1 overflow-hidden flex flex-col">
-                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response</h4>
-                                        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                                            {typeof testResult.response === 'object' ? (
-                                                <JsonRenderer data={testResult.response} />
-                                            ) : (
-                                                <MarkdownRenderer content={String(testResult.response)} />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Messages Section */}
-                                    <div className="flex-1 overflow-hidden flex flex-col">
-                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Messages</h4>
-                                        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-4">
-                                            {testResult.messages.map((message: any, index: number) => (
-                                                <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
-                                                    <div className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
-                                                        {message.role}
-                                                    </div>
-                                                    <div className="text-sm">
-                                                        {typeof message.content === 'object' ? (
-                                                            <JsonRenderer data={message.content} />
-                                                        ) : (
-                                                            <MarkdownRenderer content={message.content} />
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Error Message */}
-                            {error && (
-                                <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                                    <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-                            <button
-                                onClick={() => setShowTestDialog(false)}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                            >
-                                Close
-                            </button>
+                    maxWidth="6xl"
+                    headerContent={
+                        <div className="flex items-center gap-3">
                             <button
                                 onClick={handleTest}
                                 disabled={testing}
-                                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                                className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
                             >
                                 {testing ? 'Testing...' : 'Run Test'}
                             </button>
+                            <button
+                                onClick={() => setShowTestDialog(false)}
+                                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    }
+                >
+                    <div className="flex flex-col h-[80vh]">
+                        {/* Main Content Area */}
+                        <div className="flex flex-1 gap-6 min-h-0">
+                            {/* Left Column - Test Parameters */}
+                            <div className="w-1/2 flex flex-col">
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Test Parameters</h4>
+                                <div className="flex-1 overflow-auto space-y-4">
+                                    {tokens.map((token) => (
+                                        <div key={token.name} className="space-y-2">
+                                            <label htmlFor={`test-${token.name}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                {token.name}
+                                            </label>
+                                            {token.type === 'file' ? (
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        id={`test-${token.name}`}
+                                                        value={testParameters[token.name] || ''}
+                                                        readOnly
+                                                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+                                                        placeholder="Select a file"
+                                                    />
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedTokenName(token.name);
+                                                            setShowFileSelector(true);
+                                                        }}
+                                                        className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+                                                    >
+                                                        Select
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <textarea
+                                                    id={`test-${token.name}`}
+                                                    value={testParameters[token.name] || ''}
+                                                    onChange={(e) => setTestParameters({ ...testParameters, [token.name]: e.target.value })}
+                                                    rows={4}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-gray-300 focus:border-gray-300 dark:bg-gray-800 dark:text-white font-mono text-sm"
+                                                    placeholder={`Enter ${token.name}`}
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Right Column - Test Results */}
+                            <div className="w-1/2 flex flex-col">
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Test Results</h4>
+                                <div className="flex-1 overflow-auto space-y-4">
+                                    {testResult ? (
+                                        <>
+                                            {/* Response Section */}
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">Response</h5>
+                                                    <button
+                                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                                        onClick={() => setIsResponseCollapsed(!isResponseCollapsed)}
+                                                    >
+                                                        <svg
+                                                            className={`w-5 h-5 transform transition-transform ${isResponseCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M19 9l-7 7-7-7"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                {!isResponseCollapsed && (
+                                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                                                        {typeof testResult.response === 'object' ? (
+                                                            <JsonRenderer data={testResult.response} />
+                                                        ) : (
+                                                            <MarkdownRenderer content={String(testResult.response)} />
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Messages Section */}
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">Messages</h5>
+                                                    <button
+                                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                                        onClick={() => setIsMessagesCollapsed(!isMessagesCollapsed)}
+                                                    >
+                                                        <svg
+                                                            className={`w-5 h-5 transform transition-transform ${isMessagesCollapsed ? 'rotate-0' : 'rotate-180'}`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M19 9l-7 7-7-7"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                {!isMessagesCollapsed && (
+                                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-4">
+                                                        {testResult.messages.map((message: any, index: number) => (
+                                                            <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
+                                                                <div className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                                                                    {message.role}
+                                                                </div>
+                                                                <div className="text-sm">
+                                                                    {typeof message.content === 'object' ? (
+                                                                        <JsonRenderer data={message.content} />
+                                                                    ) : (
+                                                                        <MarkdownRenderer content={message.content} />
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                            Run the test to see results
+                                        </div>
+                                    )}
+
+                                    {/* Error Message */}
+                                    {error && (
+                                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                                            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </Dialog>
