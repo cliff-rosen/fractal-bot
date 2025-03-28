@@ -31,7 +31,7 @@ const PromptMenuBar: React.FC<PromptMenuBarProps> = ({
                                  px-1 py-1 text-sm font-medium
                                  text-gray-600 hover:text-gray-800 hover:bg-gray-100
                                  dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700
-                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
                                  transition-colors rounded-md mr-3"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,9 +54,9 @@ const PromptMenuBar: React.FC<PromptMenuBarProps> = ({
                             disabled={isTesting}
                             className="inline-flex items-center justify-center rounded-md
                                  px-3 py-1.5 text-sm font-medium
-                                 bg-emerald-50 text-emerald-700 hover:bg-emerald-100
-                                 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30
-                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
+                                 bg-gray-100 text-gray-700 hover:bg-gray-200
+                                 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700
+                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
                                  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isTesting ? 'Testing...' : 'Test Template'}
@@ -69,10 +69,10 @@ const PromptMenuBar: React.FC<PromptMenuBarProps> = ({
                             className={`inline-flex items-center justify-center rounded-md
                                  px-3 py-1.5 text-sm font-medium
                                  ${hasUnsavedChanges
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700'
+                                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                                     : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'
                                 }
-                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
                                  transition-colors`}
                         >
                             {isSaving ? 'Saving...' : 'Save'}

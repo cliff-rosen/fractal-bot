@@ -291,7 +291,7 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({ schema, onChange, onCancel,
                                 type="button"
                                 onClick={() => setEditMode('gui')}
                                 className={`${compact ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'} rounded-md ${editMode === 'gui'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                                    ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                     }`}
                             >
@@ -301,7 +301,7 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({ schema, onChange, onCancel,
                                 type="button"
                                 onClick={() => setEditMode('json')}
                                 className={`${compact ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'} rounded-md ${editMode === 'json'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                                    ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                     }`}
                             >
@@ -475,7 +475,7 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({ schema, onChange, onCancel,
                             <button
                                 type="button"
                                 onClick={handleAddField}
-                                className={`${compact ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'} bg-blue-600 text-white rounded-md hover:bg-blue-700`}
+                                className={`${compact ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'} bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700`}
                             >
                                 Add Field
                             </button>

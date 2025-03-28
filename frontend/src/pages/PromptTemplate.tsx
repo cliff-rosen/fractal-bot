@@ -308,7 +308,7 @@ const PromptTemplate: React.FC = () => {
                                 id="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-gray-300 focus:border-gray-300 dark:bg-gray-800 dark:text-white"
                                 placeholder="Enter template name"
                             />
                         </div>
@@ -321,7 +321,7 @@ const PromptTemplate: React.FC = () => {
                                 id="description"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-gray-300 focus:border-gray-300 dark:bg-gray-800 dark:text-white"
                                 placeholder="Enter template description"
                             />
                         </div>
@@ -339,7 +339,7 @@ const PromptTemplate: React.FC = () => {
                                 value={userMessageTemplate}
                                 onChange={(e) => setUserMessageTemplate(e.target.value)}
                                 rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white font-mono text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-gray-300 focus:border-gray-300 dark:bg-gray-800 dark:text-white font-mono text-sm"
                                 placeholder="Enter user message template"
                             />
                         </div>
@@ -352,7 +352,7 @@ const PromptTemplate: React.FC = () => {
                                 value={systemMessageTemplate}
                                 onChange={(e) => setSystemMessageTemplate(e.target.value)}
                                 rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white font-mono text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-gray-300 focus:border-gray-300 dark:bg-gray-800 dark:text-white font-mono text-sm"
                                 placeholder="Enter system message template"
                             />
                         </div>
@@ -432,7 +432,7 @@ const PromptTemplate: React.FC = () => {
                                                     setSelectedTokenName(token.name);
                                                     setShowFileSelector(true);
                                                 }}
-                                                className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
                                             >
                                                 Select
                                             </button>
@@ -443,7 +443,7 @@ const PromptTemplate: React.FC = () => {
                                             id={`test-${token.name}`}
                                             value={testParameters[token.name] || ''}
                                             onChange={(e) => setTestParameters({ ...testParameters, [token.name]: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-gray-300 focus:border-gray-300 dark:bg-gray-800 dark:text-white"
                                             placeholder={`Enter ${token.name}`}
                                         />
                                     )}
@@ -509,7 +509,7 @@ const PromptTemplate: React.FC = () => {
                             <button
                                 onClick={handleTest}
                                 disabled={testing}
-                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
                             >
                                 {testing ? 'Testing...' : 'Run Test'}
                             </button>
