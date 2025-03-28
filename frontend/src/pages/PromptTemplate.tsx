@@ -37,6 +37,7 @@ const PromptTemplate: React.FC = () => {
     const [systemMessageTemplate, setSystemMessageTemplate] = useState(template?.system_message_template || '');
     const [tokens, setTokens] = useState<PromptTemplateToken[]>(template?.tokens || []);
     const [outputSchema, setOutputSchema] = useState<Schema>(template?.output_schema || defaultOutputSchema);
+    const [showTestDialog, setShowTestDialog] = useState(false);
     const [testParameters, setTestParameters] = useState<Record<string, string>>({});
     const [testResult, setTestResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
@@ -286,7 +287,7 @@ const PromptTemplate: React.FC = () => {
                 isTesting={testing}
                 hasUnsavedChanges={hasUnsavedChanges}
                 onSave={handleSave}
-                onTest={handleTest}
+                onTest={() => setShowTestDialog(true)}
                 onBack={handleBack}
             />
 
@@ -366,21 +367,30 @@ const PromptTemplate: React.FC = () => {
                             />
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    {/* Test Section */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Test Template</h3>
+            {/* Test Dialog */}
+            {showTestDialog && (
+                <Dialog
+                    isOpen={showTestDialog}
+                    onClose={() => setShowTestDialog(false)}
+                    title="Test Template"
+                    maxWidth="4xl"
+                >
+                    <div className="space-y-6">
+                        {/* Test Parameters */}
                         <div className="grid grid-cols-2 gap-4">
                             {tokens.map((token) => (
                                 <div key={token.name}>
-                                    <label htmlFor={token.name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label htmlFor={`test-${token.name}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         {token.name}
                                     </label>
                                     {token.type === 'file' ? (
                                         <div className="flex gap-2">
                                             <input
                                                 type="text"
-                                                id={token.name}
+                                                id={`test-${token.name}`}
                                                 value={testParameters[token.name] || ''}
                                                 readOnly
                                                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
@@ -399,7 +409,7 @@ const PromptTemplate: React.FC = () => {
                                     ) : (
                                         <input
                                             type="text"
-                                            id={token.name}
+                                            id={`test-${token.name}`}
                                             value={testParameters[token.name] || ''}
                                             onChange={(e) => setTestParameters({ ...testParameters, [token.name]: e.target.value })}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
@@ -409,16 +419,55 @@ const PromptTemplate: React.FC = () => {
                                 </div>
                             ))}
                         </div>
+
+                        {/* Test Results */}
                         {testResult && (
-                            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-                                <pre className="text-sm font-mono text-gray-900 dark:text-white whitespace-pre-wrap">
-                                    {JSON.stringify(testResult, null, 2)}
+                            <div className="mt-6">
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Results</h4>
+                                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response</h4>
+                                    <pre className="text-sm font-mono text-gray-900 dark:text-white whitespace-pre-wrap overflow-auto max-h-[400px]">
+                                        {testResult.response.type === 'object' ? JSON.stringify(testResult.response, null, 2) : testResult.response}
+                                    </pre>
+                                </div>
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Messages</h4>
+                                <pre className="text-sm font-mono text-gray-900 dark:text-white whitespace-pre-wrap overflow-auto max-h-[400px]">
+                                    {testResult.messages.map((message: any, index: number) => (
+                                        <div key={index}>
+                                            <span className="font-bold">{message.role}:</span>
+                                            <span>{message.content ? JSON.stringify(message.content, null, 2) : message.content}</span>
+                                        </div>
+                                    ))}
                                 </pre>
                             </div>
                         )}
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <button
+                                onClick={() => setShowTestDialog(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={handleTest}
+                                disabled={testing}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {testing ? 'Testing...' : 'Run Test'}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </Dialog>
+            )}
 
             {/* File Selector Dialog */}
             {showFileSelector && (

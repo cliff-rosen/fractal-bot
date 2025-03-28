@@ -21,7 +21,7 @@ export function AssetUploadButton({ onUploadAndAddAsset, onRetrieveAsset }: Asse
                 className="flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100"
             >
                 <Upload className="h-4 w-4" />
-                <span>Upload Asset</span>
+                <span>Add Asset</span>
             </Button>
             <AddAssetModal
                 isOpen={isModalOpen}
