@@ -2,18 +2,18 @@
 // This is for executing action steps in run mode 
 
 import React, { useState, useMemo } from 'react';
-import { useWorkflows } from '../context/WorkflowContext';
-import { usePromptTemplates } from '../context/PromptTemplateContext';
-import { fileApi } from '../lib/api/fileApi';
-import { WorkflowStep, WorkflowVariableName } from '../types/workflows';
-import { isFileValue } from '../types/schema';
-import Dialog from './common/Dialog';
-import FileLibrary from './FileLibrary';
-import VariableRenderer from './common/VariableRenderer';
-import JsonEditor from './common/JsonEditor';
-import { WorkflowEngine } from '../lib/workflow/workflowEngine';
+import { useWorkflows } from '@/context/WorkflowContext';
+import { usePromptTemplates } from '@/context/PromptTemplateContext';
+import { fileApi } from '@/lib/api/fileApi';
+import { WorkflowStep, WorkflowVariableName } from '@/types/workflows';
+import { isFileValue } from '@/types/schema';
+import Dialog from '@/components/common/Dialog';
+import FileLibrary from '@/components/FileLibrary';
+import VariableRenderer from '@/components/common/VariableRenderer';
+import JsonEditor from '@/components/common/JsonEditor';
+import { WorkflowEngine } from '@/lib/workflow/workflowEngine';
 import { Link } from 'react-router-dom';
-import TemplateEditorDialog from './TemplateEditorDialog';
+import TemplateEditorDialog from '@/components/workflow/TemplateEditorDialog';
 
 interface ActionStepRunnerProps {
     actionStep: WorkflowStep;

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { WorkflowVariable } from '../types/workflows';
-import { Schema } from '../types/schema';
-import { formatVariablePath, renderVariablePathsWithProperties } from '../lib/utils/variableUIUtils';
+import { WorkflowVariable } from '@/types/workflows';
+import { Schema } from '@/types/schema';
+import { formatVariablePath, renderVariablePathsWithProperties } from '@/lib/utils/variableUIUtils';
 
 interface VariablePathSelectorProps {
     variables: WorkflowVariable[];

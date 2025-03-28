@@ -11,7 +11,7 @@ import { JobStepsList } from '../components/job/JobStepsList';
 import { JobInputForm } from '../components/job/JobInputForm';
 import JobMenuBar from '../components/job/JobMenuBar';
 import { JobSummary } from '../components/job/JobSummary';
-import { getWorkflowInputs } from '../types/workflows';
+import { getWorkflowInputs } from '@/types/workflows';
 
 const Job: React.FC = () => {
     const { jobId } = useParams<{ jobId: string }>();

@@ -2,13 +2,13 @@
 // This is for collecting input values in run mode 
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useWorkflows } from '../context/WorkflowContext';
+import { useWorkflows } from '../../context/WorkflowContext';
 import SchemaForm from './SchemaForm';
-import { WorkflowVariable } from '@/types/workflows';
-import { Schema, SchemaValueType } from '@/types/schema';
-import Dialog from './common/Dialog';
-import { Button } from './ui/button';
-import { WorkflowEngine } from '@/lib/workflow/workflowEngine';
+import { WorkflowVariable } from '../../types/workflows';
+import { Schema, SchemaValueType } from '../../types/schema';
+import Dialog from '../common/Dialog';
+import { Button } from '../ui/button';
+import { WorkflowEngine } from '../../lib/workflow/workflowEngine';
 
 interface InputStepRunnerProps {
     isOpen: boolean;

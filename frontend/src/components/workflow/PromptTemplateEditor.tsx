@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { PromptTemplate, PromptTemplateToken, PromptTemplateCreate, PromptTemplateUpdate, PromptTemplateTest } from '../types/prompts';
-import { Schema, SchemaValueType } from '../types/schema';
-import Dialog from './common/Dialog';
-import SchemaEditor from './common/SchemaEditor';
-import { usePromptTemplates } from '../context/PromptTemplateContext';
-import FileLibrary from '../components/FileLibrary';
-import { fileApi } from '../lib/api/fileApi';
+import { PromptTemplate, PromptTemplateToken, PromptTemplateCreate, PromptTemplateUpdate, PromptTemplateTest } from '@/types/prompts';
+import { Schema, SchemaValueType } from '@/types/schema';
+import Dialog from '@/components/common/Dialog';
+import SchemaEditor from '@/components/common/SchemaEditor';
+import { usePromptTemplates } from '@/context/PromptTemplateContext';
+import FileLibrary from '@/components/FileLibrary';
+import { fileApi } from '@/lib/api/fileApi';
 
 interface PromptTemplateEditorProps {
     template: PromptTemplate | null;

@@ -13,8 +13,9 @@ import {
 import AssetList from '../components/common/AssetList';
 import {
     Workflow,
-    getWorkflowInputs
-} from '../types/workflows';
+    getWorkflowInputs,
+    WorkflowStatus
+} from '@/types/workflows';
 
 const JobsManager: React.FC = () => {
     const navigate = useNavigate();

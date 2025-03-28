@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { WorkflowVariable } from '../types/workflows';
-import { Schema } from '../types/schema';
-import { formatVariablePath } from '../lib/utils/variableUIUtils';
-import VariablePathModal from './VariablePathModal';
+import { WorkflowVariable } from '@/types/workflows';
+import { Schema } from '@/types/schema';
+import { formatVariablePath } from '@/lib/utils/variableUIUtils';
+import VariablePathModal from '@/components/workflow/VariablePathModal';
 
 interface VariablePathButtonProps {
     variables: WorkflowVariable[];

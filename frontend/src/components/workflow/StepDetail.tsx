@@ -1,5 +1,5 @@
 import React from 'react';
-import { WorkflowStepType, WorkflowStep } from '../types/workflows';
+import { WorkflowStepType, WorkflowStep } from '@/types/workflows';
 import ActionStepEditor from './ActionStepEditor';
 import ActionStepRunner from './ActionStepRunner';
 import EvaluationStepRunner from './EvaluationStepRunner';

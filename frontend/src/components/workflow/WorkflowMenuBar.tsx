@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkflows } from '../context/WorkflowContext';
+import { useWorkflows } from '../../context/WorkflowContext';
 
 interface WorkflowMenuBarProps {
     isEditMode: boolean;

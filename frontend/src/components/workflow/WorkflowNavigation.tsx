@@ -1,5 +1,5 @@
 import React from 'react';
-import { WorkflowStepType } from '../types/workflows';
+import { WorkflowStepType } from '../../types/workflows';
 
 interface WorkflowNavigationProps {
     isEditMode: boolean;

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import TestComponent from '../components/TestComponent';
-import AgentWorkflowOrchestratorTest from '../components/AgentWorkflowOrchestratorTest';
+import AgentWorkflowOrchestratorTest from '../components/workflow/AgentWorkflowOrchestratorTest';
 import { PageLayout } from '../components/layout/PageLayout';
 
 /**
@@ -22,7 +21,7 @@ const TestPage: React.FC = () => {
     const renderTestComponent = () => {
         switch (selectedTest) {
             case TestComponentType.WORKFLOW_ENGINE:
-                return <TestComponent />;
+                return <div>REMOVED</div>;
             case TestComponentType.WORKFLOW_ORCHESTRATOR:
                 return <AgentWorkflowOrchestratorTest />;
             default:

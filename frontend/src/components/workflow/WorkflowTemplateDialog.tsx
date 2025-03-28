@@ -1,5 +1,5 @@
 import React from 'react';
-import { workflowTemplates } from '../types/workflow-templates';
+import { workflowTemplates } from '../../types/workflow-templates';
 
 interface WorkflowTemplateDialogProps {
     isOpen: boolean;

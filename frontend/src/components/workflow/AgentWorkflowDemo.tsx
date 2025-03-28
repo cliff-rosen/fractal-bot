@@ -5,15 +5,15 @@ import {
     WorkflowMessageType,
     WorkflowStatus,
     WorkflowStepStatus
-} from '../lib/workflow/agent/AgentWorkflowOrchestrator';
-import { AgentWorkflowEngine } from '../lib/workflow/agent/AgentWorkflowEngine';
+} from '../../lib/workflow/agent/AgentWorkflowOrchestrator';
+import { AgentWorkflowEngine } from '../../lib/workflow/agent/AgentWorkflowEngine';
 import {
     AgentWorkflowChain,
     SAMPLE_WORKFLOW_CHAIN
-} from '../types/agent-workflows';
+} from '../../types/agent-workflows';
 import {
     WorkflowVariable,
-} from '../types/workflows';
+} from '../../types/workflows';
 
 // Helper functions for phase display
 const getPhaseProgress = (phaseId: string): number => {

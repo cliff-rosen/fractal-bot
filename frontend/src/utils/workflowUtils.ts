@@ -1,5 +1,5 @@
 import { Schema, ValueType } from '../types/schema';
-import { WorkflowVariableName, WorkflowVariable } from '../types/workflows';
+import { WorkflowVariableName, WorkflowVariable } from '@/types/workflows';
 
 /**
  * Create a workflow variable

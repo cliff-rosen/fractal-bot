@@ -9,8 +9,8 @@ import {
     isEnhancedMapping,
     getVariableNameFromMapping,
     getOperationFromMapping
-} from '../types/workflows';
-import { getTypeColor, isCompatibleType } from '../lib/utils/variableUIUtils';
+} from '@/types/workflows';
+import { getTypeColor, isCompatibleType } from '@/lib/utils/variableUIUtils';
 import VariablePathButton from './VariablePathButton';
 
 /**

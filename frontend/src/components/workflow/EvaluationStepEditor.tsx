@@ -1,6 +1,6 @@
 import React from 'react';
-import { WorkflowStep, WorkflowVariableName } from '../types/workflows';
-import { useWorkflows } from '../context/WorkflowContext';
+import { WorkflowStep, WorkflowVariableName } from '../../types/workflows';
+import { useWorkflows } from '../../context/WorkflowContext';
 import VariablePathSelector from './VariablePathSelector';
 
 interface EvaluationStepEditorProps {

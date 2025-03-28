@@ -1,9 +1,9 @@
 import React from 'react';
-import { WorkflowStep } from '../types/workflows';
-import { EvaluationOutputs } from '../types/evaluation';
-import { useWorkflows } from '../context/WorkflowContext';
-import { resolveVariablePath } from '../lib/utils/variablePathUtils';
-import { formatVariablePath } from '../lib/utils/variableUIUtils';
+import { WorkflowStep } from '@/types/workflows';
+import { EvaluationOutputs } from '@/types/evaluation';
+import { useWorkflows } from '@/context/WorkflowContext';
+import { resolveVariablePath } from '@/lib/utils/variablePathUtils';
+import { formatVariablePath } from '@/lib/utils/variableUIUtils';
 
 interface EvaluationStepRunnerProps {
     step: WorkflowStep;

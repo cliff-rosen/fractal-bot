@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { WorkflowStep } from '../types/workflows';
-import { usePromptTemplates } from '../context/PromptTemplateContext';
-import { toolApi } from '../lib/api/toolApi';
-import TemplateEditorDialog from './TemplateEditorDialog';
+import { WorkflowStep } from '@/types/workflows';
+import { usePromptTemplates } from '@/context/PromptTemplateContext';
+import { toolApi } from '@/lib/api/toolApi';
+import TemplateEditorDialog from '@/components/workflow/TemplateEditorDialog';
 
 interface PromptTemplateSelectorProps {
     step: WorkflowStep;

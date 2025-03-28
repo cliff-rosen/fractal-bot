@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { WorkflowStep } from '../types/workflows';
+import { WorkflowStep } from '../../types/workflows';
 import { GripVertical } from 'lucide-react';
 
 interface SortableStepProps {

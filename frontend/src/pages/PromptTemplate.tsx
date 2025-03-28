@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { usePromptTemplates } from '../context/PromptTemplateContext';
 import SchemaEditor from '../components/common/SchemaEditor';
 import { extractTokens } from '../lib/utils';
-import PromptMenuBar from '../components/PromptMenuBar';
+import PromptMenuBar from '../components/workflow/PromptMenuBar';
 import { PromptTemplateToken, PromptTemplateCreate, PromptTemplateUpdate, PromptTemplateTest } from '../types/prompts';
 import { Schema, SchemaValueType } from '../types/schema';
 import FileLibrary from '../components/FileLibrary';

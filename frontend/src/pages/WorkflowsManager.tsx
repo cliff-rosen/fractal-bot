@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useWorkflows } from '../context/WorkflowContext';
 import { workflowApi } from '../lib/api';
 import AssetList from '../components/common/AssetList';
-import WorkflowTemplateDialog from '../components/WorkflowTemplateDialog';
+import WorkflowTemplateDialog from '../components/workflow/WorkflowTemplateDialog';
 import {
     Workflow,
     getWorkflowInputs,
     getWorkflowOutputs
-} from '../types/workflows';
+} from '@/types/workflows';
 
 const WorkflowsManager: React.FC = () => {
     const navigate = useNavigate();

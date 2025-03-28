@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { WorkflowStep, WorkflowVariableName, WorkflowVariable, Workflow, addWorkflowVariable, EnhancedOutputMapping } from '../types/workflows';
-import { Tool, ToolParameterName, ToolOutputName } from '../types/tools';
-import { toolApi } from '../lib/api/toolApi';
-import PromptTemplateSelector from './PromptTemplateSelector';
-import DataFlowMapper2 from './DataFlowMapper2';
-import { useWorkflows } from '../context/WorkflowContext';
-import ToolSelector from './ToolSelector';
+import { WorkflowStep, WorkflowVariableName, WorkflowVariable, Workflow, addWorkflowVariable, EnhancedOutputMapping } from '@/types/workflows';
+import { Tool, ToolParameterName, ToolOutputName } from '@/types/tools';
+import { toolApi } from '@/lib/api/toolApi';
+import PromptTemplateSelector from '@/components/workflow/PromptTemplateSelector';
+import DataFlowMapper2 from '@/components/workflow/DataFlowMapper2';
+import { useWorkflows } from '@/context/WorkflowContext';
+import ToolSelector from '@/components/workflow/ToolSelector';
 
 interface ToolActionEditorProps {
     step: WorkflowStep;

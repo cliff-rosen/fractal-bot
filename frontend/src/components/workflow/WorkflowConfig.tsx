@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Schema, ValueType, SchemaValueType } from '../types/schema';
-import { WorkflowVariable, createBasicSchema, WorkflowVariableName } from '../types/workflows';
-import { useWorkflows } from '../context/WorkflowContext';
-import { FileInfo } from '../lib/api/fileApi';
-import Dialog from './common/Dialog';
-import FileLibrary from './FileLibrary';
-import { fileApi } from '../lib/api/fileApi';
-import SchemaEditor from './common/SchemaEditor';
-import SchemaValueEditor from './common/SchemaValueEditor';
-import VariableRenderer from './common/VariableRenderer';
+
+import { Schema, ValueType, SchemaValueType } from '@/types/schema';
+import { WorkflowVariable, createBasicSchema, WorkflowVariableName } from '@/types/workflows';
+import { useWorkflows } from '@/context/WorkflowContext';
+import { FileInfo } from '@/lib/api/fileApi';
+import Dialog from '@/components/common/Dialog';
+import FileLibrary from '@/components/FileLibrary';
+import { fileApi } from '@/lib/api/fileApi';
+import SchemaEditor from '@/components/common/SchemaEditor';
+import SchemaValueEditor from '@/components/common/SchemaValueEditor';
+import VariableRenderer from '@/components/common/VariableRenderer';
+import { useState } from 'react';
 
 const VALUE_TYPES: ValueType[] = ['string', 'number', 'boolean', 'file', 'object'];
 

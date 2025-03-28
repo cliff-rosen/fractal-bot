@@ -2,22 +2,18 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 // Types
-import {
-    WorkflowStep,
-    WorkflowStepType
-} from '../types/workflows';
-import type { Workflow } from '../types/workflows';
+import { WorkflowStep, WorkflowStepType } from '@/types/workflows';
 
 // Context
-import { useWorkflows } from '../context/WorkflowContext';
+import { useWorkflows } from '@/context/WorkflowContext';
 
 // Page components
-import WorkflowIOEditor from '../components/WorkflowConfig';
-import WorkflowStepsList from '../components/WorkflowStepsList';
-import StepDetail from '../components/StepDetail';
-import WorkflowNavigation from '../components/WorkflowNavigation';
-import WorkflowMenuBar from '../components/WorkflowMenuBar';
-import InputStepRunner from '../components/InputStepRunner';
+import WorkflowIOEditor from '@/components/workflow/WorkflowConfig';
+import WorkflowStepsList from '@/components/workflow/WorkflowStepsList';
+import StepDetail from '@/components/workflow/StepDetail';
+import WorkflowNavigation from '@/components/workflow/WorkflowNavigation';
+import WorkflowMenuBar from '@/components/workflow/WorkflowMenuBar';
+import InputStepRunner from '@/components/workflow/InputStepRunner';
 
 
 const Workflow: React.FC = () => {

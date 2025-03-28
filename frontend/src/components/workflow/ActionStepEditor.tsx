@@ -2,12 +2,12 @@
 // This is for editing action steps in edit mode 
 
 import React, { useEffect, useState } from 'react';
-import { WorkflowStep, WorkflowStepType } from '../types/workflows';
-import { Tool } from '../types/tools';
-import { toolApi } from '../lib/api/toolApi';
-import EvaluationStepEditor from './EvaluationStepEditor';
-import ToolActionEditor from './ToolActionEditor';
-import { useWorkflows } from '../context/WorkflowContext';
+import { WorkflowStep, WorkflowStepType } from '@/types/workflows';
+import { Tool } from '@/types/tools';
+import { toolApi } from '@/lib/api/toolApi';
+import EvaluationStepEditor from '@/components/workflow/EvaluationStepEditor';
+import ToolActionEditor from '@/components/workflow/ToolActionEditor';
+import { useWorkflows } from '@/context/WorkflowContext';
 
 interface ActionStepEditorProps {
     step: WorkflowStep;

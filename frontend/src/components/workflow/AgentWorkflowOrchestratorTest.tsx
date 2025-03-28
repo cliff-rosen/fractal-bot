@@ -7,17 +7,17 @@ import {
     WorkflowCompleteEvent,
     AgentWorkflowEventType,
     OrchestrationStatus
-} from '../lib/workflow/agent/AgentWorkflowOrchestrator';
-import { AgentWorkflowEngine } from '../lib/workflow/agent/AgentWorkflowEngine';
+} from '../../lib/workflow/agent/AgentWorkflowOrchestrator';
+import { AgentWorkflowEngine } from '../../lib/workflow/agent/AgentWorkflowEngine';
 import AgentWorkflowStatusDisplay, { AgentWorkflowStatusDisplayRef } from './AgentWorkflowStatusDisplay';
 import {
     AgentWorkflowChain,
     SAMPLE_WORKFLOW_CHAIN
-} from '../types/agent-workflows';
+} from '../../types/agent-workflows';
 import {
     WorkflowVariable,
     WorkflowVariableRole
-} from '../types/workflows';
+} from '../../types/workflows';
 
 // Use a different name to avoid conflict with the DOM ErrorEvent
 interface WorkflowErrorEvent {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Schema, SchemaValueType } from '../types/schema';
-import FileLibrary from './FileLibrary';
+import { Schema, SchemaValueType } from '../../types/schema';
+import FileLibrary from '../FileLibrary';
 
 interface SchemaFormProps {
     schema: Schema;

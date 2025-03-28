@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { WorkflowVariable, WorkflowVariableName } from '../types/workflows';
-import { Schema } from '../types/schema';
-import { getTypeColor, isCompatibleType } from '../lib/utils/variableUIUtils';
+import { WorkflowVariable, WorkflowVariableName } from '@/types/workflows';
+import { Schema } from '@/types/schema';
+import { getTypeColor, isCompatibleType } from '@/lib/utils/variableUIUtils';
 
 interface VariablePathModalProps {
     isOpen: boolean;
