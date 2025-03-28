@@ -254,15 +254,8 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({ schema, onChange, onCancel,
         });
     };
 
-    const handleDone = () => {
-        if (editMode === 'json') {
-            handleJsonChange(jsonText);
-        }
-        if (onCancel) onCancel();
-    };
-
     return (
-        <div className={`${compact ? 'space-y-2' : 'space-y-4'}`}>
+        <div className={`space-y-4 ${compact ? 'text-sm' : ''}`}>
             <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2 flex-wrap">
                     <label className={`block ${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-700 dark:text-gray-300 mr-2`}>
@@ -503,13 +496,6 @@ const SchemaEditor: React.FC<SchemaEditorProps> = ({ schema, onChange, onCancel,
                             Cancel
                         </button>
                     )}
-                    <button
-                        type="button"
-                        onClick={handleDone}
-                        className={`${compact ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'} bg-blue-600 text-white rounded-md hover:bg-blue-700`}
-                    >
-                        Done
-                    </button>
                 </div>
             )}
         </div>
