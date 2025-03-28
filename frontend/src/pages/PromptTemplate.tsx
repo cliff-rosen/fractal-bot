@@ -9,6 +9,8 @@ import { Schema, SchemaValueType } from '../types/schema';
 import FileLibrary from '../components/FileLibrary';
 import Dialog from '../components/common/Dialog';
 import { fileApi } from '../lib/api/fileApi';
+import { JsonRenderer } from '../components/common/JsonRenderer';
+import { MarkdownRenderer } from '../components/common/MarkdownRenderer';
 
 const defaultOutputSchema: Schema = {
     type: 'string',
@@ -378,9 +380,9 @@ const PromptTemplate: React.FC = () => {
                     title="Test Template"
                     maxWidth="4xl"
                 >
-                    <div className="space-y-6">
+                    <div className="flex flex-col h-[80vh]">
                         {/* Test Parameters */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4 mb-6">
                             {tokens.map((token) => (
                                 <div key={token.name}>
                                     <label htmlFor={`test-${token.name}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -421,36 +423,54 @@ const PromptTemplate: React.FC = () => {
                         </div>
 
                         {/* Test Results */}
-                        {testResult && (
-                            <div className="mt-6">
-                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Results</h4>
-                                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response</h4>
-                                    <pre className="text-sm font-mono text-gray-900 dark:text-white whitespace-pre-wrap overflow-auto max-h-[400px]">
-                                        {testResult.response.type === 'object' ? JSON.stringify(testResult.response, null, 2) : testResult.response}
-                                    </pre>
-                                </div>
-                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Messages</h4>
-                                <pre className="text-sm font-mono text-gray-900 dark:text-white whitespace-pre-wrap overflow-auto max-h-[400px]">
-                                    {testResult.messages.map((message: any, index: number) => (
-                                        <div key={index}>
-                                            <span className="font-bold">{message.role}:</span>
-                                            <span>{message.content ? JSON.stringify(message.content, null, 2) : message.content}</span>
+                        <div className="flex-1 overflow-hidden flex flex-col">
+                            {testResult && (
+                                <div className="flex-1 overflow-hidden flex flex-col space-y-4">
+                                    {/* Response Section */}
+                                    <div className="flex-1 overflow-hidden flex flex-col">
+                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response</h4>
+                                        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                                            {typeof testResult.response === 'object' ? (
+                                                <JsonRenderer data={testResult.response} />
+                                            ) : (
+                                                <MarkdownRenderer content={String(testResult.response)} />
+                                            )}
                                         </div>
-                                    ))}
-                                </pre>
-                            </div>
-                        )}
+                                    </div>
 
-                        {/* Error Message */}
-                        {error && (
-                            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-                            </div>
-                        )}
+                                    {/* Messages Section */}
+                                    <div className="flex-1 overflow-hidden flex flex-col">
+                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Messages</h4>
+                                        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-4">
+                                            {testResult.messages.map((message: any, index: number) => (
+                                                <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0">
+                                                    <div className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">
+                                                        {message.role}
+                                                    </div>
+                                                    <div className="text-sm">
+                                                        {typeof message.content === 'object' ? (
+                                                            <JsonRenderer data={message.content} />
+                                                        ) : (
+                                                            <MarkdownRenderer content={message.content} />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Error Message */}
+                            {error && (
+                                <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                                    <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Action Buttons */}
-                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
                             <button
                                 onClick={() => setShowTestDialog(false)}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
