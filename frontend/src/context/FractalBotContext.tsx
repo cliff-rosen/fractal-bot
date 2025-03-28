@@ -268,16 +268,31 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             // Create execution context
             const context: AgentExecutionContext = {
                 agent,
-                inputParameters: agent.input_parameters,
-                outputAssetIds: agent.output_asset_ids,
-                assets: state.assets,
-                updateAsset: (assetId: string, updates: Partial<Asset>) => {
-                    updateAsset(assetId, updates);
-                }
+                inputAssets: agent.input_asset_ids?.map(id => state.assets[id]).filter(Boolean) as Asset[],
+                outputAssets: agent.output_asset_ids?.map(id => state.assets[id]).filter(Boolean) as Asset[],
+                state: state
             };
 
             // Execute the agent
             const result = await executor.execute(context);
+
+            // Update output assets with the results
+            if (result.success && result.outputAssets) {
+                result.outputAssets.forEach((outputAsset, index) => {
+                    const assetId = agent.output_asset_ids?.[index];
+                    if (assetId) {
+                        updateAsset(assetId, {
+                            ...outputAsset,
+                            status: AssetStatus.READY,
+                            metadata: {
+                                ...outputAsset.metadata,
+                                updatedAt: new Date().toISOString(),
+                                agentId: agent.agent_id
+                            }
+                        });
+                    }
+                });
+            }
 
             // Update agent status to completed
             updateAgent(agentId, {
@@ -293,9 +308,9 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         } catch (error) {
             console.error(`Error executing agent ${agentId}:`, error);
 
-            // Update agent status to failed
+            // Update agent status to error
             updateAgent(agentId, {
-                status: AgentStatus.FAILED,
+                status: AgentStatus.ERROR,
                 metadata: {
                     ...agent.metadata,
                     lastExecutedAt: new Date().toISOString(),

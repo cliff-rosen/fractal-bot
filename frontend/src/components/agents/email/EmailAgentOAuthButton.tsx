@@ -1,25 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { api } from '@/lib/api';
+import { emailApi } from '@/lib/api/emailApi';
 import { useState, useEffect } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 export default function EmailAgentOAuthButton() {
     const { isAuthenticated } = useAuth();
     const [isConnecting, setIsConnecting] = useState(false);
+    const [isDisconnecting, setIsDisconnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isGmailConnected, setIsGmailConnected] = useState(false);
 
     useEffect(() => {
         const checkGmailConnection = async () => {
             if (!isAuthenticated) return;
-
-            try {
-                const response = await api.get('/api/email/labels');
-                setIsGmailConnected(response.data.success);
-            } catch (error) {
-                setIsGmailConnected(false);
-            }
+            setIsGmailConnected(await emailApi.checkConnection());
         };
 
         checkGmailConnection();
@@ -30,14 +25,10 @@ export default function EmailAgentOAuthButton() {
             setIsConnecting(true);
             setError(null);
 
-            const response = await api.get('/api/email/auth/init');
-
-            if (!response.data.url) {
-                throw new Error('No authorization URL received from server');
-            }
+            const authUrl = await emailApi.initOAuth();
 
             const popup = window.open(
-                response.data.url,
+                authUrl,
                 'Google OAuth',
                 'width=600,height=700,menubar=no,toolbar=no,location=no,status=no'
             );
@@ -55,7 +46,7 @@ export default function EmailAgentOAuthButton() {
 
         } catch (error: any) {
             console.error('Error initiating Google OAuth:', error);
-            const errorMessage = error.response?.data?.detail || error.message || 'Failed to connect to Google';
+            const errorMessage = error.message || 'Failed to connect to Google';
 
             if (errorMessage.includes('Scope has changed')) {
                 setError('Gmail permissions have changed. Please reconnect your account.');
@@ -69,15 +60,41 @@ export default function EmailAgentOAuthButton() {
         }
     };
 
+    const handleDisconnect = async () => {
+        try {
+            setIsDisconnecting(true);
+            setError(null);
+            await emailApi.disconnect();
+            setIsGmailConnected(false);
+        } catch (error: any) {
+            console.error('Error disconnecting Gmail:', error);
+            setError(error.message || 'Failed to disconnect Gmail');
+        } finally {
+            setIsDisconnecting(false);
+        }
+    };
+
     if (!isAuthenticated) {
         return null;
     }
 
     if (isGmailConnected) {
         return (
-            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Connected</span>
+            <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Connected</span>
+                </div>
+                <Button
+                    onClick={handleDisconnect}
+                    disabled={isDisconnecting}
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                    <XCircle className="h-4 w-4 mr-1" />
+                    {isDisconnecting ? 'Disconnecting...' : 'Disconnect'}
+                </Button>
             </div>
         );
     }

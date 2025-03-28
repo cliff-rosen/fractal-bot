@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Asset } from '../types/state';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import DOMPurify from 'dompurify';
+import { getAssetContent } from '../utils/assetUtils';
 
 interface EmailMessage {
     id: string;
@@ -25,7 +26,7 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const emailsPerPage = 10;
 
-    const emails = asset.content as EmailMessage[];
+    const emails = getAssetContent(asset) as EmailMessage[];
     const totalPages = Math.ceil(emails.length / emailsPerPage);
     const currentEmails = emails.slice(
         currentPage * emailsPerPage,

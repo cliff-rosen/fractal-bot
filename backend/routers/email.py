@@ -363,4 +363,39 @@ async def get_message(
         return EmailAgentResponse(
             success=False,
             error=str(e)
+        )
+
+@router.post("/auth/disconnect")
+async def disconnect_gmail(
+    user = Depends(validate_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Disconnect Gmail by removing OAuth2 credentials
+    
+    Args:
+        user: Authenticated user
+        db: Database session
+        
+    Returns:
+        JSON response with success status
+    """
+    try:
+        # Find and delete the user's Gmail credentials
+        credentials = db.query(GoogleOAuth2Credentials).filter(
+            GoogleOAuth2Credentials.user_id == user.user_id
+        ).first()
+        
+        if credentials:
+            db.delete(credentials)
+            db.commit()
+            return {"success": True, "message": "Gmail disconnected successfully"}
+        else:
+            return {"success": True, "message": "Gmail was not connected"}
+            
+    except Exception as e:
+        logger.error(f"Error disconnecting Gmail: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error disconnecting Gmail: {str(e)}"
         ) 

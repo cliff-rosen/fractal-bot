@@ -2,17 +2,12 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useFractalBot } from '@/context/FractalBotContext';
+import { EmailSearchParams } from '@/lib/api/emailApi';
 
 interface EmailSearchButtonProps {
     agentId: string;
     operation: string;
-    searchParams: {
-        folders?: string[];
-        query_terms?: string[];
-        max_results?: number;
-        include_attachments?: boolean;
-        include_metadata?: boolean;
-    };
+    searchParams: EmailSearchParams;
 }
 
 export default function EmailSearchButton({ agentId, operation, searchParams }: EmailSearchButtonProps) {
@@ -22,23 +17,17 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
     const handleOperation = async () => {
         if (!agentId) return;
 
-        console.log('Executing operation:', {
-            agentId,
-            operation,
-            searchParams
-        });
-
         setIsLoading(true);
 
         try {
-            // Update the agent with current parameters
+            // Get the current agent state
             const currentAgent = state.agents[agentId];
             if (!currentAgent) {
                 console.error('Agent not found:', agentId);
                 return;
             }
 
-            // Update the agent with current parameters while preserving existing ones
+            // Update the agent with current parameters
             updateAgent(agentId, {
                 input_parameters: {
                     ...currentAgent.input_parameters,
@@ -47,7 +36,7 @@ export default function EmailSearchButton({ agentId, operation, searchParams }: 
                 }
             });
 
-            // Execute the agent using its ID
+            // Execute the agent
             await executeAgent(agentId);
         } catch (error) {
             console.error('Error executing agent:', error);

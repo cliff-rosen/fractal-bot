@@ -4,6 +4,7 @@ import { XMarkIcon, DocumentIcon, CheckCircleIcon, DocumentDuplicateIcon, XCircl
 import { FileType, DataType, Asset, AssetStatus } from '@/types/asset';
 import { getAssetIcon } from '../utils/assetUtils';
 import { EmailListView } from './EmailListView';
+import { GenericListView } from './GenericListView';
 
 interface AssetModalProps {
     asset: Asset;
@@ -85,6 +86,11 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
         // Special handling for email list data type
         if (asset.dataType === DataType.EMAIL_LIST) {
             return <EmailListView asset={asset} />;
+        }
+
+        // Special handling for generic list data type
+        if (asset.dataType === DataType.GENERIC_LIST) {
+            return <GenericListView asset={asset} />;
         }
 
         // Default view for other types
