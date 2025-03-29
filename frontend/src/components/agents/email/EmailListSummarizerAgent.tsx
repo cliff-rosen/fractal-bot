@@ -74,7 +74,7 @@ export default function EmailListSummarizerAgent({ agentId }: EmailListSummarize
                                 Edit
                             </Button>
                         )}
-                        {agent.status === AgentStatus.IDLE && (
+                        {(agent.status === AgentStatus.IDLE || true) && (
                             <EmailListSummarizerButton agentId={agentId} />
                         )}
                     </div>

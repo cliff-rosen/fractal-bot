@@ -3,6 +3,7 @@ import { Agent, AgentType } from '@/types/agent';
 import { AgentExecutor, AgentExecutionContext, AgentExecutionResult } from '../types';
 import { EmailMessage } from '@/types/email';
 import { EmailSummarizerAgentExecutor } from './emailSummarizerAgent';
+import { getAssetContent } from '@/lib/utils/assets/assetUtils';
 
 export class EmailListSummarizerAgentExecutor implements AgentExecutor {
     type = AgentType.EMAIL_LIST_SUMMARIZER;
@@ -15,6 +16,7 @@ export class EmailListSummarizerAgentExecutor implements AgentExecutor {
     }
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
+        console.log('EmailListSummarizerAgentExecutor: execute');
         try {
             const { agent, inputAssets } = context;
             const targetAssetId = agent.output_asset_ids?.[0] || `email_list_summary_${Date.now()}`;
@@ -24,7 +26,8 @@ export class EmailListSummarizerAgentExecutor implements AgentExecutor {
             }
 
             const inputAsset = inputAssets[0];
-            const emailMessages = inputAsset.content as EmailMessage[];
+            let emailMessages = getAssetContent(inputAsset) as EmailMessage[];
+            console.log('EmailListSummarizerAgentExecutor: emailMessages', emailMessages);
 
             if (!Array.isArray(emailMessages)) {
                 throw new Error('Input asset content must be an array of email messages');
@@ -63,6 +66,8 @@ export class EmailListSummarizerAgentExecutor implements AgentExecutor {
                     });
                 }
             }
+
+            console.log('EmailListSummarizerAgentExecutor: summaries', summaries);
 
             const asset = {
                 asset_id: targetAssetId,

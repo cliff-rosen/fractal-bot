@@ -100,8 +100,8 @@ export function createEmailSearchAgent(
         outputAssetConfigs: [{
             name: "Search Results",
             description: "List of emails matching the search criteria",
-            fileType: "json",
-            dataType: "email_list"
+            fileType: FileType.JSON,
+            dataType: DataType.EMAIL_LIST
         }]
     });
 } 

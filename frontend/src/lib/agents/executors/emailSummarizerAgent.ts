@@ -70,7 +70,19 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
     private generateSummary(email: EmailMessage): string {
         // Fake summarization - in a real implementation, this would use an LLM
         const date = new Date(parseInt(email.date)).toLocaleString();
-        const body = email.body.plain || email.body.html || email.snippet;
+
+        // Get the email body content, falling back to snippet if no body is available
+        let bodyContent = '';
+        if (email.body) {
+            bodyContent = email.body.plain || email.body.html || email.snippet || '';
+        } else {
+            bodyContent = email.snippet || '';
+        }
+
+        // If we still don't have any content, use a default message
+        if (!bodyContent) {
+            bodyContent = 'No content available';
+        }
 
         return `Email Summary:
 From: ${email.from}
@@ -79,7 +91,7 @@ Subject: ${email.subject}
 Date: ${date}
 
 Summary:
-${body.substring(0, 200)}...`;
+${bodyContent.substring(0, 200)}...`;
     }
 
     validateInputs(context: AgentExecutionContext): boolean {
