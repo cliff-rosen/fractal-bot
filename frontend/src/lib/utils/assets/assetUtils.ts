@@ -75,13 +75,29 @@ export const getDataType = (file: File): DataType => {
     return DataType.UNSTRUCTURED;
 };
 
+// content can be primitive, object, or array
+// if object, return object[dataType]
+// if array, return array
+// if primitive, return primitive
+// if null or undefined, return null
 export const getAssetContent = (asset: Asset) => {
-    // if object with property that matches asset dataType return it
+    // Handle null/undefined content
+    if (!asset.content) {
+        return null;
+    }
+
+    // If content is a primitive (string, number, etc.), return it directly
+    if (typeof asset.content !== 'object') {
+        return asset.content;
+    }
+
+    // If content is an object and has a property matching the dataType, return that property
     if (Object.keys(asset.content).includes(asset.dataType)) {
         console.log('getAssetContent: dataType: ', asset.dataType);
         console.log('getAssetContent: asset.content[asset.dataType]: ', asset.content[asset.dataType]);
         return asset.content[asset.dataType];
     }
 
+    // If content is an object but doesn't have a matching dataType property, return the whole object
     return asset.content;
 }; 
