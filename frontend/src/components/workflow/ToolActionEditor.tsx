@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { WorkflowStep, WorkflowVariableName, WorkflowVariable, Workflow, addWorkflowVariable, EnhancedOutputMapping } from '@/types/workflows';
 import { Tool, ToolParameterName, ToolOutputName } from '@/types/tools';
 import { toolApi } from '@/lib/api/toolApi';
+import { ToolEngine } from '@/lib/tool/toolEngine';
 import PromptTemplateSelector from '@/components/workflow/PromptTemplateSelector';
 import DataFlowMapper2 from '@/components/workflow/DataFlowMapper2';
 import { useWorkflows } from '@/context/WorkflowContext';
@@ -37,7 +38,10 @@ const ToolActionEditor: React.FC<ToolActionEditorProps> = ({
         if (!step.tool) return;
 
         try {
-            const updatedStep = await toolApi.updateWorkflowStepWithTemplate(step, templateId);
+            const updatedStep = await ToolEngine.updateWorkflowStepWithTemplate(
+                step,
+                templateId
+            );
             onStepUpdate(updatedStep);
         } catch (err) {
             console.error('Error updating step with template:', err);

@@ -3,11 +3,13 @@ import {
     ToolOutputs,
     ToolOutputName,
     ResolvedParameters,
-    ToolParameterName
+    ToolParameterName,
+    ToolSignature
 } from '../../types/tools';
 import { SchemaValueType, SchemaObjectType } from '../../types/schema';
 import { executeTool } from './toolRegistry';
-import { WorkflowStep, StepExecutionResult, WorkflowVariableRole } from '../../types/workflows';
+import { WorkflowStep, StepExecutionResult, WorkflowVariableRole, EnhancedOutputMapping } from '../../types/workflows';
+import { toolApi } from '../api/toolApi';
 
 export class ToolEngine {
     /**
@@ -210,5 +212,52 @@ export class ToolEngine {
             default:
                 return String(value);
         }
+    }
+
+    /**
+     * Updates a workflow step with a new prompt template
+     */
+    static async updateWorkflowStepWithTemplate(
+        step: WorkflowStep,
+        templateId: string
+    ): Promise<WorkflowStep> {
+        if (!step.tool) {
+            throw new Error('Step must have a tool to update with template');
+        }
+
+        const signature = await toolApi.createToolSignatureFromTemplate(templateId);
+
+        // Only clear mappings if the parameters/outputs have changed
+        const parameterMappings = { ...step.parameter_mappings };
+        const outputMappings = { ...step.output_mappings };
+
+        // Clear parameter mappings for parameters that no longer exist
+        if (step.parameter_mappings) {
+            Object.keys(step.parameter_mappings).forEach(param => {
+                if (!signature.parameters.find((p: { name: string }) => p.name === param)) {
+                    delete parameterMappings[param as ToolParameterName];
+                }
+            });
+        }
+
+        // Clear output mappings for outputs that no longer exist
+        if (step.output_mappings) {
+            Object.keys(step.output_mappings).forEach(output => {
+                if (!signature.outputs.find((o: { name: string }) => o.name === output)) {
+                    delete outputMappings[output as ToolOutputName];
+                }
+            });
+        }
+
+        return {
+            ...step,
+            prompt_template_id: templateId,
+            parameter_mappings: parameterMappings,
+            output_mappings: outputMappings,
+            tool: {
+                ...step.tool,
+                signature
+            }
+        };
     }
 } 

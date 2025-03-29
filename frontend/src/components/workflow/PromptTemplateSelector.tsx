@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { WorkflowStep } from '@/types/workflows';
 import { usePromptTemplates } from '@/context/PromptTemplateContext';
 import { toolApi } from '@/lib/api/toolApi';
+import { ToolEngine } from '@/lib/tool/toolEngine';
 import TemplateEditorDialog from '@/components/workflow/TemplateEditorDialog';
 
 interface PromptTemplateSelectorProps {
@@ -31,7 +32,10 @@ const PromptTemplateSelector: React.FC<PromptTemplateSelectorProps> = ({
             setIsCreating(true);
         } else {
             try {
-                await toolApi.updateWorkflowStepWithTemplate(step, templateId);
+                await ToolEngine.updateWorkflowStepWithTemplate(
+                    step,
+                    templateId
+                );
                 onTemplateChange(templateId);
             } catch (err) {
                 console.error('Error updating step with template:', err);
