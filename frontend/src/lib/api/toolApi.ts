@@ -58,6 +58,16 @@ export const toolApi = {
         return response.data;
     },
 
+    executeLLM: async (llmParams: any): Promise<any> => {
+        const response = await api.post('/api/execute_llm', llmParams);
+        return response.data;
+    },
+
+    searchPubMed: async (query: string): Promise<any> => {
+        const response = await api.get('/api/pubmed/search', { params: { query } });
+        return response.data;
+    },
+
     // Clear the cache (useful when we need to force a refresh)
     clearCache: () => {
         toolsCache = null;

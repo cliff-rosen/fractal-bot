@@ -78,8 +78,7 @@ export const executePubMedSearch = async (_toolId: string, parameters: ResolvedP
     console.log('Executing PubMed search with parameters:', parameters);
     const query = (parameters as Record<string, string>)['query'];
     try {
-        const response = await api.get('/api/pubmed/search', { params: { query } });
-        const articles = response.data;
+        const articles = await toolApi.searchPubMed(query);
 
         // Format each article into a structured result
         const formattedResults = articles.map((article: any) =>
@@ -111,10 +110,10 @@ export const executeLLM = async (toolId: string, parameters: ResolvedParameters)
         const llmParams = await prepareLLMParameters(tool, parameters);
 
         // Call the backend LLM execution endpoint
-        const response = await api.post('/api/execute_llm', llmParams);
+        const response = await toolApi.executeLLM(llmParams);
 
         return {
-            ['response' as ToolOutputName]: response.data.response
+            ['response' as ToolOutputName]: response.response
         };
 
     } catch (error: any) {
