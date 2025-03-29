@@ -36,6 +36,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({ asset, onClick, onDelete }
         }
     };
 
+
     return (
         <div
             className="group relative bg-white dark:bg-gray-700/50 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 cursor-pointer w-full min-h-[80px]"

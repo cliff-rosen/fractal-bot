@@ -247,6 +247,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
     const executeAgent = useCallback(async (agentId: string): Promise<AgentExecutionResult> => {
         const agent = state.agents[agentId];
+        console.log('executeAgent', agent)
         if (!agent) {
             throw new Error(`Agent ${agentId} not found`);
         }

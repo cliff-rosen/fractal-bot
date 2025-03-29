@@ -9,6 +9,7 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
     fileType = FileType.TXT;
 
     async execute(context: AgentExecutionContext): Promise<AgentExecutionResult> {
+        console.log('EmailSummarizerAgentExecutor: execute')
         try {
             const { agent, inputAssets } = context;
             const targetAssetId = agent.output_asset_ids?.[0] || `email_summary_${Date.now()}`;

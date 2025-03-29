@@ -128,6 +128,11 @@ const FractalBotContent: React.FC = () => {
         }
     };
 
+    const handleApproveAgent = (agent: Agent) => {
+        console.log('handleApproveAgent', agent)
+        
+    };
+
     const handleRetrieveAsset = (asset: Asset) => {
         // Make sure we're using the asset's ID from the database
         const assetToAdd = {
@@ -192,6 +197,7 @@ const FractalBotContent: React.FC = () => {
                 <AgentsSection
                     agents={Object.values(agents)}
                     onAgentClick={handleAgentClick}
+                    onApproveAgent={handleApproveAgent}
                 />
             </div>
 

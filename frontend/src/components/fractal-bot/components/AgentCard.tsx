@@ -3,6 +3,7 @@ import { ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons
 import { Agent, AgentStatus, AgentType } from '../types/state';
 import EmailSearchAgent from '@/components/agents/email/EmailSearchAgent';
 import EmailListSummarizerAgent from '@/components/agents/email/EmailListSummarizerAgent';
+import { useFractalBot } from '@/context/FractalBotContext';
 
 interface AgentCardProps {
     agent: Agent;
@@ -20,7 +21,28 @@ export const AgentCard: React.FC<AgentCardProps> = ({
     onRejectAgent
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const isProposed = agent.status === AgentStatus.IDLE;
+    const { executeAgent, updateAgent, state } = useFractalBot();
+
+    const handleApproveAgent = async () => {
+        console.log('handleApproveAgent', agent)
+        setIsLoading(true);
+        try {
+            await executeAgent(agent.agent_id);
+        } catch (error) {
+            console.error('Error executing agent:', error);
+        } finally {
+            setIsLoading(false);
+        }
+        updateAgent(agent.agent_id, {
+            status: AgentStatus.COMPLETED
+        });
+    };
+
+    const handleRejectAgent = () => {
+        console.log('handleRejectAgent', agent)
+    };
 
     // Special handling for email agents
     if (agent.type === AgentType.GET_MESSAGES || agent.type === AgentType.LIST_LABELS) {
@@ -136,8 +158,9 @@ export const AgentCard: React.FC<AgentCardProps> = ({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            onApproveAgent?.(agent);
+                            handleApproveAgent();
                         }}
+                        disabled={isLoading}
                         className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors"
                     >
                         <CheckIcon className="h-4 w-4" />
@@ -146,7 +169,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            onRejectAgent?.(agent);
+                            handleRejectAgent();
                         }}
                         className="flex items-center gap-1 px-3 py-1 text-sm bg-red-100 text-red-800 rounded-full hover:bg-red-200 transition-colors"
                     >
