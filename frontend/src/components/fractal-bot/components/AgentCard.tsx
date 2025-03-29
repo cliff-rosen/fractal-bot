@@ -102,7 +102,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({
                 </span>
             </div>
 
-            {/* Input Parameters Section */}
+            {/* Expandable Details Section */}
             <div className="mt-2">
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
@@ -111,51 +111,91 @@ export const AgentCard: React.FC<AgentCardProps> = ({
                     {isExpanded ? (
                         <>
                             <ChevronUpIcon className="h-4 w-4" />
-                            Hide Parameters
+                            Hide Details
                         </>
                     ) : (
                         <>
                             <ChevronDownIcon className="h-4 w-4" />
-                            Show Parameters
+                            Show Details
                         </>
                     )}
                 </button>
                 {isExpanded && (
-                    <div className="mt-2 p-3 bg-white/50 dark:bg-gray-700/50 rounded border border-gray-200 dark:border-gray-600">
-                        <div className="space-y-2">
-                            {Object.entries(isEditing ? editedParameters : agent.input_parameters).map(([key, value]) => (
-                                <div key={key} className="text-sm">
-                                    <Label className="text-gray-700 dark:text-gray-300">{key}</Label>
-                                    {isEditing ? (
-                                        typeof value === 'boolean' ? (
-                                            <div className="flex items-center space-x-2 mt-1">
-                                                <Switch
-                                                    checked={value}
-                                                    onCheckedChange={(checked) => setEditedParameters(prev => ({
+                    <div className="mt-2 space-y-4">
+                        {/* Parameters Section */}
+                        <div className="p-3 bg-white/50 dark:bg-gray-700/50 rounded border border-gray-200 dark:border-gray-600">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Parameters</h4>
+                            <div className="space-y-2">
+                                {Object.entries(isEditing ? editedParameters : agent.input_parameters).map(([key, value]) => (
+                                    <div key={key} className="text-sm">
+                                        <Label className="text-gray-700 dark:text-gray-300">{key}</Label>
+                                        {isEditing ? (
+                                            typeof value === 'boolean' ? (
+                                                <div className="flex items-center space-x-2 mt-1">
+                                                    <Switch
+                                                        checked={value}
+                                                        onCheckedChange={(checked) => setEditedParameters(prev => ({
+                                                            ...prev,
+                                                            [key]: checked
+                                                        }))}
+                                                    />
+                                                    <span className="text-gray-600 dark:text-gray-400">{value ? 'Yes' : 'No'}</span>
+                                                </div>
+                                            ) : (
+                                                <Input
+                                                    type={typeof value === 'number' ? 'number' : 'text'}
+                                                    value={String(value)}
+                                                    onChange={(e) => setEditedParameters(prev => ({
                                                         ...prev,
-                                                        [key]: checked
+                                                        [key]: typeof value === 'number' ? Number(e.target.value) : e.target.value
                                                     }))}
+                                                    className="mt-1"
                                                 />
-                                                <span className="text-gray-600 dark:text-gray-400">{value ? 'Yes' : 'No'}</span>
-                                            </div>
+                                            )
                                         ) : (
-                                            <Input
-                                                type={typeof value === 'number' ? 'number' : 'text'}
-                                                value={String(value)}
-                                                onChange={(e) => setEditedParameters(prev => ({
-                                                    ...prev,
-                                                    [key]: typeof value === 'number' ? Number(e.target.value) : e.target.value
-                                                }))}
-                                                className="mt-1"
-                                            />
-                                        )
-                                    ) : (
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-                                        </span>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                            </span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Input Assets Section */}
+                        <div className="p-3 bg-white/50 dark:bg-gray-700/50 rounded border border-gray-200 dark:border-gray-600">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Input Assets</h4>
+                            <div className="space-y-2">
+                                {agent.input_asset_ids?.map(assetId => {
+                                    const asset = state.assets[assetId];
+                                    return asset ? (
+                                        <div key={assetId} className="text-sm">
+                                            <div className="font-medium text-gray-700 dark:text-gray-300">{asset.name}</div>
+                                            <div className="text-gray-600 dark:text-gray-400">{asset.description}</div>
+                                        </div>
+                                    ) : null;
+                                }) || (
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">No input assets</div>
                                     )}
-                                </div>
-                            ))}
+                            </div>
+                        </div>
+
+                        {/* Output Assets Section */}
+                        <div className="p-3 bg-white/50 dark:bg-gray-700/50 rounded border border-gray-200 dark:border-gray-600">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Output Assets</h4>
+                            <div className="space-y-2">
+                                {agent.output_asset_ids?.map(assetId => {
+                                    const asset = state.assets[assetId];
+                                    return asset ? (
+                                        <div key={assetId} className="text-sm">
+                                            <div className="font-medium text-gray-700 dark:text-gray-300">{asset.name}</div>
+                                            <div className="text-gray-600 dark:text-gray-400">{asset.description}</div>
+                                        </div>
+                                    ) : null;
+                                }) || (
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">No output assets</div>
+                                    )}
+                            </div>
                         </div>
                     </div>
                 )}
