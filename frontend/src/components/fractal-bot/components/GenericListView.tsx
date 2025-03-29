@@ -12,12 +12,12 @@ export const GenericListView: React.FC<GenericListViewProps> = ({ asset }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const itemsPerPage = 10;
 
-    const items = getAssetContent(asset) as any[];
-    const totalPages = Math.ceil(items.length / itemsPerPage);
-    const currentItems = items.slice(
+    const items = getAssetContent(asset) as any[] | null;
+    const totalPages = items ? Math.ceil(items.length / itemsPerPage) : 0;
+    const currentItems = items ? items.slice(
         currentPage * itemsPerPage,
         (currentPage + 1) * itemsPerPage
-    );
+    ) : [];
 
     const handleItemClick = (item: any) => {
         setSelectedItem(item);

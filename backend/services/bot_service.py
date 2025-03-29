@@ -273,6 +273,30 @@ class BotService:
                 agent_jobs = response_data.get("agent_jobs", [])
                 direct_assets = response_data.get("assets", [])
                 
+                # Process agent jobs
+                for job in agent_jobs:
+                    # Ensure input_asset_ids is a list
+                    if "input_asset_ids" not in job:
+                        job["input_asset_ids"] = []
+                    elif not isinstance(job["input_asset_ids"], list):
+                        job["input_asset_ids"] = [job["input_asset_ids"]]
+                    
+                    # Validate required fields
+                    if "agentType" not in job:
+                        raise ValueError(f"Agent job missing required field 'agentType'")
+                    if "output_asset_configs" not in job:
+                        raise ValueError(f"Agent job missing required field 'output_asset_configs'")
+                    
+                    # Add default metadata if not present
+                    if "metadata" not in job:
+                        job["metadata"] = {}
+                    if "priority" not in job["metadata"]:
+                        job["metadata"]["priority"] = "medium"
+                    if "tags" not in job["metadata"]:
+                        job["metadata"]["tags"] = []
+                    if "estimated_duration" not in job["metadata"]:
+                        job["metadata"]["estimated_duration"] = "5m"
+                
                 # Process direct assets
                 for asset in direct_assets:
                     if "asset_id" not in asset:

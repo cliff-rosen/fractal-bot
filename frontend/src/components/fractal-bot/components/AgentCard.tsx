@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Agent, AgentStatus, AgentType } from '../types/state';
 import EmailSearchAgent from '@/components/agents/email/EmailSearchAgent';
+import EmailListSummarizerAgent from '@/components/agents/email/EmailListSummarizerAgent';
 
 interface AgentCardProps {
     agent: Agent;
@@ -24,6 +25,10 @@ export const AgentCard: React.FC<AgentCardProps> = ({
     // Special handling for email agents
     if (agent.type === AgentType.GET_MESSAGES || agent.type === AgentType.LIST_LABELS) {
         return <EmailSearchAgent key={agent.agent_id} agent={agent} />;
+    }
+
+    if (agent.type === AgentType.EMAIL_LIST_SUMMARIZER) {
+        return <EmailListSummarizerAgent key={agent.agent_id} agentId={agent.agent_id} />;
     }
 
     return (

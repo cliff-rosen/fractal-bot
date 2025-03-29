@@ -72,6 +72,15 @@ export const getFileType = (file: File): FileType => {
 };
 
 export const getDataType = (file: File): DataType => {
+    // Check file extension first
+    const extension = file.name.split('.').pop()?.toLowerCase();
+
+    // If it's a JSON file, we'll need to check its content
+    if (extension === 'json') {
+        return DataType.GENERIC_LIST;
+    }
+
+    // For other file types, default to unstructured
     return DataType.UNSTRUCTURED;
 };
 

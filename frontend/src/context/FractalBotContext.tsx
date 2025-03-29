@@ -10,6 +10,7 @@ import { assetApi } from '@/lib/api/assetApi';
 import { useToast } from '@/components/ui/use-toast';
 import { agentRegistry, AgentExecutionContext, AgentExecutionResult } from '@/lib/agents';
 import { registerAgentExecutors } from '@/lib/agents';
+import { createAgent } from '@/lib/agents/factory';
 
 interface FractalBotContextType {
     state: FractalBotState;
@@ -193,28 +194,23 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
             // Process agent jobs and create agents
             agentJobs.forEach((job: AgentJob) => {
-                const agentId = crypto.randomUUID();
-                const outputAssetIds = job.output_asset_configs.map(() => crypto.randomUUID());
-
-                // Create the agent
-                const agent: Agent = {
-                    agent_id: agentId,
-                    type: job.agentType as AgentType,
+                // Create the agent using the factory
+                const agent = createAgent({
+                    agentType: job.agentType as AgentType,
                     name: `${job.agentType} Agent`,
                     description: `Agent to execute ${job.agentType} operation`,
-                    status: AgentStatus.IDLE,
-                    input_parameters: job.input_parameters,
-                    output_asset_ids: outputAssetIds,
+                    inputParameters: job.input_parameters,
+                    inputAssetIds: job.input_asset_ids || [],
+                    outputAssetConfigs: job.output_asset_configs,
                     metadata: {
-                        createdAt: new Date().toISOString(),
-                        output_asset_configs: job.output_asset_configs
+                        createdAt: new Date().toISOString()
                     }
-                };
+                });
                 addAgent(agent);
 
                 // Create placeholder output assets
                 job.output_asset_configs.forEach((config: AssetConfig, index: number) => {
-                    const assetId = outputAssetIds[index];
+                    const assetId = agent.output_asset_ids![index];
                     addAsset({
                         asset_id: assetId,
                         name: config.name,
@@ -227,7 +223,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString(),
                             creator: 'bot',
-                            agentId
+                            agentId: agent.agent_id
                         },
                         persistence: {
                             isInDb: false

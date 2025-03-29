@@ -57,12 +57,15 @@ const FractalBotContent: React.FC = () => {
         try {
             // Create a new asset from the file
             const now = new Date().toISOString();
+            const fileType = getFileType(file);
+            const dataType = getDataType(file);
+
             newAsset = {
                 asset_id: `temp_${Date.now()}`,
                 name: file.name,
                 description: `Uploaded file: ${file.name}`,
-                fileType: getFileType(file),
-                dataType: getDataType(file),
+                fileType,
+                dataType,
                 content: null, // Will be set by processFile
                 status: AssetStatus.PENDING,
                 metadata: {
@@ -81,9 +84,19 @@ const FractalBotContent: React.FC = () => {
 
             // Process the file and update asset
             const fileContent = await file.text();
+            let processedContent = fileContent;
+
+            // If it's a JSON file, parse it
+            if (fileType === FileType.JSON) {
+                try {
+                    processedContent = JSON.parse(fileContent);
+                } catch (error) {
+                    throw new Error('Invalid JSON file');
+                }
+            }
 
             updateAsset(newAsset.asset_id, {
-                content: fileContent,
+                content: processedContent,
                 status: AssetStatus.READY,
                 metadata: {
                     ...newAsset.metadata,
