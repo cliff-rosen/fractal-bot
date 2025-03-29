@@ -2,6 +2,8 @@ import { agentRegistry } from './registry';
 import { EmailAccessAgentExecutor } from './executors/emailAccessAgent';
 import { EmailLabelsAgentExecutor } from './executors/emailLabelsAgent';
 import { EmailMessageAgentExecutor } from './executors/emailMessageAgent';
+import { EmailSummarizerAgentExecutor } from './executors/emailSummarizerAgent';
+import { EmailListSummarizerAgentExecutor } from './executors/emailListSummarizerAgent';
 
 
 // Register all agent executors
@@ -10,6 +12,10 @@ export function registerAgentExecutors() {
     agentRegistry.registerExecutor(new EmailAccessAgentExecutor());
     agentRegistry.registerExecutor(new EmailLabelsAgentExecutor());
     agentRegistry.registerExecutor(new EmailMessageAgentExecutor());
+
+    // Register email summarizer agents
+    agentRegistry.registerExecutor(new EmailSummarizerAgentExecutor());
+    agentRegistry.registerExecutor(new EmailListSummarizerAgentExecutor());
 
     // Add more agent registrations here as they are implemented
 }

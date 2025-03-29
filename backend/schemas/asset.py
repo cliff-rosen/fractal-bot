@@ -44,6 +44,8 @@ class DataType(str, Enum):
     EMAIL_LIST = "email_list"
     GENERIC_LIST = "generic_list"
     GENERIC_TABLE = "generic_table"
+    EMAIL_MESSAGE = "email_message"
+    EMAIL_SUMMARIES_LIST = "email_summaries_list"
 
     @classmethod
     def _missing_(cls, value):

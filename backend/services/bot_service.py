@@ -445,11 +445,12 @@ You have two possible response formats:
     "response": "Your response text here",
     "agent_jobs": [
         {{
-            "agentType": "list_labels|get_messages|get_message",  // The agentType MUST be one of these exact values
+            "agentType": "list_labels|get_messages|get_message|email_summarizer|email_list_summarizer",  // The agentType MUST be one of these exact values
             "input_parameters": {{
                 "operation": "list_labels|get_messages|get_message",  // Must match agentType
                 // Operation-specific parameters as shown below
             }},
+            "input_asset_ids": ["asset_id_1", "asset_id_2"],  // REQUIRED: Array of input asset IDs that this agent will process
             "output_asset_configs": [
                 {{
                     "name": "Required name for the output asset",
@@ -457,7 +458,14 @@ You have two possible response formats:
                     "fileType": "txt|pdf|csv|json|png|jpg|jpeg|gif|mp3|mp4|wav|unknown",
                     "dataType": "unstructured|email_list|generic_list|generic_table"
                 }}
-            ]
+            ],
+            "description": "Optional description of what this job will do",
+            "metadata": {{  // Optional metadata for the job
+                "priority": "high|medium|low",
+                "tags": ["tag1", "tag2"],
+                "estimated_duration": "5m",
+                // ... other metadata as needed
+            }}
         }}
     ],
     "assets": [  // Optional: For directly generated assets like poems, summaries, etc.
@@ -501,6 +509,7 @@ IMPORTANT DISTINCTION:
            "operation": "list_labels",
            "include_system_labels": true  // Whether to include system labels like INBOX, SENT, etc.
        }}
+       - input_asset_ids: []  // No input assets needed
        - output_asset_configs: [{{  // Will contain the list of labels
            "name": "Email Labels List",
            "description": "List of all email folders and labels",
@@ -525,6 +534,7 @@ IMPORTANT DISTINCTION:
            "include_attachments": false,         // Whether to include email attachments
            "include_metadata": true              // Whether to include email metadata (headers, etc.)
        }}
+       - input_asset_ids: []  // No input assets needed
        - output_asset_configs: [{{  // Will contain the retrieved messages
            "name": "Retrieved Emails",
            "description": "List of emails matching the search criteria",
@@ -543,6 +553,7 @@ IMPORTANT DISTINCTION:
            "include_attachments": true,          // Whether to include email attachments
            "include_metadata": true              // Whether to include email metadata
        }}
+       - input_asset_ids: []  // No input assets needed
        - output_asset_configs: [{{  // Will contain the specific message
            "name": "Retrieved Email",
            "description": "The specific email message with ID",
@@ -550,6 +561,32 @@ IMPORTANT DISTINCTION:
            "dataType": "email_list"
        }}]
      * Example: "I'll create a get_message agent job to retrieve the specific email with ID 'abc123'"
+
+   - email_summarizer: Creates a summary of a single email message
+     * General inputs:
+       - agentType: email_summarizer
+       - input_parameters: {{}}  // No parameters needed
+       - input_asset_ids: ["email_asset_id"]  // REQUIRED: ID of the email asset to summarize
+       - output_asset_configs: [{{  // Will contain the email summary
+           "name": "Email Summary",
+           "description": "Summary of the email message",
+           "fileType": "txt",
+           "dataType": "unstructured"
+       }}]
+     * Example: "I'll create an email_summarizer agent job to summarize this email"
+
+   - email_list_summarizer: Creates summaries of multiple email messages
+     * General inputs:
+       - agentType: email_list_summarizer
+       - input_parameters: {{}}  // No parameters needed
+       - input_asset_ids: ["email_list_asset_id"]  // REQUIRED: ID of the email list asset to summarize
+       - output_asset_configs: [{{  // Will contain the list of email summaries
+           "name": "Email List Summary",
+           "description": "Summaries of multiple email messages",
+           "fileType": "json",
+           "dataType": "generic_list"  // Each item in the list will have: email_id, subject, from, to, date, and summary
+       }}]
+     * Example: "I'll create an email_list_summarizer agent job to summarize these emails"
 
 3. Direct Asset Generation:
    - You can directly generate assets in your final response

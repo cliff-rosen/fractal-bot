@@ -4,7 +4,9 @@ export enum AgentType {
     ANALYSIS = 'analysis',
     LIST_LABELS = 'list_labels',
     GET_MESSAGES = 'get_messages',
-    GET_MESSAGE = 'get_message'
+    GET_MESSAGE = 'get_message',
+    EMAIL_SUMMARIZER = 'email_summarizer',
+    EMAIL_LIST_SUMMARIZER = 'email_list_summarizer'
 }
 
 export enum AgentStatus {
