@@ -12,6 +12,7 @@ export default function EmailListSummarizerButton({ agentId }: EmailListSummariz
     const { executeAgent, state } = useFractalBot();
 
     const handleApprove = async () => {
+        console.log('EmailListSummarizerButton: handleApprove');
         if (!agentId) return;
 
         setIsLoading(true);
