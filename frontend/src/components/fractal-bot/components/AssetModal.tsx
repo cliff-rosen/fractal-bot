@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon, DocumentIcon, CheckCircleIcon, DocumentDuplicateIcon, XCircleIcon, CloudIcon, ServerIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { FileType, DataType, Asset, AssetStatus } from '@/types/asset';
-import { getAssetIcon } from '../utils/assetUtils';
+import { getAssetIcon } from '@/lib/utils/assets/assetIconUtils';
 import { EmailListView } from './EmailListView';
 import { GenericListView } from './GenericListView';
 

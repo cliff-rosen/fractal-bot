@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Asset } from '@/types/asset';
-import { getAssetContent } from '../utils/assetUtils';
+import { getAssetContent } from '@/lib/utils/assets/assetUtils';
+
 interface GenericListViewProps {
     asset: Asset;
 }

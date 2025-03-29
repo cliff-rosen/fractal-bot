@@ -7,7 +7,7 @@ import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent } from '@/types/agent';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { useToast } from '@/components/ui/use-toast';
-import { getFileType, getDataType } from './utils/assetUtils';
+import { getFileType, getDataType } from '@/lib/utils/assets/assetUtils';
 
 const FractalBotContent: React.FC = () => {
     const [inputMessage, setInputMessage] = useState('');

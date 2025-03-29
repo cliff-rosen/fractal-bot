@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Asset } from '../types/state';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import DOMPurify from 'dompurify';
-import { getAssetContent } from '../utils/assetUtils';
+import { getAssetContent } from '@/lib/utils/assets/assetUtils';
 
 interface EmailMessage {
     id: string;

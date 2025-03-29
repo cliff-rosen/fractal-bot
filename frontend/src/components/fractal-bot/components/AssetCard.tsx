@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DocumentIcon, DocumentDuplicateIcon, CheckCircleIcon, XCircleIcon, TrashIcon, CloudIcon } from '@heroicons/react/24/outline';
 import { Asset, FileType, AssetStatus } from '@/types/asset';
-import { getAssetIcon } from '../utils/assetUtils';
+import { getAssetIcon } from '@/lib/utils/assets/assetIconUtils';
 
 interface AssetCardProps {
     asset: Asset;
