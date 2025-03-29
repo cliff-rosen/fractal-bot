@@ -19,7 +19,8 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
             }
 
             const inputAsset = inputAssets[0];
-            const emailMessage = inputAsset.content as EmailMessage;
+            const emailMessage = inputAsset.content['email_message'] as EmailMessage;
+            console.log('EmailSummarizerAgentExecutor: emailMessage', emailMessage)
 
             // Fake summarization function - in a real implementation, this would use an LLM
             const summary = this.generateSummary(emailMessage);

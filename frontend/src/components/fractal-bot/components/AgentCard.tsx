@@ -1,57 +1,65 @@
 import React, { useState } from 'react';
-import { ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronUpIcon, PencilIcon, PlayIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Agent, AgentStatus, AgentType } from '../types/state';
 import EmailSearchAgent from '@/components/agents/email/EmailSearchAgent';
 import EmailListSummarizerAgent from '@/components/agents/email/EmailListSummarizerAgent';
 import { useFractalBot } from '@/context/FractalBotContext';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 interface AgentCardProps {
     agent: Agent;
     isRecent?: boolean;
     onAgentClick?: (agent: Agent) => void;
-    onApproveAgent?: (agent: Agent) => void;
-    onRejectAgent?: (agent: Agent) => void;
 }
 
 export const AgentCard: React.FC<AgentCardProps> = ({
     agent,
     isRecent = false,
     onAgentClick,
-    onApproveAgent,
-    onRejectAgent
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const isProposed = agent.status === AgentStatus.IDLE;
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedParameters, setEditedParameters] = useState(agent.input_parameters);
     const { executeAgent, updateAgent, state } = useFractalBot();
 
-    const handleApproveAgent = async () => {
-        console.log('handleApproveAgent', agent)
+    const handleSave = () => {
+        updateAgent(agent.agent_id, {
+            input_parameters: editedParameters
+        });
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setEditedParameters(agent.input_parameters);
+        setIsEditing(false);
+    };
+
+    const handleRunAgent = async () => {
         setIsLoading(true);
         try {
+            // Update agent with edited parameters if we were editing
+            if (isEditing) {
+                handleSave();
+            }
             await executeAgent(agent.agent_id);
         } catch (error) {
             console.error('Error executing agent:', error);
         } finally {
             setIsLoading(false);
         }
-        updateAgent(agent.agent_id, {
-            status: AgentStatus.COMPLETED
-        });
     };
 
-    const handleRejectAgent = () => {
-        console.log('handleRejectAgent', agent)
-    };
+    // // Special handling for email agents
+    // if (agent.type === AgentType.GET_MESSAGES || agent.type === AgentType.LIST_LABELS) {
+    //     return <EmailSearchAgent key={agent.agent_id} agent={agent} />;
+    // }
 
-    // Special handling for email agents
-    if (agent.type === AgentType.GET_MESSAGES || agent.type === AgentType.LIST_LABELS) {
-        return <EmailSearchAgent key={agent.agent_id} agent={agent} />;
-    }
-
-    if (agent.type === AgentType.EMAIL_LIST_SUMMARIZER) {
-        return <EmailListSummarizerAgent key={agent.agent_id} agentId={agent.agent_id} />;
-    }
+    // if (agent.type === AgentType.EMAIL_LIST_SUMMARIZER) {
+    //     return <EmailListSummarizerAgent key={agent.agent_id} agentId={agent.agent_id} />;
+    // }
 
     return (
         <div
@@ -59,7 +67,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({
             className={`p-4 ${isRecent
                 ? 'bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800'
                 : 'bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700'
-                } cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors`}
+                }`}
         >
             <div className="flex justify-between items-start">
                 <div>
@@ -97,10 +105,7 @@ export const AgentCard: React.FC<AgentCardProps> = ({
             {/* Input Parameters Section */}
             <div className="mt-2">
                 <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsExpanded(!isExpanded);
-                    }}
+                    onClick={() => setIsExpanded(!isExpanded)}
                     className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                 >
                     {isExpanded ? (
@@ -118,12 +123,37 @@ export const AgentCard: React.FC<AgentCardProps> = ({
                 {isExpanded && (
                     <div className="mt-2 p-3 bg-white/50 dark:bg-gray-700/50 rounded border border-gray-200 dark:border-gray-600">
                         <div className="space-y-2">
-                            {Object.entries(agent.input_parameters).map(([key, value]) => (
+                            {Object.entries(isEditing ? editedParameters : agent.input_parameters).map(([key, value]) => (
                                 <div key={key} className="text-sm">
-                                    <span className="font-medium text-gray-700 dark:text-gray-300">{key}:</span>{' '}
-                                    <span className="text-gray-600 dark:text-gray-400">
-                                        {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-                                    </span>
+                                    <Label className="text-gray-700 dark:text-gray-300">{key}</Label>
+                                    {isEditing ? (
+                                        typeof value === 'boolean' ? (
+                                            <div className="flex items-center space-x-2 mt-1">
+                                                <Switch
+                                                    checked={value}
+                                                    onCheckedChange={(checked) => setEditedParameters(prev => ({
+                                                        ...prev,
+                                                        [key]: checked
+                                                    }))}
+                                                />
+                                                <span className="text-gray-600 dark:text-gray-400">{value ? 'Yes' : 'No'}</span>
+                                            </div>
+                                        ) : (
+                                            <Input
+                                                type={typeof value === 'number' ? 'number' : 'text'}
+                                                value={String(value)}
+                                                onChange={(e) => setEditedParameters(prev => ({
+                                                    ...prev,
+                                                    [key]: typeof value === 'number' ? Number(e.target.value) : e.target.value
+                                                }))}
+                                                className="mt-1"
+                                            />
+                                        )
+                                    ) : (
+                                        <span className="text-gray-600 dark:text-gray-400">
+                                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                        </span>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -152,32 +182,44 @@ export const AgentCard: React.FC<AgentCardProps> = ({
                 </div>
             )}
 
-            {/* Action Buttons for Proposed Agents */}
-            {isProposed && (
-                <div className="mt-3 flex gap-2">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleApproveAgent();
-                        }}
-                        disabled={isLoading}
-                        className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors"
-                    >
-                        <CheckIcon className="h-4 w-4" />
-                        Approve
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleRejectAgent();
-                        }}
-                        className="flex items-center gap-1 px-3 py-1 text-sm bg-red-100 text-red-800 rounded-full hover:bg-red-200 transition-colors"
-                    >
-                        <XMarkIcon className="h-4 w-4" />
-                        Reject
-                    </button>
-                </div>
-            )}
+            {/* Action Buttons */}
+            <div className="mt-3 flex gap-2">
+                {isEditing ? (
+                    <>
+                        <button
+                            onClick={handleCancel}
+                            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors"
+                        >
+                            <CheckIcon className="h-4 w-4" />
+                            Save
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors"
+                        >
+                            <PencilIcon className="h-4 w-4" />
+                            Edit
+                        </button>
+                        <button
+                            onClick={handleRunAgent}
+                            disabled={isLoading || agent.status === AgentStatus.RUNNING}
+                            className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <PlayIcon className="h-4 w-4" />
+                            {agent.status === AgentStatus.COMPLETED ? 'Rerun' : 'Run'}
+                        </button>
+                    </>
+                )}
+            </div>
         </div>
     );
 }; 
