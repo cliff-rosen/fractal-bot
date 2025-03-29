@@ -128,7 +128,29 @@ class EmailService:
             # Handle text/html
             elif part.get('mimeType') == 'text/html':
                 if 'data' in part['body']:
-                    html = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8', errors='replace')
+                    html_raw = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8', errors='replace')
+                    # Clean HTML using BeautifulSoup
+                    soup = BeautifulSoup(html_raw, "html.parser")
+                    
+                    # Remove unwanted elements
+                    for element in soup.find_all(['script', 'style', 'meta', 'link', 'noscript', 'iframe', 'form', 'input', 'button', 'img']):
+                        element.decompose()
+                    
+                    # Remove empty tags
+                    for tag in soup.find_all():
+                        if len(tag.get_text(strip=True)) == 0:
+                            tag.decompose()
+                    
+                    # Clean up whitespace and formatting
+                    for tag in soup.find_all(['p', 'div', 'span', 'br']):
+                        # Replace multiple spaces with single space
+                        if tag.string:
+                            tag.string.replace_with(' '.join(tag.string.split()))
+                    
+                    # Get text with proper spacing and formatting
+                    html = soup.get_text(separator='\n', strip=True)
+                    # Clean up multiple newlines
+                    html = '\n'.join(line.strip() for line in html.split('\n') if line.strip())
         
         # Return both formats if available
         return {
