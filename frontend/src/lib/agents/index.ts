@@ -4,6 +4,7 @@ import { EmailLabelsAgentExecutor } from './executors/emailLabelsAgent';
 import { EmailMessageAgentExecutor } from './executors/emailMessageAgent';
 import { EmailSummarizerAgentExecutor } from './executors/emailSummarizerAgent';
 import { EmailListSummarizerAgentExecutor } from './executors/emailListSummarizerAgent';
+import { LLMAssetAgentExecutor } from './executors/llmAssetAgent';
 
 
 // Register all agent executors
@@ -16,6 +17,9 @@ export function registerAgentExecutors() {
     // Register email summarizer agents
     agentRegistry.registerExecutor(new EmailSummarizerAgentExecutor());
     agentRegistry.registerExecutor(new EmailListSummarizerAgentExecutor());
+
+    // Register LLM asset agent
+    agentRegistry.registerExecutor(new LLMAssetAgentExecutor());
 
     // Add more agent registrations here as they are implemented
 }

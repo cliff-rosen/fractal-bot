@@ -638,7 +638,7 @@ IMPORTANT DISTINCTION:
 
 CRITICAL: When recommending an agent job, you MUST do TWO things:
 1. Add the agent job to the "agent_jobs" array in your response with:
-   - agentType: MUST be one of: list_labels, get_messages, or get_message
+   - agentType: MUST be one of: list_labels, get_messages, get_message, email_summarizer, or email_list_summarizer
    - input_parameters object with:
      * operation: The specific operation to perform (must match agentType)
      * Operation-specific parameters as shown above

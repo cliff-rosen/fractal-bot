@@ -3,7 +3,8 @@ export enum AgentType {
     GET_MESSAGES = 'get_messages',
     GET_MESSAGE = 'get_message',
     EMAIL_SUMMARIZER = 'email_summarizer',
-    EMAIL_LIST_SUMMARIZER = 'email_list_summarizer'
+    EMAIL_LIST_SUMMARIZER = 'email_list_summarizer',
+    PROMPT_TEMPLATE = 'prompt_template'
 }
 
 export enum AgentStatus {

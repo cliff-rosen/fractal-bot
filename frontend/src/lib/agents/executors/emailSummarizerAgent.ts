@@ -2,6 +2,7 @@ import { FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent, AgentType } from '@/types/agent';
 import { AgentExecutor, AgentExecutionContext, AgentExecutionResult } from '../types';
 import { EmailMessage } from '@/types/email';
+import { toolApi } from '@/lib/api/toolApi';
 
 export class EmailSummarizerAgentExecutor implements AgentExecutor {
     type = AgentType.EMAIL_SUMMARIZER;
@@ -23,7 +24,7 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
             console.log('EmailSummarizerAgentExecutor: emailMessage', emailMessage)
 
             // Fake summarization function - in a real implementation, this would use an LLM
-            const summary = this.generateSummary(emailMessage);
+            const summary = await this.generateSummary(emailMessage);
 
             const asset = {
                 asset_id: targetAssetId,
@@ -69,10 +70,7 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
         }
     }
 
-    private generateSummary(email: EmailMessage): string {
-        // Fake summarization - in a real implementation, this would use an LLM
-        const date = new Date(parseInt(email.date)).toLocaleString();
-
+    private async generateSummary(email: EmailMessage): Promise<string> {
         // Get the email body content, falling back to snippet if no body is available
         let bodyContent = '';
         if (email.body) {
@@ -86,7 +84,21 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
             bodyContent = 'No content available';
         }
 
-        return `Email Summary:
+        try {
+            const llmResponse = await toolApi.executeLLM({
+                prompt_template_id: "extract_email_articles",
+                regular_variables: {
+                    email_content: bodyContent
+                },
+                file_variables: {}
+            });
+
+            return llmResponse;
+        } catch (error) {
+            console.error('Error generating summary with LLM:', error);
+            // Fallback to basic summary if LLM fails
+            const date = new Date(parseInt(email.date)).toLocaleString();
+            return `Email Summary:
 From: ${email.from}
 To: ${email.to}
 Subject: ${email.subject}
@@ -94,6 +106,7 @@ Date: ${date}
 
 Summary:
 ${bodyContent.substring(0, 200)}...`;
+        }
     }
 
     validateInputs(context: AgentExecutionContext): boolean {

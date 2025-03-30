@@ -59,6 +59,7 @@ export const toolApi = {
     },
 
     executeLLM: async (llmParams: any): Promise<any> => {
+        console.log('executeLLM', llmParams)
         const response = await api.post('/api/execute_llm', llmParams);
         return response.data;
     },

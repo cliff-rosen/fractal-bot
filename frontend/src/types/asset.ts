@@ -61,6 +61,7 @@ export interface AssetMetadata {
     lastModified?: number;
     error?: string;
     agentId?: string;
+    prompt_template_param?: string;  // The parameter name this asset maps to in a prompt template
 }
 
 export interface Asset {
