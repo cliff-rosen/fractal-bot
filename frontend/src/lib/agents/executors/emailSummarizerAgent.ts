@@ -24,9 +24,9 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
             const inputAsset = inputAssets[0];
             let emailMessage: EmailMessage;
             if (inputAsset.content?.email_message) {
-                emailMessage = inputAsset.content['email_message'][0] as EmailMessage;
+                emailMessage = inputAsset.content['email_message'] as EmailMessage;
             } else {
-                emailMessage = inputAsset.content[0] as EmailMessage;
+                emailMessage = inputAsset.content as EmailMessage;
             }
             console.log('EmailSummarizerAgentExecutor: emailMessage', emailMessage)
 

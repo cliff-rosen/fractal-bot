@@ -49,7 +49,7 @@ export class EmailListSummarizerAgentExecutor implements AgentExecutor {
                     ...context,
                     inputAssets: [{
                         ...inputAsset,
-                        content: [email] // Wrap single email in array to match expected format
+                        content: email // Wrap single email in array to match expected format
                     }]
                 };
 
