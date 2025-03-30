@@ -130,7 +130,7 @@ const FractalBotContent: React.FC = () => {
 
     const handleApproveAgent = (agent: Agent) => {
         console.log('handleApproveAgent', agent)
-        
+
     };
 
     const handleRetrieveAsset = (asset: Asset) => {

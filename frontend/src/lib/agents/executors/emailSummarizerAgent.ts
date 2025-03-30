@@ -37,8 +37,8 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
                 asset_id: targetAssetId,
                 name: `Summary: ${emailMessage.subject}`,
                 description: 'Summary of the email message',
-                fileType: this.fileType,
-                dataType: this.dataType,
+                fileType: FileType.JSON,
+                dataType: DataType.EMAIL_MESSAGE,
                 content: summary,
                 status: AssetStatus.READY,
                 metadata: {

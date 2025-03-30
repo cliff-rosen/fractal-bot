@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { ChatBubbleLeftRightIcon, ChevronDownIcon, ChevronUpIcon, MagnifyingGlassIcon, XMarkIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, ChevronDownIcon, ChevronUpIcon, MagnifyingGlassIcon, XMarkIcon, ArrowUpIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Message, ActionButton, ActionType, MessageRole } from '../types/state';
+import { useFractalBot } from '@/context/FractalBotContext';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ChatSectionProps {
     messages: Message[];
@@ -19,8 +21,20 @@ export const ChatSection: React.FC<ChatSectionProps> = ({
     onInputChange,
     onActionButtonClick
 }) => {
-
+    const { clearMessages } = useFractalBot();
+    const { toast } = useToast();
     const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+
+    const handleClearMessages = () => {
+        if (window.confirm('Are you sure you want to clear all chat messages?')) {
+            clearMessages();
+            toast({
+                title: 'Chat Cleared',
+                description: 'All messages have been removed.',
+                variant: 'default'
+            });
+        }
+    };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -75,9 +89,18 @@ export const ChatSection: React.FC<ChatSectionProps> = ({
     return (
         <div className="flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm h-full overflow-hidden">
             {/* Header */}
-            <div className="flex-none flex items-center gap-2 p-4 border-b border-gray-100 dark:border-gray-700">
-                <ChatBubbleLeftRightIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">Chat</h3>
+            <div className="flex-none flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2">
+                    <ChatBubbleLeftRightIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">Chat</h3>
+                </div>
+                <button
+                    onClick={handleClearMessages}
+                    className="p-1.5 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    title="Clear chat messages"
+                >
+                    <TrashIcon className="h-4 w-4" />
+                </button>
             </div>
 
             {/* Messages */}
