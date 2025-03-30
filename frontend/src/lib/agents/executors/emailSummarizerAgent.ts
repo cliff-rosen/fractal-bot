@@ -4,6 +4,8 @@ import { AgentExecutor, AgentExecutionContext, AgentExecutionResult } from '../t
 import { EmailMessage } from '@/types/email';
 import { toolApi } from '@/lib/api/toolApi';
 
+const PROMPT_TEMPLATE_ID = 'extract_email_articles';
+
 export class EmailSummarizerAgentExecutor implements AgentExecutor {
     type = AgentType.EMAIL_SUMMARIZER;
     dataType = DataType.UNSTRUCTURED;
@@ -20,7 +22,12 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
             }
 
             const inputAsset = inputAssets[0];
-            const emailMessage = inputAsset.content['email_message'] as EmailMessage;
+            let emailMessage: EmailMessage;
+            if (inputAsset.content?.email_message) {
+                emailMessage = inputAsset.content['email_message'][0] as EmailMessage;
+            } else {
+                emailMessage = inputAsset.content[0] as EmailMessage;
+            }
             console.log('EmailSummarizerAgentExecutor: emailMessage', emailMessage)
 
             // Fake summarization function - in a real implementation, this would use an LLM
@@ -71,12 +78,13 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
     }
 
     private async generateSummary(email: EmailMessage): Promise<string> {
+        console.log('EmailSummarizerAgentExecutor: generateSummary', email)
         // Get the email body content, falling back to snippet if no body is available
         let bodyContent = '';
-        if (email.body) {
-            bodyContent = email.body.plain || email.body.html || email.snippet || '';
+        if (email['body']) {
+            bodyContent = email['body']['plain'] || email['body']['html'] || email['snippet'] || '';
         } else {
-            bodyContent = email.snippet || '';
+            bodyContent = email['snippet'] || '';
         }
 
         // If we still don't have any content, use a default message
@@ -86,14 +94,14 @@ export class EmailSummarizerAgentExecutor implements AgentExecutor {
 
         try {
             const llmResponse = await toolApi.executeLLM({
-                prompt_template_id: "extract_email_articles",
+                prompt_template_id: PROMPT_TEMPLATE_ID,
                 regular_variables: {
                     email_content: bodyContent
                 },
                 file_variables: {}
             });
 
-            return llmResponse;
+            return llmResponse.response;
         } catch (error) {
             console.error('Error generating summary with LLM:', error);
             // Fallback to basic summary if LLM fails
