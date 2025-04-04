@@ -34,8 +34,8 @@ export const GenericListView: React.FC<GenericListViewProps> = ({ asset }) => {
                 <div className="space-y-2">
                     {Object.entries(item).map(([key, value]) => (
                         <div key={key} className="flex gap-2">
-                            <span className="font-medium text-gray-500 dark:text-gray-400">{key}:</span>
-                            <span className="text-gray-900 dark:text-white">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">{key}:</span>
+                            <span className="text-gray-900 dark:text-gray-100">
                                 {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
                             </span>
                         </div>
@@ -44,7 +44,7 @@ export const GenericListView: React.FC<GenericListViewProps> = ({ asset }) => {
             );
         }
         // If it's a primitive value, display it directly
-        return <span className="text-gray-900 dark:text-white">{String(item)}</span>;
+        return <span className="text-gray-900 dark:text-gray-100">{String(item)}</span>;
     };
 
     return (
@@ -69,18 +69,18 @@ export const GenericListView: React.FC<GenericListViewProps> = ({ asset }) => {
                 <button
                     onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
                     disabled={currentPage === 0}
-                    className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1 px-3 py-1 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <ChevronLeftIcon className="h-4 w-4" />
                     Previous
                 </button>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                     Page {currentPage + 1} of {totalPages}
                 </span>
                 <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
                     disabled={currentPage === totalPages - 1}
-                    className="flex items-center gap-1 px-3 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1 px-3 py-1 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Next
                     <ChevronRightIcon className="h-4 w-4" />
@@ -92,7 +92,7 @@ export const GenericListView: React.FC<GenericListViewProps> = ({ asset }) => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Item Details</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Item Details</h3>
                             <button
                                 onClick={handleCloseItem}
                                 className="text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300"

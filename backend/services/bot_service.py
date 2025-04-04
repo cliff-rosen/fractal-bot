@@ -498,7 +498,7 @@ You have two possible response formats:
             "name": "Required name for the asset",
             "description": "Description of the asset",
             "fileType": "txt|pdf|csv|json|png|jpg|jpeg|gif|mp3|mp4|wav|unknown",
-            "dataType": "unstructured|email_list|generic_list|generic_table",
+            "dataType": "unstructured|email_message|email_list|generic_list|generic_table",
             "content": "The actual content of the asset",
             "metadata": {{
                 "createdAt": "timestamp",
@@ -668,5 +668,6 @@ Content: {asset.content}
 Metadata: {json.dumps(asset.metadata, indent=2)}
 """
             base_prompt += assets_section
+            print("type of asset.content: ", type(asset.content))
 
         return base_prompt 

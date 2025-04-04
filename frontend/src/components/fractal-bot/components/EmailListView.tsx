@@ -64,22 +64,22 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
                 {currentEmails.map((email) => (
                     <div
                         key={email.id}
-                        className="p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                        className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer bg-white dark:bg-gray-800"
                         onClick={() => handleEmailClick(email)}
                     >
                         <div className="flex justify-between items-start">
                             <div>
-                                <h3 className="font-medium text-gray-900 dark:text-white">
+                                <h3 className="font-medium text-gray-900 dark:text-gray-100">
                                     {email.subject}
                                 </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
                                     From: {email.from}
                                 </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
                                     Date: {formatDate(email.date)}
                                 </p>
                             </div>
-                            <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+                            <ChevronRightIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                         </div>
                     </div>
                 ))}
@@ -91,17 +91,17 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
                     <button
                         onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
                         disabled={currentPage === 0}
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 text-gray-700 dark:text-gray-300"
                     >
                         <ChevronLeftIcon className="h-5 w-5" />
                     </button>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                         Page {currentPage + 1} of {totalPages}
                     </span>
                     <button
                         onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
                         disabled={currentPage === totalPages - 1}
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 text-gray-700 dark:text-gray-300"
                     >
                         <ChevronRightIcon className="h-5 w-5" />
                     </button>
@@ -111,10 +111,10 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
             {/* Email Detail Modal */}
             {selectedEmail && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-xl">
                         <div className="p-6">
                             <div className="flex justify-between items-start mb-4">
-                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                                     {selectedEmail.subject}
                                 </h2>
                                 <button
@@ -124,13 +124,16 @@ export const EmailListView: React.FC<EmailListViewProps> = ({ asset }) => {
                                     ✕
                                 </button>
                             </div>
-                            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                                <p><strong>From:</strong> {selectedEmail.from}</p>
-                                <p><strong>To:</strong> {selectedEmail.to}</p>
-                                <p><strong>Date:</strong> {formatDate(selectedEmail.date)}</p>
+                            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                                <p><strong className="text-gray-900 dark:text-gray-100">From:</strong> {selectedEmail.from}</p>
+                                <p><strong className="text-gray-900 dark:text-gray-100">To:</strong> {selectedEmail.to}</p>
+                                <p><strong className="text-gray-900 dark:text-gray-100">Date:</strong> {formatDate(selectedEmail.date)}</p>
                             </div>
                             <div className="mt-6 prose dark:prose-invert max-w-none">
-                                <div dangerouslySetInnerHTML={{ __html: getEmailBody(selectedEmail) }} />
+                                <div
+                                    dangerouslySetInnerHTML={{ __html: getEmailBody(selectedEmail) }}
+                                    className="text-gray-700 dark:text-gray-300 font-normal"
+                                />
                             </div>
                         </div>
                     </div>

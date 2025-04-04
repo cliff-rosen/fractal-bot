@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog } from '@headlessui/react';
-import { XMarkIcon, DocumentIcon, CheckCircleIcon, DocumentDuplicateIcon, XCircleIcon, CloudIcon, ServerIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, DocumentIcon, CheckCircleIcon, DocumentDuplicateIcon, XCircleIcon, CloudIcon, ServerIcon, ArrowDownTrayIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { FileType, DataType, Asset, AssetStatus } from '@/types/asset';
 import { getAssetIcon } from '@/lib/utils/assets/assetIconUtils';
 import { EmailListView } from './EmailListView';
@@ -14,8 +14,37 @@ interface AssetModalProps {
 }
 
 export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveToDb, onUpdate }) => {
-
     const [isSaving, setIsSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedName, setEditedName] = useState(asset.name);
+    const [editedDescription, setEditedDescription] = useState(asset.description || '');
+
+    const handleEdit = () => {
+        setIsEditing(true);
+    };
+
+    const handleSaveEdit = () => {
+        if (!onUpdate) return;
+
+        const updatedAsset = {
+            ...asset,
+            name: editedName,
+            description: editedDescription,
+            persistence: {
+                ...asset.persistence,
+                isDirty: true
+            }
+        };
+
+        onUpdate(updatedAsset);
+        setIsEditing(false);
+    };
+
+    const handleCancelEdit = () => {
+        setEditedName(asset.name);
+        setEditedDescription(asset.description || '');
+        setIsEditing(false);
+    };
 
     const getStatusIcon = (status: AssetStatus) => {
         switch (status) {
@@ -111,24 +140,66 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose, onSaveTo
                 <Dialog.Panel className="h-[calc(100vh-4rem)] max-w-4xl w-full bg-white dark:bg-gray-900 rounded-xl shadow-lg flex flex-col">
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-1">
                             <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-300">
                                 {getAssetIcon(asset.fileType, asset.dataType)}
                             </div>
-                            <div>
-                                <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                    {asset.name}
-                                </Dialog.Title>
-                                {asset.description && (
-                                    <p className="text-sm text-gray-500 dark:text-gray-300">
-                                        {asset.description}
-                                    </p>
+                            <div className="flex-1 min-w-0">
+                                {isEditing ? (
+                                    <div className="space-y-2">
+                                        <input
+                                            type="text"
+                                            value={editedName}
+                                            onChange={(e) => setEditedName(e.target.value)}
+                                            className="w-full px-2 py-1 text-lg font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                            placeholder="Asset name"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={editedDescription}
+                                            onChange={(e) => setEditedDescription(e.target.value)}
+                                            className="w-full px-2 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                            placeholder="Description (optional)"
+                                        />
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={handleSaveEdit}
+                                                className="px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                onClick={handleCancelEdit}
+                                                className="px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <Dialog.Title className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                            {asset.name}
+                                        </Dialog.Title>
+                                        {asset.description && (
+                                            <p className="text-sm text-gray-500 dark:text-gray-300">
+                                                {asset.description}
+                                            </p>
+                                        )}
+                                        <button
+                                            onClick={handleEdit}
+                                            className="mt-1 inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                        >
+                                            <PencilIcon className="h-3 w-3" />
+                                            Edit
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300"
+                            className="text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300 ml-4"
                         >
                             <XMarkIcon className="h-6 w-6" />
                         </button>
