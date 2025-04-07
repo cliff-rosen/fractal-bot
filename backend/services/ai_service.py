@@ -23,7 +23,8 @@ class Message(TypedDict):
 
 class AIService:
     def __init__(self):
-        self.provider: LLMProvider = AnthropicProvider()
+        #self.provider: LLMProvider = AnthropicProvider()
+        self.provider: LLMProvider = OpenAIProvider()
 
     def set_provider(self, provider: str):
         """Change the LLM provider"""

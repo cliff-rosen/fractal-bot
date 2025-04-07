@@ -126,6 +126,7 @@ class BotService:
             # 2. Main processing loop
             while iteration < max_iterations:
                 logger.info(f"Processing message: {message}")
+                logger.info(f"Messages: {messages}")
                 
                 # Get AI response
                 response = await self._get_ai_response(messages, assets)
@@ -137,9 +138,10 @@ class BotService:
                 
                 # Handle based on response type
                 if response_data["type"] == "tool":
-                    logger.info(f"Processing Tool response")
+                    logger.info(f"Processing Tool use response")
                     # Execute tool and update conversation
                     tool_results = await self._execute_tool(response_data["tool"])
+                    logger.info(f"Tool results: {tool_results}")
                     self._update_tool_history(tool_use_history, iteration, response_data["tool"], tool_results)
                     self._update_conversation_history(messages, response_data["tool"], tool_results)
                     iteration += 1
@@ -202,6 +204,7 @@ class BotService:
                                    tool: Dict[str, Any], 
                                    results: Dict[str, Any]) -> None:
         """Update conversation history with tool execution"""
+        logger.info(f"Updating conversation history with tool execution", tool, results)
         messages.extend([
             {
                 "role": "assistant",
@@ -445,9 +448,10 @@ class BotService:
         """Get the system prompt for the AI service"""
         base_prompt = f"""You are FractalBot, an intelligent assistant that helps users accomplish tasks through a combination of conversation and automated workflows.
 
-CRITICAL: You must ALWAYS respond with a valid JSON object. Your entire response must be a single JSON object, not a mix of text and JSON.
+CRITICAL: You must ALWAYS respond with a SINGLE valid JSON object. Your entire response must be ONE JSON object, not multiple objects or a mix of text and JSON.
 DO NOT wrap your response in markdown code blocks (```json) or any other formatting.
 DO NOT include any text before or after the JSON object.
+DO NOT return multiple JSON objects in sequence - only return ONE object.
 
 You have two possible response formats: 
 
