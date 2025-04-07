@@ -15,6 +15,7 @@ from schemas import (
     AgentStatus
 )
 import json
+import re
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -80,250 +81,249 @@ class BotService:
 
     def get_clean_response_json(self, response: str) -> str:
         """Clean the response to ensure it's valid JSON"""
+        
         response = response.strip()
+        
+        # Remove markdown code blocks if present
         if response.startswith('```json'):
             response = response[7:]
         if response.endswith('```'):    
             response = response[:-3]
-                    # Handle multiple JSON objects in response
-        if '\n\n' in response:
-            logger.info(f'Received multiple tool requests')
-            # Take only the first tool request
-            response = response.split('\n\n')[0]
-
-        return json.loads(response)
-
+            
+        # Try to parse the complete response as JSON
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError as e:
+            # If parsing fails, try to fix newlines in string values
+            try:
+                # Find all string values in the JSON and escape newlines
+                def escape_newlines(match):
+                    # Get the string content (without quotes)
+                    content = match.group(1)
+                    # Escape newlines and other control characters
+                    content = content.replace('\n', '\\n')
+                    content = content.replace('\r', '\\r')
+                    content = content.replace('\t', '\\t')
+                    return f'"{content}"'
+                
+                # This regex matches string values in JSON, including the quotes
+                fixed_response = re.sub(r'"([^"]*?)"', escape_newlines, response)
+                return json.loads(fixed_response)
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse JSON: {str(e)}")
+                logger.error(f"Response after cleaning: {fixed_response}")
+                raise ValueError(f"AI response must be valid JSON: {str(e)}")
 
     async def process_message(self, message: str, history: List[Dict[str, Any]], assets: List[Asset] = None) -> ChatResponse:
         """Process a user message and return a response with appropriate side effects"""
         try:
-            # Initialize conversation history
-            messages = [
-                {
-                    "role": msg["role"],
-                    "content": msg["content"]
-                }
-                for msg in history
-            ]
-            
-            # Add the current message
-            messages.append({
-                "role": "user",
-                "content": message
-            })
-            
-            # Log the input message
-            logger.info(f"Processing message: {message}")
-            
-            # Maximum number of tool use iterations
-            max_iterations = 5
-            iteration = 0
-            
-            # Track tool use history
+            # 1. Initialize conversation state
+            messages = self._initialize_conversation_history(history, message)
             tool_use_history = []
-            
+            iteration = 0
+            max_iterations = 5
+
+            # 2. Main processing loop
             while iteration < max_iterations:
-                # Get response from AI service
-                logger.info(f'Iteration {iteration + 1}: Requesting AI response')
-                response = await self.ai_service.send_messages(
-                    messages=messages,
-                    system=self._get_system_prompt(assets)
-                )
-                print('response', response)
+                logger.info(f"Processing message: {message}")
+                
+                # Get AI response
+                response = await self._get_ai_response(messages, assets)
+                logger.info(f"AI response: {response}")
 
-                try:
-                    # Clean the response to ensure it's valid JSON
-                    response_data = self.get_clean_response_json(response)
+                # Process response
+                response_data = self.get_clean_response_json(response)
+                self._validate_response_data(response_data)
+                
+                # Handle based on response type
+                if response_data["type"] == "tool":
+                    logger.info(f"Processing Tool response")
+                    # Execute tool and update conversation
+                    tool_results = await self._execute_tool(response_data["tool"])
+                    self._update_tool_history(tool_use_history, iteration, response_data["tool"], tool_results)
+                    self._update_conversation_history(messages, response_data["tool"], tool_results)
+                    iteration += 1
+                    continue
                     
-                    if not isinstance(response_data, dict):
-                        raise ValueError("Response must be a JSON object")
-                        
-                    if "type" not in response_data:
-                        raise ValueError("Response must include a 'type' field")
-                    
-                    if response_data.get("type") == "tool":   
-                        # Execute the tool
-                        tool_name = response_data["tool"]["name"]
-                        tool_params = response_data["tool"].get("parameters", {})
-                        logger.info(f'Iteration {iteration + 1}: Executing {tool_name} with params: {tool_params}')
-                        
-                        tool_results = await self._execute_tool(response_data["tool"])
-                        
-                        # Log tool results summary
-                        if tool_name == "search":
-                            num_results = len(tool_results.get("results", []))
-                            logger.info(f'Iteration {iteration + 1}: {tool_name} completed - found {num_results} results')
-                        elif tool_name == "retrieve":
-                            num_chunks = len(tool_results.get("content", []))
-                            logger.info(f'Iteration {iteration + 1}: {tool_name} completed - extracted {num_chunks} relevant chunks')
-                        else:
-                            logger.info(f'Iteration {iteration + 1}: {tool_name} completed successfully')
-                        
-                        # Track tool use in history
-                        tool_use_history.append({
-                            "iteration": iteration + 1,
-                            "tool": response_data["tool"],
-                            "results": tool_results
-                        })
-                        
-                        # Add tool request and results to conversation history
-                        messages.append({
-                            "role": "assistant",
-                            "content": json.dumps({
-                                "type": "tool",
-                                "tool": response_data["tool"]
-                            })
-                        })
-                        messages.append({
-                            "role": "assistant",
-                            "content": json.dumps({
-                                "type": "tool_result",
-                                "tool": response_data["tool"]["name"],
-                                "results": tool_results
-                            })
-                        })
-                        
-                        # Continue the loop with updated history
-                        iteration += 1
-                        continue
-                        
-                    elif response_data.get("type") == "final_response":
-                        # Process final response
-                        logger.info(f'Iteration {iteration + 1}: Received final response')
-                        
-                        # Process agent jobs and direct assets
-                        processed_response = await self._process_ai_response(response)
-                        
-                        # Create chat response with processed side effects
-                        return ChatResponse(
-                            message=Message(
-                                message_id=str(uuid.uuid4()),
-                                role=MessageRole.ASSISTANT,
-                                content=response_data["response"],
-                                timestamp=datetime.now(),
-                                metadata=self._get_message_metadata(processed_response)
-                            ),
-                            sideEffects={
-                                "final_response": response_data["response"],
-                                "agent_jobs": processed_response.get("agent_jobs", []),  # Pass raw agent jobs
-                                "assets": processed_response.get("assets", []),
-                                "tool_use_history": tool_use_history
-                            }
-                        )
-                    else:
-                        raise ValueError(f"Invalid response type: {response_data.get('type')}")
-                        
-                except json.JSONDecodeError as e:
-                    logger.error(f"Iteration {iteration + 1}: JSON parsing error: {str(e)}")
-                    logger.error(f"Raw response: {response}")
-                    raise ValueError(f"AI response must be valid JSON: {str(e)}")
-                except Exception as e:
-                    logger.error(f"Iteration {iteration + 1}: Error processing response: {str(e)}")
-                    logger.error(f"Raw response: {response}")
-                    raise ValueError(f"Error processing AI response: {str(e)}")
-            
-            # If we've exceeded max iterations, return the last response with tool history
-            logger.warning(f"Maximum iterations ({max_iterations}) reached")
-            return ChatResponse(
-                message=Message(
-                    message_id=str(uuid.uuid4()),
-                    role=MessageRole.ASSISTANT,
-                    content="I've reached the maximum number of tool use iterations. Please try rephrasing your request.",
-                    timestamp=datetime.now(),
-                    metadata={
-                        "error": True, 
-                        "max_iterations_reached": True,
-                        "tool_use_history": tool_use_history
-                    }
-                ),
-                sideEffects={"tool_use_history": tool_use_history}
-            )
-            
-        except Exception as e:
-            # Handle errors and create appropriate error response
-            error_message = f"Error processing message: {str(e)}"
-            logger.error(f"Error in process_message: {error_message}")
-            return ChatResponse(
-                message=Message(
-                    message_id=str(uuid.uuid4()),
-                    role=MessageRole.ASSISTANT,
-                    content=error_message,
-                    timestamp=datetime.now(),
-                    metadata={"error": True}
-                ),
-                sideEffects={}
-            )
+                elif response_data["type"] == "final_response":
+                    logger.info(f"Processing Final response")
+                    # Process final response and return
+                    processed_response = await self._process_final_response(response_data)
+                    return self._create_chat_response(
+                        response_data["response"],
+                        processed_response,
+                        tool_use_history
+                    )
+                
+                else:
+                    raise ValueError(f"Invalid response type: {response_data['type']}")
 
-    async def _process_ai_response(self, response: str) -> Dict[str, Any]:
-        """Process the AI response and determine necessary side effects"""
-        try:
-            # Parse the JSON response
-            response_data = json.loads(response)
-            
-            # Handle different response types
-            if response_data.get("type") == "tool":
-                # Execute the tool and get results
-                tool_results = await self._execute_tool(response_data["tool"])
-                return {
-                    "tool_executed": response_data["tool"],
-                    "tool_results": tool_results
-                }
-            elif response_data.get("type") == "final_response":
-                # Handle final response with any agent job recommendations and direct assets
-                agent_jobs = response_data.get("agent_jobs", [])
-                direct_assets = response_data.get("assets", [])
-                
-                # Process agent jobs
-                for job in agent_jobs:
-                    # Ensure input_asset_ids is a list
-                    if "input_asset_ids" not in job:
-                        job["input_asset_ids"] = []
-                    elif not isinstance(job["input_asset_ids"], list):
-                        job["input_asset_ids"] = [job["input_asset_ids"]]
-                    
-                    # Validate required fields
-                    if "agentType" not in job:
-                        raise ValueError(f"Agent job missing required field 'agentType'")
-                    if "output_asset_configs" not in job:
-                        raise ValueError(f"Agent job missing required field 'output_asset_configs'")
-                    
-                    # Add default metadata if not present
-                    if "metadata" not in job:
-                        job["metadata"] = {}
-                    if "priority" not in job["metadata"]:
-                        job["metadata"]["priority"] = "medium"
-                    if "tags" not in job["metadata"]:
-                        job["metadata"]["tags"] = []
-                    if "estimated_duration" not in job["metadata"]:
-                        job["metadata"]["estimated_duration"] = "5m"
-                
-                # Process direct assets
-                for asset in direct_assets:
-                    if "asset_id" not in asset:
-                        asset["asset_id"] = str(uuid.uuid4())
-                    if "metadata" not in asset:
-                        asset["metadata"] = {}
-                    if "createdAt" not in asset["metadata"]:
-                        asset["metadata"]["createdAt"] = datetime.now().isoformat()
-                    if "updatedAt" not in asset["metadata"]:
-                        asset["metadata"]["updatedAt"] = datetime.now().isoformat()
-                    if "creator" not in asset["metadata"]:
-                        asset["metadata"]["creator"] = "bot"
-                    if "version" not in asset["metadata"]:
-                        asset["metadata"]["version"] = 1
-                
-                return {
-                    "final_response": response_data["response"],
-                    "agent_jobs": agent_jobs,  # Pass raw agent jobs
-                    "assets": direct_assets
-                }
-            else:
-                raise ValueError(f"Invalid response type: {response_data.get('type')}")
-                
-        except json.JSONDecodeError:
-            raise ValueError("AI response must be valid JSON")
+            # 3. Handle max iterations reached
+            return self._create_max_iterations_response(tool_use_history)
+
         except Exception as e:
-            raise ValueError(f"Error processing AI response: {str(e)}")
+            # 4. Handle errors
+            return self._create_error_response(str(e))
+
+    def _initialize_conversation_history(self, history: List[Dict[str, Any]], message: str) -> List[Dict[str, Any]]:
+        """Initialize conversation history with current message"""
+        messages = [
+            {"role": msg["role"], "content": msg["content"]}
+            for msg in history
+        ]
+        messages.append({"role": "user", "content": message})
+        return messages
+
+    async def _get_ai_response(self, messages: List[Dict[str, Any]], assets: List[Asset]) -> str:
+        """Get response from AI service"""
+        return await self.ai_service.send_messages(
+            messages=messages,
+            system=self._get_system_prompt(assets)
+        )
+
+    def _validate_response_data(self, response_data: Dict[str, Any]) -> None:
+        """Validate response data structure"""
+        if not isinstance(response_data, dict):
+            raise ValueError("Response must be a JSON object")
+        if "type" not in response_data:
+            raise ValueError("Response must include a 'type' field")
+
+    def _update_tool_history(self, tool_use_history: List[Dict[str, Any]], 
+                            iteration: int, tool: Dict[str, Any], 
+                            results: Dict[str, Any]) -> None:
+        """Update tool use history"""
+        tool_use_history.append({
+            "iteration": iteration + 1,
+            "tool": tool,
+            "results": results
+        })
+
+    def _update_conversation_history(self, messages: List[Dict[str, Any]], 
+                                   tool: Dict[str, Any], 
+                                   results: Dict[str, Any]) -> None:
+        """Update conversation history with tool execution"""
+        messages.extend([
+            {
+                "role": "assistant",
+                "content": json.dumps({"type": "tool", "tool": tool})
+            },
+            {
+                "role": "assistant",
+                "content": json.dumps({
+                    "type": "tool_result",
+                    "tool": tool["name"],
+                    "results": results
+                })
+            }
+        ])
+
+    async def _process_final_response(self, response_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process final response including agent jobs and assets"""
+        agent_jobs = self._process_agent_jobs(response_data.get("agent_jobs", []))
+        assets = self._process_assets(response_data.get("assets", []))
+        return {
+            "final_response": response_data["response"],
+            "agent_jobs": agent_jobs,
+            "assets": assets
+        }
+
+    def _process_agent_jobs(self, agent_jobs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Process and validate agent jobs"""
+        processed_jobs = []
+        for job in agent_jobs:
+            # Ensure input_asset_ids is a list
+            if "input_asset_ids" not in job:
+                job["input_asset_ids"] = []
+            elif not isinstance(job["input_asset_ids"], list):
+                job["input_asset_ids"] = [job["input_asset_ids"]]
+            
+            # Validate required fields
+            if "agentType" not in job:
+                raise ValueError(f"Agent job missing required field 'agentType'")
+            if "output_asset_configs" not in job:
+                raise ValueError(f"Agent job missing required field 'output_asset_configs'")
+            
+            # Add default metadata if not present
+            if "metadata" not in job:
+                job["metadata"] = {}
+            if "priority" not in job["metadata"]:
+                job["metadata"]["priority"] = "medium"
+            if "tags" not in job["metadata"]:
+                job["metadata"]["tags"] = []
+            if "estimated_duration" not in job["metadata"]:
+                job["metadata"]["estimated_duration"] = "5m"
+            
+            processed_jobs.append(job)
+        return processed_jobs
+
+    def _process_assets(self, assets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Process and validate assets"""
+        processed_assets = []
+        for asset in assets:
+            if "asset_id" not in asset:
+                asset["asset_id"] = str(uuid.uuid4())
+            if "metadata" not in asset:
+                asset["metadata"] = {}
+            if "createdAt" not in asset["metadata"]:
+                asset["metadata"]["createdAt"] = datetime.now().isoformat()
+            if "updatedAt" not in asset["metadata"]:
+                asset["metadata"]["updatedAt"] = datetime.now().isoformat()
+            if "creator" not in asset["metadata"]:
+                asset["metadata"]["creator"] = "bot"
+            if "version" not in asset["metadata"]:
+                asset["metadata"]["version"] = 1
+            
+            processed_assets.append(asset)
+        return processed_assets
+
+    def _create_chat_response(self, response: str, processed_response: Dict[str, Any], 
+                             tool_use_history: List[Dict[str, Any]]) -> ChatResponse:
+        """Create final chat response"""
+        return ChatResponse(
+            message=Message(
+                message_id=str(uuid.uuid4()),
+                role=MessageRole.ASSISTANT,
+                content=response,
+                timestamp=datetime.now(),
+                metadata=self._get_message_metadata(processed_response)
+            ),
+            sideEffects={
+                "final_response": response,
+                "agent_jobs": processed_response.get("agent_jobs", []),
+                "assets": processed_response.get("assets", []),
+                "tool_use_history": tool_use_history
+            }
+        )
+
+    def _create_max_iterations_response(self, tool_use_history: List[Dict[str, Any]]) -> ChatResponse:
+        """Create response for max iterations reached"""
+        return ChatResponse(
+            message=Message(
+                message_id=str(uuid.uuid4()),
+                role=MessageRole.ASSISTANT,
+                content="I've reached the maximum number of tool use iterations. Please try rephrasing your request.",
+                timestamp=datetime.now(),
+                metadata={
+                    "error": True,
+                    "max_iterations_reached": True,
+                    "tool_use_history": tool_use_history
+                }
+            ),
+            sideEffects={"tool_use_history": tool_use_history}
+        )
+
+    def _create_error_response(self, error_message: str) -> ChatResponse:
+        """Create error response"""
+        return ChatResponse(
+            message=Message(
+                message_id=str(uuid.uuid4()),
+                role=MessageRole.ASSISTANT,
+                content=f"Error processing message: {error_message}",
+                timestamp=datetime.now(),
+                metadata={"error": True}
+            ),
+            sideEffects={}
+        )
 
     async def _execute_tool(self, tool_call: Dict[str, Any]) -> Dict[str, Any]:
         """Execute a tool and return its results"""
