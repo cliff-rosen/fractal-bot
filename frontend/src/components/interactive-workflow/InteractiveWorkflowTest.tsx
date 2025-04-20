@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { JourneyCard } from './JourneyCard';
 import { WorkflowCard } from './WorkflowCard';
-import { StepDetailsCard } from './StepDetailsCard';
+import { WorkspacePanel } from './WorkspacePanel';
 import { EnhancedChatPanel } from './EnhancedChatPanel';
 import { uiSnapshots } from './workflowTransitionData';
 import { ActionButton } from './types';
@@ -22,6 +22,10 @@ const InteractiveWorkflowTest: React.FC = () => {
         if (currentSnapshotIndex > 0) {
             setCurrentSnapshotIndex(prev => prev - 1);
         }
+    };
+
+    const handleReset = () => {
+        setCurrentSnapshotIndex(0);
     };
 
     const handleAction = (action: ActionButton['action']) => {
@@ -45,7 +49,6 @@ const InteractiveWorkflowTest: React.FC = () => {
         }, 1000);
     };
 
-    // Get action buttons from the last assistant message
     const getActionButtons = () => {
         if (!currentSnapshot.journey?.messages) return [];
 
@@ -61,13 +64,19 @@ const InteractiveWorkflowTest: React.FC = () => {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+        <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-950">
             {/* Header */}
-            <div className="h-12 bg-white dark:bg-gray-800 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="h-12 bg-white dark:bg-gray-800 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <h1 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     Orchestrator Demo
                 </h1>
                 <div className="flex gap-2">
+                    <button
+                        onClick={handleReset}
+                        className="px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300"
+                    >
+                        Reset
+                    </button>
                     <button
                         onClick={handlePrevious}
                         disabled={currentSnapshotIndex === 0}
@@ -86,9 +95,9 @@ const InteractiveWorkflowTest: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex">
+            <div className="flex-1 flex p-4 gap-4">
                 {/* Left: Chat Panel */}
-                <div className="w-[400px] flex flex-col bg-white dark:bg-gray-800 shadow-sm">
+                <div className="w-[400px] flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                     <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Chat</h2>
                     </div>
@@ -103,21 +112,43 @@ const InteractiveWorkflowTest: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Right: Journey Card + Workflow + Step Details */}
-                <div className="flex-1 flex flex-col">
-                    {currentSnapshot.journey && (
-                        <JourneyCard journey={currentSnapshot.journey} />
-                    )}
-                    {currentSnapshot.journey?.workflow && (
-                        <WorkflowCard workflow={currentSnapshot.journey.workflow} />
-                    )}
-                    {currentSnapshot.journey?.workflow?.steps[currentSnapshot.journey.workflow.currentStepIndex] && (
-                        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 shadow-sm">
+                {/* Right: Journey, Workflow, and Workspace */}
+                <div className="flex-1 flex flex-col gap-4">
+                    {/* Journey Card */}
+                    {currentSnapshot.journey && currentSnapshot.journey.status !== 'draft' && (
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                             <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
-                                <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Step Details</h2>
+                                <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Journey</h2>
                             </div>
-                            <div className="flex-1 overflow-y-auto">
-                                <StepDetailsCard step={currentSnapshot.journey.workflow.steps[currentSnapshot.journey.workflow.currentStepIndex]} />
+                            <div className="p-4">
+                                <JourneyCard journey={currentSnapshot.journey} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Workflow Card - Fixed height */}
+                    {currentSnapshot.journey?.workflow && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
+                        <div className="h-[300px] bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                            <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workflow</h2>
+                            </div>
+                            <div className="p-4 h-[calc(300px-3rem)] overflow-y-auto">
+                                <WorkflowCard workflow={currentSnapshot.journey.workflow} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Workspace Panel - Takes remaining space */}
+                    {currentSnapshot.journey && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
+                        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                            <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workspace</h2>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-4">
+                                <WorkspacePanel
+                                    journey={currentSnapshot.journey}
+                                    workflow={currentSnapshot.journey?.workflow}
+                                />
                             </div>
                         </div>
                     )}

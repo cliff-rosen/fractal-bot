@@ -11,7 +11,23 @@ export interface TransitionStep {
 export const transitionSteps: TransitionStep[] = [
     {
         state: 'AWAITING_JOURNEY',
-        description: 'Initial state when user first engages',
+        description: 'User initiates a new journey',
+        chatMessages: [
+            {
+                id: 'msg_001',
+                role: 'user',
+                content: 'I need to analyze our client feedback from Q1 2024',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'goal'
+                }
+            }
+        ],
+        journey: undefined
+    },
+    {
+        state: 'AWAITING_JOURNEY',
+        description: 'System proposes a journey card',
         chatMessages: [
             {
                 id: 'msg_001',
@@ -57,6 +73,24 @@ export const transitionSteps: TransitionStep[] = [
         description: 'Entered after journey card acceptance',
         chatMessages: [
             {
+                id: 'msg_001',
+                role: 'user',
+                content: 'I need to analyze our client feedback from Q1 2024',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'goal'
+                }
+            },
+            {
+                id: 'msg_002',
+                role: 'assistant',
+                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'status'
+                }
+            },
+            {
                 id: 'msg_003',
                 role: 'assistant',
                 content: 'Would you like me to propose a workflow for analyzing the client feedback?',
@@ -82,6 +116,33 @@ export const transitionSteps: TransitionStep[] = [
         state: 'AWAITING_WORKFLOW_START',
         description: 'Workflow is accepted but execution has not begun',
         chatMessages: [
+            {
+                id: 'msg_001',
+                role: 'user',
+                content: 'I need to analyze our client feedback from Q1 2024',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'goal'
+                }
+            },
+            {
+                id: 'msg_002',
+                role: 'assistant',
+                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'status'
+                }
+            },
+            {
+                id: 'msg_003',
+                role: 'assistant',
+                content: 'Would you like me to propose a workflow for analyzing the client feedback?',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'suggestion'
+                }
+            },
             {
                 id: 'msg_004',
                 role: 'assistant',
@@ -116,6 +177,42 @@ export const transitionSteps: TransitionStep[] = [
         description: 'Active workflow execution state',
         chatMessages: [
             {
+                id: 'msg_001',
+                role: 'user',
+                content: 'I need to analyze our client feedback from Q1 2024',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'goal'
+                }
+            },
+            {
+                id: 'msg_002',
+                role: 'assistant',
+                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'status'
+                }
+            },
+            {
+                id: 'msg_003',
+                role: 'assistant',
+                content: 'Would you like me to propose a workflow for analyzing the client feedback?',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'suggestion'
+                }
+            },
+            {
+                id: 'msg_004',
+                role: 'assistant',
+                content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'confirmation'
+                }
+            },
+            {
                 id: 'msg_005',
                 role: 'assistant',
                 content: 'Starting Step 1: Collecting emails from Q1 2024...',
@@ -134,6 +231,51 @@ export const transitionSteps: TransitionStep[] = [
         state: 'WORKFLOW_COMPLETE',
         description: 'All workflow steps have been completed',
         chatMessages: [
+            {
+                id: 'msg_001',
+                role: 'user',
+                content: 'I need to analyze our client feedback from Q1 2024',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'goal'
+                }
+            },
+            {
+                id: 'msg_002',
+                role: 'assistant',
+                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'status'
+                }
+            },
+            {
+                id: 'msg_003',
+                role: 'assistant',
+                content: 'Would you like me to propose a workflow for analyzing the client feedback?',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'suggestion'
+                }
+            },
+            {
+                id: 'msg_004',
+                role: 'assistant',
+                content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'confirmation'
+                }
+            },
+            {
+                id: 'msg_005',
+                role: 'assistant',
+                content: 'Starting Step 1: Collecting emails from Q1 2024...',
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    type: 'status'
+                }
+            },
             {
                 id: 'msg_006',
                 role: 'assistant',
@@ -163,8 +305,66 @@ export interface UISnapshot {
 export const uiSnapshots: UISnapshot[] = [
     {
         timestamp: "2024-03-15T10:30:00Z",
+        description: "Initial empty state",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "",
+            goal: "",
+            state: "AWAITING_JOURNEY",
+            status: "draft",
+            creator: "Sarah Chen",
+            createdAt: "2024-03-15T10:30:00Z",
+            updatedAt: "2024-03-15T10:30:00Z",
+            tags: [],
+            deliverableType: "draft",
+            messages: [],
+            workflow: null,
+            workspace: {
+                id: "ws_2024_03_15_001",
+                name: "",
+                description: "",
+                assets: [],
+                tools: [],
+                settings: {}
+            }
+        },
+        isRightPanelOpen: false
+    },
+    {
+        timestamp: "2024-03-15T10:30:01Z",
         description: "User initiates a new journey",
-        journey: null,
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "",
+            goal: "",
+            state: "AWAITING_JOURNEY",
+            status: "draft",
+            creator: "Sarah Chen",
+            createdAt: "2024-03-15T10:30:00Z",
+            updatedAt: "2024-03-15T10:30:01Z",
+            tags: [],
+            deliverableType: "draft",
+            messages: [
+                {
+                    id: "msg_001",
+                    role: "user",
+                    content: "I need to analyze our client feedback from Q1 2024",
+                    timestamp: "2024-03-15T10:30:01Z",
+                    metadata: {
+                        type: "goal"
+                    }
+                }
+            ],
+            workflow: null,
+            workspace: {
+                id: "ws_2024_03_15_001",
+                name: "",
+                description: "",
+                assets: [],
+                tools: [],
+                settings: {}
+            }
+        },
         isRightPanelOpen: false
     },
     {
@@ -178,7 +378,7 @@ export const uiSnapshots: UISnapshot[] = [
             status: "draft",
             creator: "Sarah Chen",
             createdAt: "2024-03-15T10:30:00Z",
-            updatedAt: "2024-03-15T10:30:00Z",
+            updatedAt: "2024-03-15T10:30:05Z",
             tags: ["feedback", "analysis", "quarterly-review"],
             deliverableType: "report",
             messages: [
@@ -186,7 +386,7 @@ export const uiSnapshots: UISnapshot[] = [
                     id: "msg_001",
                     role: "user",
                     content: "I need to analyze our client feedback from Q1 2024",
-                    timestamp: "2024-03-15T10:30:00Z",
+                    timestamp: "2024-03-15T10:30:01Z",
                     metadata: {
                         type: "goal"
                     }
@@ -218,8 +418,8 @@ export const uiSnapshots: UISnapshot[] = [
             workflow: null,
             workspace: {
                 id: "ws_2024_03_15_001",
-                name: "Q1 Feedback Analysis Workspace",
-                description: "Workspace for analyzing Q1 2024 client feedback",
+                name: "",
+                description: "",
                 assets: [],
                 tools: [],
                 settings: {}
