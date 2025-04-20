@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
-import { Journey, Workflow, ChatMessage } from './types';
+import { Journey, Workflow, ChatMessage, JourneyState } from './types';
 import { transitionSteps } from './workflowTransitionData';
-
-// Define the transition states
-type JourneyState =
-    | 'AWAITING_JOURNEY'
-    | 'AWAITING_WORKFLOW_DESIGN'
-    | 'AWAITING_WORKFLOW_START'
-    | 'WORKFLOW_IN_PROGRESS'
-    | 'WORKFLOW_COMPLETE';
 
 interface TransitionStep {
     state: JourneyState;

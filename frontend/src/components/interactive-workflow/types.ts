@@ -1,58 +1,21 @@
-export type WorkflowPhase = 'setup' | 'execution';
-export type SetupSubPhase =
-    | 'question_development'
-    | 'workflow_development'
-    | 'workflow_designing'
-    | 'workflow_ready';
+// Journey State Types
+export type JourneyState =
+    | 'AWAITING_JOURNEY'
+    | 'AWAITING_WORKFLOW_DESIGN'
+    | 'AWAITING_WORKFLOW_START'
+    | 'WORKFLOW_IN_PROGRESS'
+    | 'WORKFLOW_COMPLETE';
 
-export type SetupStage =
-    | 'initial'                    // Initial welcome message
-    | 'goal_definition'           // User defining their goal/intent
-    | 'clarification'             // Copilot asking for clarification
-    | 'workflow_design'           // Copilot designing workflow
-    | 'workflow_review'           // User reviewing proposed workflow
-    | 'workflow_ready';           // Ready to execute
+// Message Types
+export type MessageType = 'goal' | 'clarification' | 'suggestion' | 'confirmation' | 'status' | 'result' | 'error';
 
-export type ExecutionStage =
-    | 'started'                   // Workflow execution started
-    | 'in_progress'              // Steps being executed
-    | 'paused'                   // Execution paused
-    | 'completed'                // Workflow completed
-    | 'failed';                  // Workflow failed
-
-export interface WorkflowState {
-    phase: WorkflowPhase;
-    setupStage: SetupStage;
-    executionStage: ExecutionStage;
-    currentStepIndex: number;
-    isProcessing: boolean;
-}
-
-export type WorkflowStep = {
-    id: string;
-    name: string;
-    description: string;
-    status: 'pending' | 'running' | 'completed' | 'failed';
-    agentType: string;
-    level: number;              // Depth in the tree (0 for main steps)
-    tools: string[];           // Tools used in this step
-    inputs: Record<string, any>;
-    outputs: Record<string, any>;
-    progress: number;          // Progress percentage (0-100)
-    assets: Asset[];          // Assets generated in this step
-    subSteps?: WorkflowStep[]; // Nested steps
-    parentId?: string;        // Reference to parent step
-    isExpanded?: boolean;
-};
-
-export type ChatMessage = {
+export interface ChatMessage {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
     metadata?: {
-        type: 'goal' | 'clarification' | 'suggestion' | 'confirmation' | 'status' | 'result' | 'error';
-        phase?: WorkflowPhase;
+        type: MessageType;
         stepId?: string;
         assetIds?: string[];
         toolIds?: string[];
@@ -60,43 +23,16 @@ export type ChatMessage = {
     };
     reactions?: MessageReaction[];
     thread?: ChatMessage[];
-};
+}
 
-export type WorkflowStepTemplate = {
+export interface MessageReaction {
     id: string;
-    name: string;
-    description: string;
-    agentType: string;
-};
+    type: '👍' | '👎' | '⭐' | '❓' | '💡';
+    userId: string;
+    timestamp: string;
+}
 
-export type InformationAsset = {
-    id: string;
-    stepId: string;            // ID of the step that generated this asset
-    type: 'search_result' | 'generated_content' | 'analysis_output' | 'intermediate_finding';
-    content: any;              // The actual content of the asset
-    metadata: {
-        tool?: string;         // Tool used to generate this asset
-        timestamp: string;     // When the asset was created
-        tags: string[];       // For organization/filtering
-    };
-};
-
-export type StepDetails = {
-    inputs: Record<string, any>;
-    outputs: Record<string, any>;
-    status: string;
-    progress: number;
-    assets: InformationAsset[];  // Track assets generated in this step
-};
-
-export type ToolTemplate = {
-    id: string;
-    name: string;
-    description: string;
-    category: 'search' | 'list' | 'analysis' | 'generation';
-    icon: string;
-};
-
+// Asset Types
 export interface Asset {
     id: string;
     title: string;
@@ -113,22 +49,16 @@ export interface Asset {
     };
     version: number;
     history: AssetVersion[];
-};
+}
 
 export interface AssetVersion {
     version: number;
     content: any;
     updatedAt: string;
     updatedBy: string;
-};
+}
 
-export interface MessageReaction {
-    id: string;
-    type: '👍' | '👎' | '⭐' | '❓' | '💡';
-    userId: string;
-    timestamp: string;
-};
-
+// Tool Types
 export interface Tool {
     id: string;
     name: string;
@@ -142,7 +72,7 @@ export interface Tool {
         avgDuration: number;
         successRate: number;
     };
-};
+}
 
 export interface ToolParameter {
     name: string;
@@ -150,30 +80,64 @@ export interface ToolParameter {
     description: string;
     required: boolean;
     default?: any;
-};
+}
 
+// Workflow Types
+export interface WorkflowStep {
+    id: string;
+    name: string;
+    description: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    agentType: string;
+    level: number;              // Depth in the tree (0 for main steps)
+    tools: string[];           // Tools used in this step
+    inputs: Record<string, any>;
+    outputs: Record<string, any>;
+    progress: number;          // Progress percentage (0-100)
+    assets: Asset[];          // Assets generated in this step
+    subSteps?: WorkflowStep[]; // Nested steps
+    parentId?: string;        // Reference to parent step
+    isExpanded?: boolean;
+}
+
+export interface Workflow {
+    id: string;
+    status: 'pending' | 'running' | 'paused' | 'completed' | 'failed';
+    currentStepIndex: number;
+    steps: WorkflowStep[];
+    assets: Asset[];
+}
+
+// Workspace Types
+export interface Workspace {
+    id: string;
+    name: string;
+    description?: string;
+    assets: Asset[];
+    tools: Tool[];
+    settings: Record<string, any>;
+}
+
+// Journey Types (Top Level)
 export interface Journey {
     id: string;
     title: string;
     goal: string;
+    state: JourneyState;
     status: 'draft' | 'active' | 'completed' | 'failed';
     creator: string;
     createdAt: string;
     updatedAt: string;
     tags: string[];
     deliverableType: 'summary' | 'draft' | 'report' | 'dataset' | 'visual' | 'decision' | 'plan';
-    workflow?: Workflow;
-};
 
-export interface Workflow {
-    id: string;
-    journeyId: string;
-    steps: WorkflowStep[];
-    status: 'pending' | 'running' | 'paused' | 'completed' | 'failed';
-    currentStepIndex: number;
-    assets: Asset[];
-};
+    // Nested components
+    messages: ChatMessage[];
+    workflow: Workflow | null;
+    workspace: Workspace;
+}
 
+// Agent Types
 export interface Agent {
     id: string;
     name: string;
@@ -186,4 +150,4 @@ export interface Agent {
         avgDuration: number;
         successRate: number;
     };
-}; 
+} 
