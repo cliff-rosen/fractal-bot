@@ -1,4 +1,4 @@
-import { Journey, Workflow, ChatMessage, JourneyState } from './types';
+import { Journey, Workflow, ChatMessage, JourneyState, ActionButton } from './types';
 
 export interface TransitionStep {
     state: JourneyState;
@@ -28,7 +28,21 @@ export const transitionSteps: TransitionStep[] = [
                 content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
                 timestamp: new Date().toISOString(),
                 metadata: {
-                    type: 'status'
+                    type: 'status',
+                    actionButtons: [
+                        {
+                            id: 'accept-journey',
+                            label: 'Accept Journey',
+                            type: 'primary',
+                            action: 'accept_journey'
+                        },
+                        {
+                            id: 'reject-journey',
+                            label: 'Reject Journey',
+                            type: 'danger',
+                            action: 'reject_journey'
+                        }
+                    ]
                 }
             }
         ],
@@ -48,7 +62,15 @@ export const transitionSteps: TransitionStep[] = [
                 content: 'Would you like me to propose a workflow for analyzing the client feedback?',
                 timestamp: new Date().toISOString(),
                 metadata: {
-                    type: 'suggestion'
+                    type: 'suggestion',
+                    actionButtons: [
+                        {
+                            id: 'start-design',
+                            label: 'Start Workflow Design',
+                            type: 'primary',
+                            action: 'start_design'
+                        }
+                    ]
                 }
             }
         ],
@@ -66,7 +88,21 @@ export const transitionSteps: TransitionStep[] = [
                 content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
                 timestamp: new Date().toISOString(),
                 metadata: {
-                    type: 'confirmation'
+                    type: 'confirmation',
+                    actionButtons: [
+                        {
+                            id: 'accept-workflow',
+                            label: 'Accept Workflow',
+                            type: 'primary',
+                            action: 'accept_workflow'
+                        },
+                        {
+                            id: 'reject-workflow',
+                            label: 'Reject Workflow',
+                            type: 'danger',
+                            action: 'reject_workflow'
+                        }
+                    ]
                 }
             }
         ],
@@ -161,7 +197,21 @@ export const uiSnapshots: UISnapshot[] = [
                     content: "I'll help you analyze the Q1 client feedback. I've created a journey card for this analysis - you can review it in the task area.",
                     timestamp: "2024-03-15T10:30:05Z",
                     metadata: {
-                        type: "status"
+                        type: "status",
+                        actionButtons: [
+                            {
+                                id: "accept-journey",
+                                label: "Accept Journey",
+                                type: "primary",
+                                action: "accept_journey"
+                            },
+                            {
+                                id: "reject-journey",
+                                label: "Reject Journey",
+                                type: "danger",
+                                action: "reject_journey"
+                            }
+                        ]
                     }
                 }
             ],
@@ -213,10 +263,18 @@ export const uiSnapshots: UISnapshot[] = [
                 {
                     id: "msg_003",
                     role: "assistant",
-                    content: "Journey card accepted. Would you like me to propose a workflow for analyzing the client feedback?",
+                    content: "Would you like me to propose a workflow for analyzing the client feedback?",
                     timestamp: "2024-03-15T10:30:15Z",
                     metadata: {
-                        type: "suggestion"
+                        type: "suggestion",
+                        actionButtons: [
+                            {
+                                id: "start-design",
+                                label: "Start Workflow Design",
+                                type: "primary",
+                                action: "start_design"
+                            }
+                        ]
                     }
                 }
             ],
@@ -268,7 +326,7 @@ export const uiSnapshots: UISnapshot[] = [
                 {
                     id: "msg_003",
                     role: "assistant",
-                    content: "Journey card accepted. Would you like me to propose a workflow for analyzing the client feedback?",
+                    content: "Would you like me to propose a workflow for analyzing the client feedback?",
                     timestamp: "2024-03-15T10:30:15Z",
                     metadata: {
                         type: "suggestion"
@@ -332,7 +390,7 @@ export const uiSnapshots: UISnapshot[] = [
                 {
                     id: "msg_003",
                     role: "assistant",
-                    content: "Journey card accepted. Would you like me to propose a workflow for analyzing the client feedback?",
+                    content: "Would you like me to propose a workflow for analyzing the client feedback?",
                     timestamp: "2024-03-15T10:30:15Z",
                     metadata: {
                         type: "suggestion"
@@ -353,7 +411,21 @@ export const uiSnapshots: UISnapshot[] = [
                     content: "I've designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?",
                     timestamp: "2024-03-15T10:30:25Z",
                     metadata: {
-                        type: "confirmation"
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "accept-workflow",
+                                label: "Accept Workflow",
+                                type: "primary",
+                                action: "accept_workflow"
+                            },
+                            {
+                                id: "reject-workflow",
+                                label: "Reject Workflow",
+                                type: "danger",
+                                action: "reject_workflow"
+                            }
+                        ]
                     }
                 }
             ],

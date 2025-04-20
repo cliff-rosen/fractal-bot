@@ -4,6 +4,7 @@ import { WorkflowCard } from './WorkflowCard';
 import { StepDetailsCard } from './StepDetailsCard';
 import { EnhancedChatPanel } from './EnhancedChatPanel';
 import { uiSnapshots } from './workflowTransitionData';
+import { ActionButton } from './types';
 
 const InteractiveWorkflowTest: React.FC = () => {
     const [currentSnapshotIndex, setCurrentSnapshotIndex] = useState(0);
@@ -23,29 +24,16 @@ const InteractiveWorkflowTest: React.FC = () => {
         }
     };
 
-    const handleAcceptJourney = () => {
-        // Move to the next snapshot which should be the journey acceptance state
-        handleNext();
-    };
-
-    const handleRejectJourney = () => {
-        // For demo purposes, we'll just move to the next snapshot
-        handleNext();
-    };
-
-    const handleStartDesign = () => {
-        // Move to the next snapshot which should be the workflow design state
-        handleNext();
-    };
-
-    const handleAcceptWorkflow = () => {
-        // Move to the next snapshot which should be the workflow acceptance state
-        handleNext();
-    };
-
-    const handleRejectWorkflow = () => {
-        // For demo purposes, we'll just move to the next snapshot
-        handleNext();
+    const handleAction = (action: ActionButton['action']) => {
+        switch (action) {
+            case 'accept_journey':
+            case 'reject_journey':
+            case 'start_design':
+            case 'accept_workflow':
+            case 'reject_workflow':
+                handleNext();
+                break;
+        }
     };
 
     const handleSendMessage = (message: string) => {
@@ -57,31 +45,19 @@ const InteractiveWorkflowTest: React.FC = () => {
         }, 1000);
     };
 
-    // Determine workflow status based on current snapshot
-    const getWorkflowStatus = () => {
-        if (!currentSnapshot.journey) return 'awaiting_journey';
-        if (currentSnapshot.journey.status === 'draft') return 'awaiting_journey';
-        if (!currentSnapshot.journey.workflow) return 'awaiting_workflow_design';
-        if (currentSnapshot.journey.workflow.status === 'pending') return 'awaiting_workflow_start';
-        return 'awaiting_workflow_start';
-    };
+    // Get action buttons from the last assistant message
+    const getActionButtons = () => {
+        if (!currentSnapshot.journey?.messages) return [];
 
-    // Determine if workflow is currently being designed
-    const isDesigning = () => {
-        if (!currentSnapshot.journey || currentSnapshot.journey.status !== 'active') return false;
-        if (currentSnapshot.journey.workflow) return false;
-        // Check if the current message indicates design is in progress
-        const lastMessage = currentSnapshot.journey.messages[currentSnapshot.journey.messages.length - 1];
-        return lastMessage?.content?.includes('designing a workflow');
-    };
+        const messages = currentSnapshot.journey.messages;
+        const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant');
 
-    // Determine if workflow has been proposed
-    const isWorkflowProposed = () => {
-        if (!currentSnapshot.journey || currentSnapshot.journey.status !== 'active') return false;
-        if (currentSnapshot.journey.workflow) return false;
-        // Check if the current message contains a workflow proposal
-        const lastMessage = currentSnapshot.journey.messages[currentSnapshot.journey.messages.length - 1];
-        return lastMessage?.content?.includes('I have designed a workflow');
+        if (!lastAssistantMessage?.metadata?.actionButtons) return [];
+
+        return lastAssistantMessage.metadata.actionButtons.map(button => ({
+            ...button,
+            onClick: () => handleAction(button.action)
+        }));
     };
 
     return (
@@ -122,6 +98,7 @@ const InteractiveWorkflowTest: React.FC = () => {
                             inputMessage={inputMessage}
                             isProcessing={isProcessing}
                             onSendMessage={handleSendMessage}
+                            actionButtons={getActionButtons()}
                         />
                     </div>
                 </div>
@@ -129,17 +106,7 @@ const InteractiveWorkflowTest: React.FC = () => {
                 {/* Right: Journey Card + Workflow + Step Details */}
                 <div className="flex-1 flex flex-col">
                     {currentSnapshot.journey && (
-                        <JourneyCard
-                            journey={currentSnapshot.journey}
-                            onAccept={handleAcceptJourney}
-                            onReject={handleRejectJourney}
-                            onStartDesign={handleStartDesign}
-                            onAcceptWorkflow={handleAcceptWorkflow}
-                            onRejectWorkflow={handleRejectWorkflow}
-                            workflowStatus={getWorkflowStatus()}
-                            isDesigning={isDesigning()}
-                            isWorkflowProposed={isWorkflowProposed()}
-                        />
+                        <JourneyCard journey={currentSnapshot.journey} />
                     )}
                     {currentSnapshot.journey?.workflow && (
                         <WorkflowCard workflow={currentSnapshot.journey.workflow} />

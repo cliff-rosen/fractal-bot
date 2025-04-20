@@ -9,6 +9,13 @@ export type JourneyState =
 // Message Types
 export type MessageType = 'goal' | 'clarification' | 'suggestion' | 'confirmation' | 'status' | 'result' | 'error';
 
+export interface ActionButton {
+    id: string;
+    label: string;
+    type: 'primary' | 'secondary' | 'danger';
+    action: 'accept_journey' | 'reject_journey' | 'start_design' | 'accept_workflow' | 'reject_workflow';
+}
+
 export interface ChatMessage {
     id: string;
     role: 'user' | 'assistant';
@@ -20,6 +27,7 @@ export interface ChatMessage {
         assetIds?: string[];
         toolIds?: string[];
         reactionIds?: string[];
+        actionButtons?: ActionButton[];
     };
     reactions?: MessageReaction[];
     thread?: ChatMessage[];

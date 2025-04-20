@@ -1,11 +1,19 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ChatMessage, MessageReaction, Asset, Tool } from './types';
 
+interface ActionButton {
+    id: string;
+    label: string;
+    type: 'primary' | 'secondary' | 'danger';
+    onClick: () => void;
+}
+
 interface EnhancedChatPanelProps {
     messages: ChatMessage[];
     inputMessage: string;
     isProcessing: boolean;
     onSendMessage: (message: string) => void;
+    actionButtons?: ActionButton[];
     className?: string;
 }
 
@@ -14,6 +22,7 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
     inputMessage,
     isProcessing,
     onSendMessage,
+    actionButtons = [],
     className = ''
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -36,16 +45,18 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
 
     };
 
-    const handleSendMessage = () => {
-        if (!localInput.trim()) return;
-        onSendMessage(localInput);
-        setLocalInput('');
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (localInput.trim() && !isProcessing) {
+            onSendMessage(localInput);
+            setLocalInput('');
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSendMessage();
+            handleSubmit(e);
         }
     };
 
@@ -68,7 +79,11 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
                         {message.content}
                     </div>
 
-
+                    {message.metadata?.type && (
+                        <span className="text-xs opacity-75 mt-1 block">
+                            {message.metadata.type}
+                        </span>
+                    )}
                 </div>
             </div>
         );
@@ -91,32 +106,49 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
                 <div ref={messagesEndRef} />
             </div>
 
+            {/* Action Buttons */}
+            {actionButtons.length > 0 && (
+                <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex gap-2">
+                        {actionButtons.map((button) => (
+                            <button
+                                key={button.id}
+                                onClick={button.onClick}
+                                className={`px-3 py-1.5 text-sm rounded ${button.type === 'primary'
+                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                    : button.type === 'danger'
+                                        ? 'bg-red-500 text-white hover:bg-red-600'
+                                        : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                    }`}
+                            >
+                                {button.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Input Area */}
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-                <div className="relative">
-                    <textarea
+            <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex gap-2">
+                    <input
+                        type="text"
                         value={localInput}
-                        onChange={handleInputChange}
+                        onChange={(e) => setLocalInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Type a message... Use @ to mention assets or tools"
-                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        rows={3}
+                        className="flex-1 px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         disabled={isProcessing}
                     />
                     <button
-                        onClick={handleSendMessage}
+                        type="submit"
                         disabled={isProcessing || !localInput.trim()}
-                        className={`absolute right-3 bottom-3 p-2 rounded-full ${isProcessing || !localInput.trim()
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700'
-                            : 'bg-blue-500 text-white hover:bg-blue-600'
-                            }`}
+                        className="px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
+                        Send
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     );
 }; 
