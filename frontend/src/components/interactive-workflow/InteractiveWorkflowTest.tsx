@@ -98,14 +98,6 @@ const InteractiveWorkflowTest: React.FC = () => {
         }, 1000);
     };
 
-    const handleMessageReaction = (messageId: string, reaction: MessageReaction) => {
-        setMessages(prev => prev.map(msg =>
-            msg.id === messageId
-                ? { ...msg, reactions: [...(msg.reactions || []), reaction] }
-                : msg
-        ));
-    };
-
     const handleAssetSelect = (asset: Asset) => {
         setSelectedAsset(asset);
     };
@@ -186,13 +178,7 @@ const InteractiveWorkflowTest: React.FC = () => {
                         messages={messages}
                         inputMessage=""
                         isProcessing={workflowState.isProcessing}
-                        availableAssets={assets}
-                        availableTools={tools}
                         onSendMessage={handleSendMessage}
-                        onReaction={handleMessageReaction}
-                        onMentionAsset={(assetId) => { }}
-                        onMentionTool={(toolId) => { }}
-                        onCreateThread={(parentId, message) => { }}
                     />
                 </div>
 

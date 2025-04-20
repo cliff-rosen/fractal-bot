@@ -6,13 +6,7 @@ interface EnhancedChatPanelProps {
     messages: ChatMessage[];
     inputMessage: string;
     isProcessing: boolean;
-    availableAssets: Asset[];
-    availableTools: Tool[];
     onSendMessage: (message: string) => void;
-    onReaction: (messageId: string, reaction: MessageReaction) => void;
-    onMentionAsset: (assetId: string) => void;
-    onMentionTool: (toolId: string) => void;
-    onCreateThread: (parentMessageId: string, message: string) => void;
     className?: string;
 }
 
@@ -20,20 +14,11 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
     messages,
     inputMessage,
     isProcessing,
-    availableAssets,
-    availableTools,
     onSendMessage,
-    onReaction,
-    onMentionAsset,
-    onMentionTool,
-    onCreateThread,
     className = ''
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [localInput, setLocalInput] = useState(inputMessage);
-    const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
-    const [mentionQuery, setMentionQuery] = useState('');
-    const [mentionType, setMentionType] = useState<'asset' | 'tool' | null>(null);
     const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
 
     // Scroll to bottom when messages change
@@ -50,28 +35,12 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
         const value = e.target.value;
         setLocalInput(value);
 
-        // Check for @ mentions
-        const lastAtIndex = value.lastIndexOf('@');
-        if (lastAtIndex !== -1 && lastAtIndex === value.length - 1) {
-            setShowMentionSuggestions(true);
-            setMentionQuery('');
-            setMentionType(null);
-        } else if (lastAtIndex !== -1) {
-            const query = value.slice(lastAtIndex + 1);
-            setMentionQuery(query);
-            setShowMentionSuggestions(true);
-            // Determine mention type based on context or let user choose
-            setMentionType(query.startsWith('tool:') ? 'tool' : 'asset');
-        } else {
-            setShowMentionSuggestions(false);
-        }
     };
 
     const handleSendMessage = () => {
         if (!localInput.trim()) return;
         onSendMessage(localInput);
         setLocalInput('');
-        setShowMentionSuggestions(false);
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -138,49 +107,6 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
         );
     };
 
-    const renderMentionSuggestions = () => {
-        if (!showMentionSuggestions) return null;
-
-        const suggestions = mentionType === 'tool'
-            ? availableTools.filter(tool =>
-                tool.name.toLowerCase().includes(mentionQuery.toLowerCase()) ||
-                tool.description.toLowerCase().includes(mentionQuery.toLowerCase())
-            )
-            : availableAssets.filter(asset =>
-                asset.title.toLowerCase().includes(mentionQuery.toLowerCase())
-            );
-
-        return (
-            <div className="absolute bottom-full left-0 w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-48 overflow-y-auto">
-                {suggestions.map(item => (
-                    <button
-                        key={item.id}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                        onClick={() => {
-                            const mention = mentionType === 'tool'
-                                ? `@tool:${(item as Tool).name}`
-                                : `@asset:${(item as Asset).title}`;
-                            setLocalInput(localInput.replace(/@\w*$/, mention));
-                            setShowMentionSuggestions(false);
-                        }}
-                    >
-                        <span className="w-4 h-4 mr-2">
-                            {mentionType === 'tool' ? (item as Tool).icon : '📄'}
-                        </span>
-                        <div>
-                            <div className="font-medium">
-                                {mentionType === 'tool' ? (item as Tool).name : (item as Asset).title}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {mentionType === 'tool' ? (item as Tool).description : (item as Asset).type}
-                            </div>
-                        </div>
-                    </button>
-                ))}
-            </div>
-        );
-    };
-
     return (
         <div className={`flex flex-col h-full ${className}`}>
             {/* Messages Container */}
@@ -201,7 +127,6 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
             {/* Input Area */}
             <div className="border-t border-gray-200 dark:border-gray-700 p-4">
                 <div className="relative">
-                    {renderMentionSuggestions()}
                     <textarea
                         value={localInput}
                         onChange={handleInputChange}
