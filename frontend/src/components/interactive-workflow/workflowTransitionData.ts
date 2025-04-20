@@ -248,7 +248,66 @@ export const uiSnapshots: UISnapshot[] = [
         isRightPanelOpen: true
     },
     {
-        timestamp: "2024-03-15T10:30:30Z",
+        timestamp: "2024-03-15T10:30:20Z",
+        description: "System starts designing the workflow",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
+            status: "active",
+            creator: "Sarah Chen",
+            createdAt: "2024-03-15T10:30:00Z",
+            updatedAt: "2024-03-15T10:30:20Z",
+            tags: ["feedback", "analysis", "quarterly-review"],
+            deliverableType: "report"
+        },
+        workflow: null,
+        messages: [
+            {
+                id: "msg_001",
+                role: "user",
+                content: "I need to analyze our client feedback from Q1 2024",
+                timestamp: "2024-03-15T10:30:00Z",
+                metadata: {
+                    type: "goal",
+                    phase: "setup"
+                }
+            },
+            {
+                id: "msg_002",
+                role: "assistant",
+                content: "I'll help you analyze the Q1 client feedback. I've created a journey card for this analysis - you can review it in the task area.",
+                timestamp: "2024-03-15T10:30:05Z",
+                metadata: {
+                    type: "status",
+                    phase: "setup"
+                }
+            },
+            {
+                id: "msg_003",
+                role: "assistant",
+                content: "Journey card accepted. Would you like me to propose a workflow for analyzing the client feedback?",
+                timestamp: "2024-03-15T10:30:15Z",
+                metadata: {
+                    type: "suggestion",
+                    phase: "setup"
+                }
+            },
+            {
+                id: "msg_004",
+                role: "assistant",
+                content: "I am designing a workflow now...",
+                timestamp: "2024-03-15T10:30:20Z",
+                metadata: {
+                    type: "status",
+                    phase: "setup"
+                }
+            }
+        ],
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: "2024-03-15T10:30:25Z",
         description: "System proposes a workflow",
         journey: {
             id: "j_2024_03_15_001",
@@ -338,8 +397,18 @@ export const uiSnapshots: UISnapshot[] = [
             {
                 id: "msg_004",
                 role: "assistant",
+                content: "I am designing a workflow now...",
+                timestamp: "2024-03-15T10:30:20Z",
+                metadata: {
+                    type: "status",
+                    phase: "setup"
+                }
+            },
+            {
+                id: "msg_005",
+                role: "assistant",
                 content: "I've designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?",
-                timestamp: "2024-03-15T10:30:30Z",
+                timestamp: "2024-03-15T10:30:25Z",
                 metadata: {
                     type: "confirmation",
                     phase: "setup"

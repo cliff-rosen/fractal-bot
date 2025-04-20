@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, MessageReaction, Asset, Tool } from './types';
 
 interface EnhancedChatPanelProps {

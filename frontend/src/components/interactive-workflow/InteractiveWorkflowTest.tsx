@@ -21,6 +21,58 @@ const InteractiveWorkflowTest: React.FC = () => {
         }
     };
 
+    const handleAcceptJourney = () => {
+        // Move to the next snapshot which should be the journey acceptance state
+        handleNext();
+    };
+
+    const handleRejectJourney = () => {
+        // For demo purposes, we'll just move to the next snapshot
+        handleNext();
+    };
+
+    const handleStartDesign = () => {
+        // Move to the next snapshot which should be the workflow design state
+        handleNext();
+    };
+
+    const handleAcceptWorkflow = () => {
+        // Move to the next snapshot which should be the workflow acceptance state
+        handleNext();
+    };
+
+    const handleRejectWorkflow = () => {
+        // For demo purposes, we'll just move to the next snapshot
+        handleNext();
+    };
+
+    // Determine workflow status based on current snapshot
+    const getWorkflowStatus = () => {
+        if (!currentSnapshot.journey) return 'awaiting_journey';
+        if (currentSnapshot.journey.status === 'draft') return 'awaiting_journey';
+        if (!currentSnapshot.workflow) return 'awaiting_workflow_design';
+        if (currentSnapshot.workflow.status === 'pending') return 'awaiting_workflow_start';
+        return 'awaiting_workflow_start';
+    };
+
+    // Determine if workflow is currently being designed
+    const isDesigning = () => {
+        if (!currentSnapshot.journey || currentSnapshot.journey.status !== 'active') return false;
+        if (currentSnapshot.workflow) return false;
+        // Check if the current message indicates design is in progress
+        const lastMessage = currentSnapshot.messages[currentSnapshot.messages.length - 1];
+        return lastMessage?.content?.includes('designing a workflow');
+    };
+
+    // Determine if workflow has been proposed
+    const isWorkflowProposed = () => {
+        if (!currentSnapshot.journey || currentSnapshot.journey.status !== 'active') return false;
+        if (currentSnapshot.workflow) return false;
+        // Check if the current message contains a workflow proposal
+        const lastMessage = currentSnapshot.messages[currentSnapshot.messages.length - 1];
+        return lastMessage?.content?.includes('I have designed a workflow');
+    };
+
     return (
         <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
             {/* Header */}
@@ -65,7 +117,19 @@ const InteractiveWorkflowTest: React.FC = () => {
 
                 {/* Right: Journey Card + Workflow + Step Details */}
                 <div className="flex-1 flex flex-col">
-                    {currentSnapshot.journey && <JourneyCard journey={currentSnapshot.journey} />}
+                    {currentSnapshot.journey && (
+                        <JourneyCard
+                            journey={currentSnapshot.journey}
+                            workflowStatus={getWorkflowStatus()}
+                            onAccept={handleAcceptJourney}
+                            onReject={handleRejectJourney}
+                            onStartDesign={handleStartDesign}
+                            onAcceptWorkflow={handleAcceptWorkflow}
+                            onRejectWorkflow={handleRejectWorkflow}
+                            isDesigning={isDesigning()}
+                            isWorkflowProposed={isWorkflowProposed()}
+                        />
+                    )}
                     {currentSnapshot.workflow && <WorkflowCard workflow={currentSnapshot.workflow} />}
                     {currentSnapshot.workflow?.steps[currentSnapshot.workflow.currentStepIndex] && (
                         <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 shadow-sm">
