@@ -35,9 +35,9 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
                                     {step.description}
                                 </div>
                             </div>
-                            {index === workflow.currentStepIndex && (
+                            {index === workflow.currentStepIndex  && (
                                 <div className="text-xs px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 whitespace-nowrap">
-                                    Current
+                                    Current {workflow.currentStepIndex}
                                 </div>
                             )}
                         </div>
