@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { JourneyCard } from './JourneyCard';
+import { WorkflowCard } from './WorkflowCard';
+import { StepDetailsCard } from './StepDetailsCard';
 import { EnhancedChatPanel } from './EnhancedChatPanel';
 import { WorkflowViewer } from './WorkflowViewer';
 import { AssetPanel } from './AssetPanel';
@@ -39,31 +41,355 @@ const InteractiveWorkflowTest: React.FC = () => {
 
     // Load initial data
     useEffect(() => {
-        // TODO: Load data from API or sample data
-        // For now, we'll use sample data
+        // Load sample data from specifications
         const sampleJourney: Journey = {
-            id: uuidv4(),
-            title: 'Sample Journey',
-            goal: 'Analyze text data for insights',
-            status: 'active',
-            creator: 'User',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            tags: ['analysis', 'text', 'demo'],
-            deliverableType: 'summary'
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
+            status: "active",
+            creator: "Sarah Chen",
+            createdAt: "2024-03-15T10:30:00Z",
+            updatedAt: "2024-03-15T10:30:00Z",
+            tags: ["feedback", "analysis", "quarterly-review"],
+            deliverableType: "report"
         };
 
         const sampleWorkflow: Workflow = {
-            id: uuidv4(),
+            id: "wf_2024_03_15_001",
             journeyId: sampleJourney.id,
-            steps: [],
-            status: 'pending',
+            status: "running",
             currentStepIndex: 0,
+            steps: [
+                {
+                    id: "step_001",
+                    name: "Email Collection",
+                    description: "Search and collect client emails from Q1 2024",
+                    status: "running",
+                    agentType: "email_search",
+                    level: 0,
+                    tools: ["email_search"],
+                    inputs: {
+                        dateRange: "2024-01-01/2024-03-31",
+                        searchTerms: ["feedback", "review", "opinion"]
+                    },
+                    outputs: {},
+                    progress: 65,
+                    assets: [],
+                    isExpanded: true
+                },
+                {
+                    id: "step_002",
+                    name: "Feedback Extraction",
+                    description: "Extract feedback points from collected emails",
+                    status: "pending",
+                    agentType: "feedback_extractor",
+                    level: 0,
+                    tools: ["feedback_extractor"],
+                    inputs: {
+                        format: "structured_json",
+                        fields: ["sentiment", "topic", "urgency"]
+                    },
+                    outputs: {},
+                    progress: 0,
+                    assets: [],
+                    isExpanded: false
+                },
+                {
+                    id: "step_003",
+                    name: "Theme Analysis",
+                    description: "Identify common themes and patterns",
+                    status: "pending",
+                    agentType: "theme_analyzer",
+                    level: 0,
+                    tools: ["theme_analyzer"],
+                    inputs: {
+                        minThemeFrequency: 3,
+                        maxThemes: 10
+                    },
+                    outputs: {},
+                    progress: 0,
+                    assets: [],
+                    isExpanded: false
+                },
+                {
+                    id: "step_004",
+                    name: "Quality Check",
+                    description: "Evaluate analysis quality and coverage",
+                    status: "pending",
+                    agentType: "evaluator",
+                    level: 0,
+                    tools: ["quality_checker"],
+                    inputs: {
+                        conditions: [
+                            {
+                                id: "cond_001",
+                                variable: "coverage_score",
+                                operator: "less_than",
+                                value: 0.8,
+                                targetStepIndex: 2
+                            }
+                        ],
+                        defaultAction: "continue",
+                        maximumJumps: 3
+                    },
+                    outputs: {},
+                    progress: 0,
+                    assets: [],
+                    isExpanded: false
+                },
+                {
+                    id: "step_005",
+                    name: "Report Generation",
+                    description: "Create final analysis report",
+                    status: "pending",
+                    agentType: "report_generator",
+                    level: 0,
+                    tools: ["report_generator"],
+                    inputs: {
+                        template: "quarterly_feedback",
+                        format: "pdf"
+                    },
+                    outputs: {},
+                    progress: 0,
+                    assets: [],
+                    isExpanded: false
+                }
+            ],
             assets: []
         };
 
+        const sampleAssets: Asset[] = [
+            {
+                id: "asset_001",
+                title: "Q1 Client Emails",
+                type: "intermediate",
+                format: "json",
+                content: {
+                    location: "/assets/j_2024_03_15_001/email_dataset.json"
+                },
+                metadata: {
+                    creator: "Sarah Chen",
+                    createdAt: "2024-03-15T10:30:00Z",
+                    updatedAt: "2024-03-15T10:30:00Z",
+                    tags: ["emails", "feedback", "q1"],
+                    stepId: "step_001",
+                    toolId: "email_search"
+                },
+                version: 1,
+                history: []
+            },
+            {
+                id: "asset_002",
+                title: "Extracted Feedback Points",
+                type: "intermediate",
+                format: "json",
+                content: {
+                    location: "/assets/j_2024_03_15_001/feedback_points.json"
+                },
+                metadata: {
+                    creator: "Sarah Chen",
+                    createdAt: "2024-03-15T10:30:00Z",
+                    updatedAt: "2024-03-15T10:30:00Z",
+                    tags: ["feedback", "analysis", "q1"],
+                    stepId: "step_002",
+                    toolId: "feedback_extractor"
+                },
+                version: 1,
+                history: []
+            },
+            {
+                id: "asset_003",
+                title: "Q1 2024 Client Feedback Analysis",
+                type: "output",
+                format: "pdf",
+                content: {
+                    location: "/assets/j_2024_03_15_001/q1_analysis.pdf"
+                },
+                metadata: {
+                    creator: "Sarah Chen",
+                    createdAt: "2024-03-15T10:30:00Z",
+                    updatedAt: "2024-03-15T10:30:00Z",
+                    tags: ["report", "analysis", "q1"],
+                    stepId: "step_005",
+                    toolId: "report_generator"
+                },
+                version: 1,
+                history: []
+            }
+        ];
+
+        const sampleMessages: ChatMessage[] = [
+            {
+                id: "msg_001",
+                role: "user",
+                content: "I need to analyze our client feedback from Q1 2024",
+                timestamp: "2024-03-15T10:30:00Z",
+                metadata: {
+                    type: "goal",
+                    phase: "setup"
+                }
+            },
+            {
+                id: "msg_002",
+                role: "assistant",
+                content: "I'll help you analyze the Q1 client feedback. I've created a journey card for this analysis - you can review it in the task area.",
+                timestamp: "2024-03-15T10:30:05Z",
+                metadata: {
+                    type: "confirmation",
+                    phase: "setup"
+                }
+            },
+            {
+                id: "msg_003",
+                role: "assistant",
+                content: "Journey card accepted",
+                timestamp: "2024-03-15T10:30:15Z",
+                metadata: {
+                    type: "status",
+                    phase: "setup"
+                }
+            }
+        ];
+
+        const sampleTools: Tool[] = [
+            {
+                id: "email_search",
+                name: "Email Search",
+                description: "Search and collect emails based on criteria",
+                category: "search",
+                capabilities: ["email_search", "data_collection"],
+                parameters: [
+                    {
+                        name: "dateRange",
+                        type: "string",
+                        description: "Date range to search within",
+                        required: true
+                    },
+                    {
+                        name: "searchTerms",
+                        type: "array",
+                        description: "Terms to search for",
+                        required: true
+                    }
+                ],
+                icon: "search"
+            },
+            {
+                id: "feedback_extractor",
+                name: "Feedback Extractor",
+                description: "Extract structured feedback from text",
+                category: "analysis",
+                capabilities: ["text_analysis", "sentiment_analysis"],
+                parameters: [
+                    {
+                        name: "format",
+                        type: "string",
+                        description: "Output format",
+                        required: true
+                    },
+                    {
+                        name: "fields",
+                        type: "array",
+                        description: "Fields to extract",
+                        required: true
+                    }
+                ],
+                icon: "extract"
+            },
+            {
+                id: "theme_analyzer",
+                name: "Theme Analyzer",
+                description: "Identify common themes in feedback",
+                category: "analysis",
+                capabilities: ["theme_analysis", "pattern_recognition"],
+                parameters: [
+                    {
+                        name: "minThemeFrequency",
+                        type: "number",
+                        description: "Minimum frequency for theme inclusion",
+                        required: true
+                    },
+                    {
+                        name: "maxThemes",
+                        type: "number",
+                        description: "Maximum number of themes to identify",
+                        required: true
+                    }
+                ],
+                icon: "analyze"
+            },
+            {
+                id: "report_generator",
+                name: "Report Generator",
+                description: "Generate analysis reports",
+                category: "generation",
+                capabilities: ["report_generation", "formatting"],
+                parameters: [
+                    {
+                        name: "template",
+                        type: "string",
+                        description: "Report template to use",
+                        required: true
+                    },
+                    {
+                        name: "format",
+                        type: "string",
+                        description: "Output format",
+                        required: true
+                    }
+                ],
+                icon: "report"
+            }
+        ];
+
+        const sampleAgents: Agent[] = [
+            {
+                id: "agent_001",
+                name: "Email Search Agent",
+                description: "Specialized in searching and collecting emails",
+                capabilities: ["email_search", "data_collection"],
+                tools: ["email_search"],
+                configuration: {
+                    maxResults: 1000,
+                    dateRange: "2024-01-01/2024-03-31"
+                },
+                metrics: {
+                    usageCount: 45,
+                    avgDuration: 120,
+                    successRate: 0.95
+                }
+            },
+            {
+                id: "agent_002",
+                name: "Feedback Analysis Agent",
+                description: "Analyzes and processes feedback data",
+                capabilities: ["feedback_extraction", "theme_analysis"],
+                tools: ["feedback_extractor", "theme_analyzer"],
+                configuration: {
+                    minConfidence: 0.8,
+                    maxThemes: 10
+                },
+                metrics: {
+                    usageCount: 32,
+                    avgDuration: 180,
+                    successRate: 0.88
+                }
+            }
+        ];
+
         setJourney(sampleJourney);
         setWorkflow(sampleWorkflow);
+        setAssets(sampleAssets);
+        setMessages(sampleMessages);
+        setTools(sampleTools);
+        setAgents(sampleAgents);
+        setWorkflowState({
+            phase: 'execution',
+            setupStage: 'workflow_ready',
+            executionStage: 'in_progress',
+            currentStepIndex: 0,
+            isProcessing: true
+        });
     }, []);
 
     // Handlers
@@ -98,148 +424,48 @@ const InteractiveWorkflowTest: React.FC = () => {
         }, 1000);
     };
 
-    const handleAssetSelect = (asset: Asset) => {
-        setSelectedAsset(asset);
-    };
-
-    const handleAssetVersionSelect = (asset: Asset, version: AssetVersion) => {
-        // TODO: Implement version switching
-        console.log('Switching to version:', version);
-    };
-
-    const handleAssetTagsUpdate = (asset: Asset, tags: string[]) => {
-        setAssets(prev => prev.map(a =>
-            a.id === asset.id
-                ? { ...a, metadata: { ...a.metadata, tags } }
-                : a
-        ));
-    };
-
-    const handleAgentSelect = (agent: Agent) => {
-        setSelectedAgent(agent);
-    };
-
-    const handleToolSelect = (tool: Tool) => {
-        // TODO: Implement tool selection
-        console.log('Selected tool:', tool);
-    };
-
-    const handleStepSelect = (stepIndex: number) => {
-        if (!workflow) return;
-        setWorkflow({ ...workflow, currentStepIndex: stepIndex });
-    };
-
-    const handleStepReorder = (fromIndex: number, toIndex: number) => {
-        if (!workflow) return;
-        const newSteps = [...workflow.steps];
-        const [movedStep] = newSteps.splice(fromIndex, 1);
-        newSteps.splice(toIndex, 0, movedStep);
-        setWorkflow({ ...workflow, steps: newSteps });
-    };
-
-    const handleStepToggle = (stepIndex: number) => {
-        if (!workflow) return;
-        const newSteps = workflow.steps.map((step, index) =>
-            index === stepIndex
-                ? { ...step, isExpanded: !step.isExpanded }
-                : step
-        );
-        setWorkflow({ ...workflow, steps: newSteps });
-    };
 
     return (
-        <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
+        <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
             {/* Header */}
-            <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        Orchestrator
-                    </h1>
-                    {journey && (
-                        <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                                Current Journey:
-                            </span>
-                            <JourneyCard
-                                journey={journey}
-                                onSelect={() => { }}
-                                className="w-64"
-                            />
+            <div className="h-12 bg-white dark:bg-gray-800 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                <h1 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    Orchestrator
+                </h1>
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 flex">
+                {/* Left: Chat Panel */}
+                <div className="w-[400px] flex flex-col bg-white dark:bg-gray-800 shadow-sm">
+                    <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Chat</h2>
+                    </div>
+                    <div className="flex-1">
+                        <EnhancedChatPanel
+                            messages={messages}
+                            inputMessage=""
+                            isProcessing={workflowState.isProcessing}
+                            onSendMessage={handleSendMessage}
+                        />
+                    </div>
+                </div>
+
+                {/* Right: Journey Card + Workflow + Step Details */}
+                <div className="flex-1 flex flex-col">
+                    {journey && <JourneyCard journey={journey} />}
+                    {workflow && <WorkflowCard workflow={workflow} />}
+                    {workflow?.steps[workflow.currentStepIndex] && (
+                        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 shadow-sm">
+                            <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Step Details</h2>
+                            </div>
+                            <div className="flex-1 overflow-y-auto">
+                                <StepDetailsCard step={workflow.steps[workflow.currentStepIndex]} />
+                            </div>
                         </div>
                     )}
                 </div>
-            </header>
-
-            {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Left Panel - Chat */}
-                <div className="w-[400px] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-                    <EnhancedChatPanel
-                        messages={messages}
-                        inputMessage=""
-                        isProcessing={workflowState.isProcessing}
-                        onSendMessage={handleSendMessage}
-                    />
-                </div>
-
-                {/* Center Panel - Workflow */}
-                <div className="flex-1 flex flex-col">
-                    {workflow && (
-                        <WorkflowViewer
-                            steps={workflow.steps}
-                            currentStepIndex={workflow.currentStepIndex}
-                            onStepSelect={handleStepSelect}
-                            onStepReorder={handleStepReorder}
-                            onStepToggle={handleStepToggle}
-                            className="flex-1"
-                        />
-                    )}
-                </div>
-
-                {/* Right Panel - Assets & Agents */}
-                <div className={`
-                    w-[400px] bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700
-                    transform transition-transform duration-300
-                    ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}
-                `}>
-                    <div className="h-1/2 border-b border-gray-200 dark:border-gray-700">
-                        <AssetPanel
-                            assets={assets}
-                            onAssetSelect={handleAssetSelect}
-                            onAssetVersionSelect={handleAssetVersionSelect}
-                            onAssetTagsUpdate={handleAssetTagsUpdate}
-                        />
-                    </div>
-                    <div className="h-1/2">
-                        <AgentPanel
-                            agents={agents}
-                            tools={tools}
-                            onAgentSelect={handleAgentSelect}
-                            onToolSelect={handleToolSelect}
-                        />
-                    </div>
-                </div>
-
-                {/* Toggle Button for Right Panel */}
-                <button
-                    onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
-                    className={`
-                        fixed right-0 top-1/2 transform -translate-y-1/2
-                        p-2 bg-white dark:bg-gray-800 rounded-l-lg shadow-lg
-                        border border-gray-200 dark:border-gray-700 border-r-0
-                        transition-transform duration-300
-                        ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-0'}
-                    `}
-                >
-                    <svg
-                        className={`w-6 h-6 text-gray-500 dark:text-gray-400 transform transition-transform duration-300 ${isRightPanelOpen ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
             </div>
         </div>
     );

@@ -69,39 +69,7 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
                         {message.content}
                     </div>
 
-                    {/* Metadata */}
-                    <div className="mt-2 flex items-center justify-between text-xs opacity-70">
-                        <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
-                        {message.metadata?.type && (
-                            <span className="ml-2 px-1.5 py-0.5 rounded-full bg-opacity-20 bg-current">
-                                {message.metadata.type}
-                            </span>
-                        )}
-                    </div>
 
-                    {/* Reactions */}
-                    {message.reactions && message.reactions.length > 0 && (
-                        <div className="absolute -bottom-6 left-0 flex gap-1">
-                            {message.reactions.map(reaction => (
-                                <span
-                                    key={reaction.id}
-                                    className="px-1.5 py-0.5 rounded-full bg-white dark:bg-gray-800 shadow-sm text-xs"
-                                >
-                                    {reaction.type}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Thread Indicator */}
-                    {message.thread && message.thread.length > 0 && (
-                        <button
-                            onClick={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
-                            className="absolute -bottom-6 right-0 text-xs text-blue-500 dark:text-blue-400"
-                        >
-                            {message.thread.length} replies
-                        </button>
-                    )}
                 </div>
             </div>
         );
