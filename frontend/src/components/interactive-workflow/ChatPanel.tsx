@@ -8,14 +8,10 @@ interface ChatPanelProps {
     isProcessing: boolean;
     currentPhase: WorkflowPhase;
     currentSubPhase: SetupSubPhase;
-    currentStepIndex: number;
-    workflowSteps: WorkflowStep[];
     isQuestionComplete: boolean;
-    isWorkflowAgreed: boolean;
     onSendMessage: (message: ChatMessage) => void;
     onInputChange: (value: string) => void;
     onCompleteWorkflow: () => void;
-    onPhaseTransition: (response: ChatMessage) => void;
 }
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -24,14 +20,10 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     isProcessing,
     currentPhase,
     currentSubPhase,
-    currentStepIndex,
-    workflowSteps,
     isQuestionComplete,
-    isWorkflowAgreed,
     onSendMessage,
     onInputChange,
     onCompleteWorkflow,
-    onPhaseTransition
 }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [localInputMessage, setLocalInputMessage] = useState(inputMessage);

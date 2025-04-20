@@ -7,20 +7,18 @@ export type SetupSubPhase =
 
 export type SetupStage =
     | 'initial'                    // Initial welcome message
-    | 'question_received'          // User has submitted their question
-    | 'clarification_requested'    // User's question submitted and bot asking for clarification
-    | 'request_confirmation'       // User confirmed lyrics requirement
-    | 'workflow_designing'         // Bot showing "Designing workflow steps..."
-    | 'workflow_explanation'       // Bot explaining the workflow that has been created
-    | 'workflow_ready';           // Workflow is ready to start
+    | 'goal_definition'           // User defining their goal/intent
+    | 'clarification'             // Copilot asking for clarification
+    | 'workflow_design'           // Copilot designing workflow
+    | 'workflow_review'           // User reviewing proposed workflow
+    | 'workflow_ready';           // Ready to execute
 
 export type ExecutionStage =
-    | 'workflow_started'          // Workflow execution has begun
-    | 'compiling_songs'           // Step 1: Compiling Beatles songs
-    | 'retrieving_lyrics'         // Step 2: Retrieving lyrics
-    | 'analyzing_lyrics'          // Step 3: Analyzing lyrics for "love"
-    | 'tabulating_results'        // Step 4: Tabulating results
-    | 'workflow_complete';        // All steps complete
+    | 'started'                   // Workflow execution started
+    | 'in_progress'              // Steps being executed
+    | 'paused'                   // Execution paused
+    | 'completed'                // Workflow completed
+    | 'failed';                  // Workflow failed
 
 export interface WorkflowState {
     phase: WorkflowPhase;
@@ -36,11 +34,15 @@ export type WorkflowStep = {
     description: string;
     status: 'pending' | 'running' | 'completed' | 'failed';
     agentType: string;
-    result?: any;
-    subSteps?: WorkflowStep[];  // Add support for nested steps
-    parentId?: string;          // Reference to parent step if this is a sub-step
     level: number;              // Depth in the tree (0 for main steps)
-    tools?: string[];          // Tools that can be used in this step
+    tools: string[];           // Tools used in this step
+    inputs: Record<string, any>;
+    outputs: Record<string, any>;
+    progress: number;          // Progress percentage (0-100)
+    assets: Asset[];          // Assets generated in this step
+    subSteps?: WorkflowStep[]; // Nested steps
+    parentId?: string;        // Reference to parent step
+    isExpanded?: boolean;
 };
 
 export type ChatMessage = {
@@ -49,11 +51,15 @@ export type ChatMessage = {
     content: string;
     timestamp: string;
     metadata?: {
+        type: 'goal' | 'clarification' | 'suggestion' | 'confirmation' | 'status' | 'result' | 'error';
         phase?: WorkflowPhase;
-        subPhase?: SetupSubPhase;
         stepId?: string;
-        type?: 'question' | 'clarification' | 'workflow' | 'result' | 'error';
+        assetIds?: string[];
+        toolIds?: string[];
+        reactionIds?: string[];
     };
+    reactions?: MessageReaction[];
+    thread?: ChatMessage[];
 };
 
 export type WorkflowStepTemplate = {
@@ -94,7 +100,90 @@ export type ToolTemplate = {
 export interface Asset {
     id: string;
     title: string;
-    data: Record<string, any>;
+    type: 'input' | 'output' | 'intermediate';
+    format: 'text' | 'json' | 'pdf' | 'image' | 'other';
+    content: any;
+    metadata: {
+        creator: string;
+        createdAt: string;
+        updatedAt: string;
+        tags: string[];
+        stepId?: string;
+        toolId?: string;
+    };
+    version: number;
+    history: AssetVersion[];
+};
+
+export interface AssetVersion {
+    version: number;
+    content: any;
+    updatedAt: string;
+    updatedBy: string;
+};
+
+export interface MessageReaction {
+    id: string;
+    type: '👍' | '👎' | '⭐' | '❓' | '💡';
+    userId: string;
+    timestamp: string;
+};
+
+export interface Tool {
+    id: string;
+    name: string;
+    description: string;
+    category: 'search' | 'analysis' | 'generation' | 'transformation';
+    capabilities: string[];
+    parameters: ToolParameter[];
     icon: string;
-    type: string;
-} 
+    metrics?: {
+        usageCount: number;
+        avgDuration: number;
+        successRate: number;
+    };
+};
+
+export interface ToolParameter {
+    name: string;
+    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+    description: string;
+    required: boolean;
+    default?: any;
+};
+
+export interface Journey {
+    id: string;
+    title: string;
+    goal: string;
+    status: 'draft' | 'active' | 'completed' | 'failed';
+    creator: string;
+    createdAt: string;
+    updatedAt: string;
+    tags: string[];
+    deliverableType: 'summary' | 'draft' | 'report' | 'dataset' | 'visual' | 'decision' | 'plan';
+    workflow?: Workflow;
+};
+
+export interface Workflow {
+    id: string;
+    journeyId: string;
+    steps: WorkflowStep[];
+    status: 'pending' | 'running' | 'paused' | 'completed' | 'failed';
+    currentStepIndex: number;
+    assets: Asset[];
+};
+
+export interface Agent {
+    id: string;
+    name: string;
+    description: string;
+    capabilities: string[];
+    tools: string[];
+    configuration: Record<string, any>;
+    metrics?: {
+        usageCount: number;
+        avgDuration: number;
+        successRate: number;
+    };
+}; 
