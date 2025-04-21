@@ -56,7 +56,7 @@ export interface Asset {
     id: string;
     title: string;
     type: 'input' | 'output' | 'intermediate';
-    format: 'text' | 'json' | 'pdf' | 'image' | 'other';
+    format: 'text' | 'json' | 'pdf' | 'image' | 'email-list' | 'other';
     content: any;
     metadata: {
         creator: string;
@@ -169,9 +169,12 @@ export interface Agent {
     inputs: {
         searchTerms?: string[];
         dateRange?: string;
+        dataset?: string;
     };
     outputs: {
         emailList?: string[];
+        themes?: string[];
+        patterns?: string[];
     };
     metrics?: {
         usageCount: number;

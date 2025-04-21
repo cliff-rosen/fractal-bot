@@ -98,13 +98,13 @@ const InteractiveWorkflowTest: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex p-4 gap-4">
+            <div className="flex-1 flex p-4 gap-4 overflow-hidden">
                 {/* Left: Chat Panel */}
-                <div className="w-[400px] flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                <div className="w-[400px] flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
                     <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Chat</h2>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-y-auto">
                         <EnhancedChatPanel
                             messages={currentSnapshot.journey?.messages || []}
                             inputMessage={inputMessage}

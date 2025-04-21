@@ -714,7 +714,7 @@ export const uiSnapshots: UISnapshot[] = [
                             id: "a_2024_03_15_001",
                             title: "Q1 2024 Client Feedback Dataset",
                             type: "input",
-                            format: "json",
+                            format: "email-list",
                             content: {},
                             metadata: {
                                 creator: "Data Collector",
@@ -742,19 +742,39 @@ export const uiSnapshots: UISnapshot[] = [
             assets: [],
             agents: [
                 {
-                    id: "agent_001",
-                    name: "Data Collector",
-                    description: "Gathers all client feedback from Q1 2024",
-                    capabilities: ["data_collection", "data_processing"],
-                    tools: ["feedback_collector"],
+                    id: "agent_002",
+                    name: "Theme Analyst",
+                    description: "Analyzes feedback for recurring themes",
+                    capabilities: ["theme_analysis", "pattern_recognition"],
+                    tools: ["theme_analyzer"],
                     configuration: {},
                     inputs: {
-                        searchTerms: ["feedback", "review", "opinion"],
-                        dateRange: "2024-01-01/2024-03-31"
+                        dataset: "ds_2024_03_15_001"
                     },
                     outputs: {
-                        emailList: []
+                        themes: [],
+                        patterns: []
                     }
+                },
+                {
+                    id: "agent_003",
+                    name: "Sentiment Analyst",
+                    description: "Evaluates sentiment in feedback",
+                    capabilities: ["sentiment_analysis", "emotion_detection"],
+                    tools: ["sentiment_analyzer"],
+                    configuration: {},
+                    inputs: {},
+                    outputs: {}
+                },
+                {
+                    id: "agent_004",
+                    name: "Insight Generator",
+                    description: "Generates actionable insights from analysis",
+                    capabilities: ["insight_generation", "recommendation"],
+                    tools: ["insight_generator"],
+                    configuration: {},
+                    inputs: {},
+                    outputs: {}
                 }
             ]
         },
@@ -941,7 +961,26 @@ export const uiSnapshots: UISnapshot[] = [
                         }
                     },
                     progress: 100,
-                    assets: []
+                    assets: [
+                        {
+                            id: "a_2024_03_15_001",
+                            title: "Q1 2024 Client Feedback Dataset",
+                            type: "input",
+                            format: "email-list",
+                            content: {},
+                            metadata: {
+                                creator: "Data Collector",
+                                createdAt: "2024-03-15T10:00:00Z",
+                                updatedAt: "2024-03-15T10:00:00Z",
+                                tags: ["raw-data", "client-feedback", "Q1-2024"],
+                                stepId: "s_2024_03_15_001",
+                                toolId: "feedback_collector"
+                            },
+                            version: 1,
+                            history: []
+                        }
+                    ]
+
                 },
                 actionButtons: [
                     {
@@ -1126,7 +1165,7 @@ export const uiSnapshots: UISnapshot[] = [
                         id: "ds_2024_03_15_001",
                         title: "Q1 2024 Client Feedback Dataset",
                         type: "input",
-                        format: "json",
+                        format: "email-list",
                         content: {},
                         metadata: {
                             creator: "Data Collector",
@@ -1151,7 +1190,7 @@ export const uiSnapshots: UISnapshot[] = [
                     id: "ds_2024_03_15_001",
                     title: "Q1 2024 Client Feedback Dataset",
                     type: "input",
-                    format: "json",
+                    format: "email-list",
                     content: {},
                     metadata: {
                         creator: "Data Collector",
@@ -1167,29 +1206,19 @@ export const uiSnapshots: UISnapshot[] = [
             ],
             agents: [
                 {
-                    id: "agent_001",
-                    name: "Data Collector",
-                    description: "Gathers all client feedback from Q1 2024",
-                    capabilities: ["data_collection", "data_processing"],
-                    tools: ["feedback_collector"],
-                    configuration: {},
-                    inputs: {
-                        searchTerms: ["feedback", "review", "opinion"],
-                        dateRange: "2024-01-01/2024-03-31"
-                    },
-                    outputs: {
-                        emailList: []
-                    }
-                },
-                {
                     id: "agent_002",
                     name: "Theme Analyst",
                     description: "Analyzes feedback for recurring themes",
                     capabilities: ["theme_analysis", "pattern_recognition"],
                     tools: ["theme_analyzer"],
                     configuration: {},
-                    inputs: {},
-                    outputs: {}
+                    inputs: {
+                        dataset: "ds_2024_03_15_001"
+                    },
+                    outputs: {
+                        themes: [],
+                        patterns: []
+                    }
                 },
                 {
                     id: "agent_003",
