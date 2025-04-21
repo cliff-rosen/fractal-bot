@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ChatMessage, MessageReaction, Asset, Tool } from './types';
+import { MarkdownRenderer } from '../common/MarkdownRenderer';
 
 interface ActionButton {
     id: string;
@@ -76,7 +77,7 @@ export const EnhancedChatPanel: React.FC<EnhancedChatPanelProps> = ({
                 >
                     {/* Message Content */}
                     <div className="prose dark:prose-invert max-w-none">
-                        {message.content}
+                        <MarkdownRenderer content={message.content} />
                     </div>
 
                     {message.metadata?.type && (

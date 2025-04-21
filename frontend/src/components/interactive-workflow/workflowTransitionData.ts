@@ -106,7 +106,7 @@ export const uiSnapshots: UISnapshot[] = [
                 {
                     id: 'msg_003',
                     role: 'assistant',
-                    content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
+                    content: 'I have designed a workflow with these steps:\n\n1. Collect emails\n2. Extract feedback\n3. Analyze themes\n4. Generate report\n\nWould you like to start?',
                     timestamp: new Date().toISOString(),
                     metadata: {
                         type: 'confirmation',

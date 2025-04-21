@@ -100,8 +100,8 @@ const renderWorkflowStep = (step: WorkflowStep) => {
 };
 
 export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({ journey }) => {
-    if (!journey) {
-        return <div className="text-gray-500 dark:text-gray-400">No journey selected</div>;
+    if (!journey?.goal) {
+        return <div className="text-gray-500 dark:text-gray-400">Waiting for goal</div>;
     }
 
     switch (journey.workspace.objectType) {
