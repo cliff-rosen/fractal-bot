@@ -181,4 +181,5 @@ export interface Agent {
         avgDuration: number;
         successRate: number;
     };
+    status?: 'active' | 'inactive';
 } 

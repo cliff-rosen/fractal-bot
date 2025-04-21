@@ -2,7 +2,7 @@ import React from 'react';
 import { Workflow } from './types';
 
 interface WorkflowCardProps {
-    workflow: Workflow;
+    workflow?: Workflow;
 }
 
 export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {

@@ -139,7 +139,7 @@ const InteractiveWorkflowTest: React.FC = () => {
                                     <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workflow</h2>
                                 </div>
                                 <div className="p-4 h-[calc(300px-3rem)] overflow-y-auto">
-                                    <WorkflowCard workflow={currentSnapshot.journey.workflow} />
+                                    <WorkflowCard workflow={currentSnapshot.journey?.workflow || undefined} />
                                 </div>
                             </div>
 
