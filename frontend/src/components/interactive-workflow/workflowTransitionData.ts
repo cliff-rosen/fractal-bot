@@ -223,7 +223,7 @@ export const uiSnapshots: UISnapshot[] = [
             workflow: null,
             workspace: {
                 id: "ws_2024_03_15_002",
-                objectType: "proposed_workflow",
+                objectType: "none",
                 object: {
                     id: "wf_2024_03_15_001",
                     status: "pending",
@@ -231,26 +231,7 @@ export const uiSnapshots: UISnapshot[] = [
                     steps: [],
                     assets: []
                 },
-                actionButtons: [
-                    {
-                        id: 'accept-workflow',
-                        label: 'Accept Workflow',
-                        type: 'primary',
-                        action: 'accept_workflow'
-                    },
-                    {
-                        id: 'reject-workflow',
-                        label: 'Reject Workflow',
-                        type: 'danger',
-                        action: 'reject_workflow'
-                    },
-                    {
-                        id: 'edit-workflow',
-                        label: 'Edit Workflow',
-                        type: 'secondary',
-                        action: 'edit_workflow'
-                    }
-                ]
+                actionButtons: []
             }
         },
         isRightPanelOpen: true

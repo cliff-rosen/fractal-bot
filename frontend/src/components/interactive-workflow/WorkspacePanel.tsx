@@ -54,7 +54,7 @@ const renderProposedJourney = (journey: Journey, onAction?: (action: ActionButto
     );
 };
 
-const renderProposedWorkflow = (workflow: Workflow) => {
+const renderProposedWorkflow = (workflow: Workflow, onAction?: (action: ActionButton['action']) => void) => {
     return (
         <div className="p-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
@@ -79,6 +79,28 @@ const renderProposedWorkflow = (workflow: Workflow) => {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-6 flex gap-3">
+                    <button
+                        onClick={() => onAction?.('accept_workflow')}
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                    >
+                        Accept
+                    </button>
+                    <button
+                        onClick={() => onAction?.('reject_workflow')}
+                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                    >
+                        Reject
+                    </button>
+                    <button
+                        onClick={() => onAction?.('edit_workflow')}
+                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-md transition-colors"
+                    >
+                        Edit
+                    </button>
                 </div>
             </div>
         </div>
@@ -137,7 +159,7 @@ export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({ journey, onActio
         case 'proposed_journey':
             return renderProposedJourney(journey.workspace.object as Journey, onAction);
         case 'proposed_workflow':
-            return renderProposedWorkflow(journey.workspace.object as Workflow);
+            return renderProposedWorkflow(journey.workspace.object as Workflow, onAction);
         case 'workflow_step':
             return renderWorkflowStep(journey.workspace.object as WorkflowStep);
         default:

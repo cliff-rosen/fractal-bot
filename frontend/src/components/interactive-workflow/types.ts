@@ -24,6 +24,7 @@ export interface ActionButton {
     label: string;
     type: 'primary' | 'secondary' | 'danger';
     action: 'accept_journey' | 'reject_journey' | 'edit_journey' | 'start_design' | 'accept_workflow' | 'reject_workflow' | 'edit_workflow';
+    onClick: () => void;
 }
 
 export interface ChatMessage {
