@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: list[str] = ["*"]
     CORS_ALLOW_HEADERS: list[str] = ["*", "Authorization"]
-    CORS_EXPOSE_HEADERS: list[str] = ["Authorization"]
+    CORS_EXPOSE_HEADERS: list[str] = ["Authorization", "X-Request-ID"]
 
     # Logging settings
     # LOG_LEVEL: str = "DEBUG"

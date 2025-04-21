@@ -8,6 +8,10 @@ interface Settings {
     // Add other settings here as needed
 }
 
+// Get the current host
+const currentHost = window.location.hostname;
+const isLocalhost = currentHost === 'localhost' || currentHost === '127.0.0.1';
+
 const productionSettings: Settings = {
     apiUrl: 'https://ra-api.ironcliff.ai',
     appName: 'FractalBot',
@@ -15,7 +19,8 @@ const productionSettings: Settings = {
 };
 
 const developmentSettings: Settings = {
-    apiUrl: 'http://localhost:8000',
+    // Use the current host for the API URL in development
+    apiUrl: isLocalhost ? 'http://localhost:8000' : `http://${currentHost}:8000`,
     appName: 'FractalBot (Dev)',
     logoUrl: '/cognify-icon.svg'  // Using existing icon
 };

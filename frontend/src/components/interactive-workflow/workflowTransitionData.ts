@@ -2052,22 +2052,6 @@ export const uiSnapshots: UISnapshot[] = [
                 }
             ],
             agents: [
-                {
-                    id: "agent_002",
-                    name: "Theme Analyst",
-                    description: "Analyzes feedback for recurring themes",
-                    capabilities: ["theme_analysis", "pattern_recognition"],
-                    tools: ["theme_analyzer"],
-                    configuration: {},
-                    inputs: {
-                        dataset: "ds_2024_03_15_001"
-                    },
-                    outputs: {
-                        themes: [],
-                        patterns: []
-                    },
-                    status: "active"
-                }
             ]
         }
     }
