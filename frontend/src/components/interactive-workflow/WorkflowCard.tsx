@@ -6,6 +6,11 @@ interface WorkflowCardProps {
 }
 
 export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
+
+    if (!workflow) {
+        return <div className="text-gray-500 dark:text-gray-400">No workflow</div>;
+    }
+
     return (
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div className="p-3">

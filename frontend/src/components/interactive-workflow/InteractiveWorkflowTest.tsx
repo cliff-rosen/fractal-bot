@@ -133,16 +133,14 @@ const InteractiveWorkflowTest: React.FC = () => {
                         {/* Left Column */}
                         <div className="flex-1 flex flex-col gap-4">
                             {/* Workflow Card */}
-                            {currentSnapshot.journey?.workflow && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
-                                <div className="h-[300px] bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                    <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workflow</h2>
-                                    </div>
-                                    <div className="p-4 h-[calc(300px-3rem)] overflow-y-auto">
-                                        <WorkflowCard workflow={currentSnapshot.journey.workflow} />
-                                    </div>
+                            <div className="h-[300px] bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                    <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workflow</h2>
                                 </div>
-                            )}
+                                <div className="p-4 h-[calc(300px-3rem)] overflow-y-auto">
+                                    <WorkflowCard workflow={currentSnapshot.journey.workflow} />
+                                </div>
+                            </div>
 
                             {/* Workspace Panel */}
                             {currentSnapshot.journey && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (

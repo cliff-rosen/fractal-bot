@@ -162,6 +162,16 @@ export interface Agent {
     capabilities: string[];
     tools: string[];
     configuration: Record<string, any>;
+    inputs: {
+        feedbackData?: string;
+        scope?: string;
+        timePeriod?: string;
+    };
+    outputs: {
+        themes?: string[];
+        sentiment?: string;
+        recommendations?: string[];
+    };
     metrics?: {
         usageCount: number;
         avgDuration: number;
