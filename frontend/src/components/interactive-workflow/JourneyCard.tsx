@@ -34,10 +34,10 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ journey }) => {
                             <>
                                 <div>
                                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                        Title: {journey.title}
+                                        {journey.title}
                                     </h2>
                                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Goal: {journey.goal}
+                                        {journey.goal}
                                     </p>
                                 </div>
                             </>
@@ -63,7 +63,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ journey }) => {
                                 : 'bg-green-500'
                                 }`} />
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {isRecording ? 'Recording' : 'Active'}
+                                {isRecording ? 'ACTIVE' : 'Active'}
                             </span>
                         </div>
                     )}

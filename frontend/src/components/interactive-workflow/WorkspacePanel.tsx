@@ -1,119 +1,116 @@
 import React from 'react';
-import { Journey, Workflow } from './types';
+import { Journey, Workflow, WorkflowStep } from './types';
 
 interface WorkspacePanelProps {
     journey: Journey | null;
-    workflow: Workflow | null | undefined;
 }
 
-export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({ journey, workflow }) => {
-    if (!journey) {
-        return (
-            <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
-                No active journey
-            </div>
-        );
-    }
-
-    const currentStep = workflow?.steps[workflow.currentStepIndex];
-
+const renderProposedJourney = (journey: Journey) => {
     return (
-        <div className="p-4 space-y-6">
-            {/* Workspace Info */}
-            <div className="space-y-2">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workspace Info</h3>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                    <p>Name: {journey.workspace.name}</p>
-                    <p>Description: {journey.workspace.description}</p>
+        <div className="p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    Proposed Journey
+                </h2>
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Title</h3>
+                        <p className="text-gray-900 dark:text-gray-100">{journey.title}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Goal</h3>
+                        <p className="text-gray-900 dark:text-gray-100">{journey.goal}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Deliverable</h3>
+                        <p className="text-gray-900 dark:text-gray-100">{journey.deliverable.name}</p>
+                    </div>
                 </div>
             </div>
-
-            {/* Current Step */}
-            {currentStep && (
-                <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Current Step</h3>
-                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {currentStep.name}
-                            </span>
-                            <span className={`text-xs px-2 py-1 rounded ${currentStep.status === 'running' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' :
-                                currentStep.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
-                                    'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
-                                }`}>
-                                {currentStep.status}
-                            </span>
-                        </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                            {currentStep.description}
-                        </p>
-                        {currentStep.progress > 0 && (
-                            <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                                <div
-                                    className="bg-blue-500 h-2 rounded-full"
-                                    style={{ width: `${currentStep.progress}%` }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Assets */}
-            {journey.workspace.assets.length > 0 && (
-                <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Assets</h3>
-                    <div className="grid grid-cols-1 gap-2">
-                        {journey.workspace.assets.map(asset => (
-                            <div
-                                key={asset.id}
-                                className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex items-center justify-between"
-                            >
-                                <div>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {asset.title}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {asset.type} • {asset.format}
-                                    </p>
-                                </div>
-                                <div className="flex gap-2">
-                                    {asset.metadata.tags.map(tag => (
-                                        <span
-                                            key={tag}
-                                            className="text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Tools */}
-            {journey.workspace.tools.length > 0 && (
-                <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Available Tools</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                        {journey.workspace.tools.map(tool => (
-                            <div
-                                key={tool.id}
-                                className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
-                            >
-                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    {tool.name}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    {tool.description}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
+};
+
+const renderProposedWorkflow = (workflow: Workflow) => {
+    return (
+        <div className="p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    Proposed Workflow
+                </h2>
+                <div className="space-y-4">
+                    {workflow.steps.map((step, index) => (
+                        <div key={step.id} className="flex items-start space-x-3">
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                <span className="text-sm font-medium text-blue-600 dark:text-blue-300">
+                                    {index + 1}
+                                </span>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    {step.name}
+                                </h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {step.description}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const renderWorkflowStepDetail = (step: WorkflowStep) => {
+    return (
+        <div className="p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    {step.name}
+                </h2>
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</h3>
+                        <p className="text-gray-900 dark:text-gray-100">{step.description}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
+                        <p className="text-gray-900 dark:text-gray-100">{step.status}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Progress</h3>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                            <div
+                                className="bg-blue-600 h-2.5 rounded-full"
+                                style={{ width: `${step.progress}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({ journey }) => {
+    if (!journey) {
+        return <div className="text-gray-500 dark:text-gray-400">No journey selected</div>;
+    }
+
+    // Determine what to render based on journey state
+    switch (journey.state) {
+        case 'AWAITING_GOAL':
+            return renderProposedJourney(journey);
+        case 'AWAITING_WORKFLOW_DESIGN':
+            return journey.workflow ? renderProposedWorkflow(journey.workflow) : null;
+        case 'WORKFLOW_IN_PROGRESS':
+            if (journey.workflow) {
+                const currentStep = journey.workflow.steps[journey.workflow.currentStepIndex];
+                return currentStep ? renderWorkflowStepDetail(currentStep) : null;
+            }
+            return null;
+        default:
+            return <div className="text-gray-500 dark:text-gray-400">No content to display</div>;
+    }
 }; 
