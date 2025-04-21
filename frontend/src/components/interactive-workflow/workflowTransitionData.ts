@@ -12,7 +12,7 @@ export interface UISnapshot {
     timestamp: string;
     description: string;
     journey: Journey | null;
-    isRightPanelOpen: boolean;
+    isRightPanelOpen?: boolean;
 }
 
 export const uiSnapshots: UISnapshot[] = [
@@ -67,8 +67,7 @@ export const uiSnapshots: UISnapshot[] = [
             },
             assets: [],
             agents: []
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -107,8 +106,7 @@ export const uiSnapshots: UISnapshot[] = [
             },
             assets: [],
             agents: []
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -178,8 +176,7 @@ export const uiSnapshots: UISnapshot[] = [
             },
             assets: [],
             agents: []
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -243,8 +240,7 @@ export const uiSnapshots: UISnapshot[] = [
             },
             assets: [],
             agents: []
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -394,8 +390,7 @@ export const uiSnapshots: UISnapshot[] = [
             },
             assets: [],
             agents: []
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -527,8 +522,7 @@ export const uiSnapshots: UISnapshot[] = [
             },
             assets: [],
             agents: []
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -742,11 +736,11 @@ export const uiSnapshots: UISnapshot[] = [
             assets: [],
             agents: [
                 {
-                    id: "agent_002",
-                    name: "Theme Analyst",
-                    description: "Analyzes feedback for recurring themes",
-                    capabilities: ["theme_analysis", "pattern_recognition"],
-                    tools: ["theme_analyzer"],
+                    id: "agent_001",
+                    name: "Data Collector",
+                    description: "Collects feedback from clients",
+                    capabilities: ["data_collection"],
+                    tools: ["feedback_collector"],
                     configuration: {},
                     inputs: {
                         dataset: "ds_2024_03_15_001"
@@ -755,30 +749,9 @@ export const uiSnapshots: UISnapshot[] = [
                         themes: [],
                         patterns: []
                     }
-                },
-                {
-                    id: "agent_003",
-                    name: "Sentiment Analyst",
-                    description: "Evaluates sentiment in feedback",
-                    capabilities: ["sentiment_analysis", "emotion_detection"],
-                    tools: ["sentiment_analyzer"],
-                    configuration: {},
-                    inputs: {},
-                    outputs: {}
-                },
-                {
-                    id: "agent_004",
-                    name: "Insight Generator",
-                    description: "Generates actionable insights from analysis",
-                    capabilities: ["insight_generation", "recommendation"],
-                    tools: ["insight_generator"],
-                    configuration: {},
-                    inputs: {},
-                    outputs: {}
                 }
             ]
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -994,8 +967,7 @@ export const uiSnapshots: UISnapshot[] = [
             },
             assets: [],
             agents: []
-        },
-        isRightPanelOpen: true
+        }
     },
     {
         timestamp: new Date().toISOString(),
@@ -1241,7 +1213,6 @@ export const uiSnapshots: UISnapshot[] = [
                     outputs: {}
                 }
             ]
-        },
-        isRightPanelOpen: true
+        }
     }
 ]; 
