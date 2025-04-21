@@ -49,12 +49,12 @@ export const uiSnapshots: UISnapshot[] = [
     },
     {
         timestamp: new Date().toISOString(),
-        description: "Initial state with proposed and accepted workflow",
+        description: "User sends initial message",
         journey: {
             id: "j_2024_03_15_001",
             title: "Q1 Client Feedback Analysis",
             goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
-            state: "AWAITING_WORKFLOW_START",
+            state: "WORKFLOW_IN_PROGRESS",
             creator: "Sarah Chen",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -110,73 +110,91 @@ export const uiSnapshots: UISnapshot[] = [
             ],
             workflow: {
                 id: "wf_2024_03_15_001",
-                status: "pending",
+                status: "running",
                 currentStepIndex: 0,
                 steps: [
                     {
                         id: "step_001",
-                        name: "Collect Emails",
-                        description: "Gather all client feedback emails from Q1 2024",
-                        status: "pending",
-                        agentType: "email_collector",
+                        name: "Initial Analysis",
+                        description: "Analyzing the initial requirements",
+                        status: "running",
+                        agentType: "analyzer",
                         level: 0,
-                        tools: ["email_retriever"],
-                        inputs: {
-                            timeRange: "2024-01-01 to 2024-03-31",
-                            source: "client_feedback"
-                        },
-                        outputs: {},
-                        progress: 0,
-                        assets: []
-                    },
-                    {
-                        id: "step_002",
-                        name: "Extract Feedback",
-                        description: "Extract key feedback points from the emails",
-                        status: "pending",
-                        agentType: "text_analyzer",
-                        level: 0,
-                        tools: ["sentiment_analyzer", "topic_extractor"],
+                        tools: ["requirement_analyzer"],
                         inputs: {},
                         outputs: {},
-                        progress: 0,
-                        assets: []
-                    },
-                    {
-                        id: "step_003",
-                        name: "Analyze Themes",
-                        description: "Identify common themes and patterns in the feedback",
-                        status: "pending",
-                        agentType: "theme_analyzer",
-                        level: 0,
-                        tools: ["theme_identifier", "pattern_analyzer"],
-                        inputs: {},
-                        outputs: {},
-                        progress: 0,
-                        assets: []
-                    },
-                    {
-                        id: "step_004",
-                        name: "Generate Report",
-                        description: "Create a comprehensive analysis report",
-                        status: "pending",
-                        agentType: "report_generator",
-                        level: 0,
-                        tools: ["report_builder"],
-                        inputs: {},
-                        outputs: {},
-                        progress: 0,
-                        assets: []
+                        progress: 30,
+                        assets: [{
+                            id: "asset_001",
+                            title: "Initial Requirements Analysis",
+                            type: "intermediate",
+                            format: "text",
+                            content: "Analyzing the initial requirements to determine the scope and approach...",
+                            metadata: {
+                                creator: "System",
+                                createdAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                                tags: ["analysis", "requirements"],
+                                stepId: "step_001",
+                                toolId: "requirement_analyzer"
+                            },
+                            version: 1,
+                            history: []
+                        }]
                     }
                 ],
-                assets: []
+                assets: [{
+                    id: "asset_001",
+                    title: "Initial Requirements Analysis",
+                    type: "intermediate",
+                    format: "text",
+                    content: "Analyzing the initial requirements to determine the scope and approach...",
+                    metadata: {
+                        creator: "System",
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        tags: ["analysis", "requirements"],
+                        stepId: "step_001",
+                        toolId: "requirement_analyzer"
+                    },
+                    version: 1,
+                    history: []
+                }]
             },
             workspace: {
                 id: "ws_2024_03_15_001",
                 name: "Q1 Feedback Analysis Workspace",
                 description: "Workspace for analyzing Q1 2024 client feedback",
-                assets: [],
-                tools: [],
+                assets: [
+                    {
+                        id: "asset_001",
+                        title: "Initial Requirements Analysis",
+                        type: "intermediate",
+                        format: "text",
+                        content: "Analyzing the initial requirements to determine the scope and approach...",
+                        metadata: {
+                            creator: "System",
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            tags: ["analysis", "requirements"],
+                            stepId: "step_001",
+                            toolId: "requirement_analyzer"
+                        },
+                        version: 1,
+                        history: []
+                    }
+                ],
+                tools: [
+                    {
+                        id: "requirement_analyzer",
+                        name: "Requirement Analyzer",
+                        description: "Analyzes requirements to determine scope and approach",
+                        category: "analysis",
+                        capabilities: ["text_analysis", "scope_determination"],
+                        parameters: [],
+                        icon: "🔍"
+                    }
+                ],
                 settings: {}
             }
         },
@@ -184,7 +202,7 @@ export const uiSnapshots: UISnapshot[] = [
     },
     {
         timestamp: new Date().toISOString(),
-        description: "Journey goal approved, awaiting workflow design",
+        description: "Initial state with proposed and accepted workflow",
         journey: {
             id: "j_2024_03_15_001",
             title: "Q1 Client Feedback Analysis",
@@ -248,12 +266,6 @@ export const uiSnapshots: UISnapshot[] = [
             }
         },
         isRightPanelOpen: true
-    },
-    {
-        timestamp: new Date().toISOString(),
-        description: "User sends initial message",
-        journey: null,
-        isRightPanelOpen: false
     },
     {
         timestamp: new Date().toISOString(),
