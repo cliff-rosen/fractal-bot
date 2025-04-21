@@ -5,6 +5,8 @@ import { WorkspacePanel } from './WorkspacePanel';
 import { EnhancedChatPanel } from './EnhancedChatPanel';
 import { uiSnapshots } from './workflowTransitionData';
 import { ActionButton } from './types';
+import { AgentPanel } from './AgentPanel';
+import { AssetPanel } from './AssetPanel';
 
 const InteractiveWorkflowTest: React.FC = () => {
     const [currentSnapshotIndex, setCurrentSnapshotIndex] = useState(0);
@@ -126,32 +128,61 @@ const InteractiveWorkflowTest: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Workflow Card - Fixed height */}
-                    {currentSnapshot.journey?.workflow && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
-                        <div className="h-[300px] bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                            <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
-                                <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workflow</h2>
-                            </div>
-                            <div className="p-4 h-[calc(300px-3rem)] overflow-y-auto">
-                                <WorkflowCard workflow={currentSnapshot.journey.workflow} />
-                            </div>
-                        </div>
-                    )}
+                    {/* Two Column Layout */}
+                    <div className="flex-1 flex gap-4">
+                        {/* Left Column */}
+                        <div className="flex-1 flex flex-col gap-4">
+                            {/* Workflow Card */}
+                            {currentSnapshot.journey?.workflow && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
+                                <div className="h-[300px] bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                    <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workflow</h2>
+                                    </div>
+                                    <div className="p-4 h-[calc(300px-3rem)] overflow-y-auto">
+                                        <WorkflowCard workflow={currentSnapshot.journey.workflow} />
+                                    </div>
+                                </div>
+                            )}
 
-                    {/* Workspace Panel - Takes remaining space */}
-                    {currentSnapshot.journey && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
-                        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                            <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
-                                <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workspace</h2>
+                            {/* Workspace Panel */}
+                            {currentSnapshot.journey && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
+                                <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                    <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workspace</h2>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto p-4">
+                                        <WorkspacePanel
+                                            journey={currentSnapshot.journey}
+                                            workflow={currentSnapshot.journey?.workflow}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="w-[400px] flex flex-col gap-4">
+                            {/* Agent Panel */}
+                            <div className="h-[300px] bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                    <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Agents</h2>
+                                </div>
+                                <div className="p-4 h-[calc(300px-3rem)] overflow-y-auto">
+                                    <AgentPanel journey={currentSnapshot.journey} />
+                                </div>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-4">
-                                <WorkspacePanel
-                                    journey={currentSnapshot.journey}
-                                    workflow={currentSnapshot.journey?.workflow}
-                                />
+
+                            {/* Asset Panel */}
+                            <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                    <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Assets</h2>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4">
+                                    <AssetPanel journey={currentSnapshot.journey} />
+                                </div>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

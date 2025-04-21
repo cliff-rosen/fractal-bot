@@ -8,293 +8,6 @@ export interface TransitionStep {
     workflow?: Partial<Workflow>;
 }
 
-export const transitionSteps: TransitionStep[] = [
-    {
-        state: 'AWAITING_JOURNEY',
-        description: 'User initiates a new journey',
-        chatMessages: [
-            {
-                id: 'msg_001',
-                role: 'user',
-                content: 'I need to analyze our client feedback from Q1 2024',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'goal'
-                }
-            }
-        ],
-        journey: undefined
-    },
-    {
-        state: 'AWAITING_JOURNEY',
-        description: 'System proposes a journey card',
-        chatMessages: [
-            {
-                id: 'msg_001',
-                role: 'user',
-                content: 'I need to analyze our client feedback from Q1 2024',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'goal'
-                }
-            },
-            {
-                id: 'msg_002',
-                role: 'assistant',
-                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'status',
-                    actionButtons: [
-                        {
-                            id: 'accept-journey',
-                            label: 'Accept Journey',
-                            type: 'primary',
-                            action: 'accept_journey'
-                        },
-                        {
-                            id: 'reject-journey',
-                            label: 'Reject Journey',
-                            type: 'danger',
-                            action: 'reject_journey'
-                        }
-                    ]
-                }
-            }
-        ],
-        journey: {
-            status: 'draft',
-            title: 'Q1 Client Feedback Analysis',
-            goal: 'Analyze customer feedback from Q1 2024 to identify key themes and sentiment'
-        }
-    },
-    {
-        state: 'AWAITING_WORKFLOW_DESIGN',
-        description: 'Entered after journey card acceptance',
-        chatMessages: [
-            {
-                id: 'msg_001',
-                role: 'user',
-                content: 'I need to analyze our client feedback from Q1 2024',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'goal'
-                }
-            },
-            {
-                id: 'msg_002',
-                role: 'assistant',
-                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'status'
-                }
-            },
-            {
-                id: 'msg_003',
-                role: 'assistant',
-                content: 'Would you like me to propose a workflow for analyzing the client feedback?',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'suggestion',
-                    actionButtons: [
-                        {
-                            id: 'start-design',
-                            label: 'Start Workflow Design',
-                            type: 'primary',
-                            action: 'start_design'
-                        }
-                    ]
-                }
-            }
-        ],
-        journey: {
-            status: 'active'
-        }
-    },
-    {
-        state: 'AWAITING_WORKFLOW_START',
-        description: 'Workflow is accepted but execution has not begun',
-        chatMessages: [
-            {
-                id: 'msg_001',
-                role: 'user',
-                content: 'I need to analyze our client feedback from Q1 2024',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'goal'
-                }
-            },
-            {
-                id: 'msg_002',
-                role: 'assistant',
-                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'status'
-                }
-            },
-            {
-                id: 'msg_003',
-                role: 'assistant',
-                content: 'Would you like me to propose a workflow for analyzing the client feedback?',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'suggestion'
-                }
-            },
-            {
-                id: 'msg_004',
-                role: 'assistant',
-                content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'confirmation',
-                    actionButtons: [
-                        {
-                            id: 'accept-workflow',
-                            label: 'Accept Workflow',
-                            type: 'primary',
-                            action: 'accept_workflow'
-                        },
-                        {
-                            id: 'reject-workflow',
-                            label: 'Reject Workflow',
-                            type: 'danger',
-                            action: 'reject_workflow'
-                        }
-                    ]
-                }
-            }
-        ],
-        workflow: {
-            status: 'pending',
-            currentStepIndex: 0
-        }
-    },
-    {
-        state: 'WORKFLOW_IN_PROGRESS',
-        description: 'Active workflow execution state',
-        chatMessages: [
-            {
-                id: 'msg_001',
-                role: 'user',
-                content: 'I need to analyze our client feedback from Q1 2024',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'goal'
-                }
-            },
-            {
-                id: 'msg_002',
-                role: 'assistant',
-                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'status'
-                }
-            },
-            {
-                id: 'msg_003',
-                role: 'assistant',
-                content: 'Would you like me to propose a workflow for analyzing the client feedback?',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'suggestion'
-                }
-            },
-            {
-                id: 'msg_004',
-                role: 'assistant',
-                content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'confirmation'
-                }
-            },
-            {
-                id: 'msg_005',
-                role: 'assistant',
-                content: 'Starting Step 1: Collecting emails from Q1 2024...',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'status'
-                }
-            }
-        ],
-        workflow: {
-            status: 'running',
-            currentStepIndex: 0
-        }
-    },
-    {
-        state: 'WORKFLOW_COMPLETE',
-        description: 'All workflow steps have been completed',
-        chatMessages: [
-            {
-                id: 'msg_001',
-                role: 'user',
-                content: 'I need to analyze our client feedback from Q1 2024',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'goal'
-                }
-            },
-            {
-                id: 'msg_002',
-                role: 'assistant',
-                content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'status'
-                }
-            },
-            {
-                id: 'msg_003',
-                role: 'assistant',
-                content: 'Would you like me to propose a workflow for analyzing the client feedback?',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'suggestion'
-                }
-            },
-            {
-                id: 'msg_004',
-                role: 'assistant',
-                content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'confirmation'
-                }
-            },
-            {
-                id: 'msg_005',
-                role: 'assistant',
-                content: 'Starting Step 1: Collecting emails from Q1 2024...',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'status'
-                }
-            },
-            {
-                id: 'msg_006',
-                role: 'assistant',
-                content: 'Workflow completed! The final report has been generated and saved to your assets.',
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: 'result'
-                }
-            }
-        ],
-        journey: {
-            status: 'completed'
-        },
-        workflow: {
-            status: 'completed'
-        }
-    }
-];
-
 export interface UISnapshot {
     timestamp: string;
     description: string;
@@ -304,120 +17,27 @@ export interface UISnapshot {
 
 export const uiSnapshots: UISnapshot[] = [
     {
-        timestamp: "2024-03-15T10:30:00Z",
-        description: "Initial empty state",
+        timestamp: new Date().toISOString(),
+        description: "Initial state - journey created but no goal defined",
         journey: {
-            id: "j_2024_03_15_001",
+            id: "j_2024_03_15_000",
             title: "",
             goal: "",
-            state: "AWAITING_JOURNEY",
-            status: "draft",
-            creator: "Sarah Chen",
-            createdAt: "2024-03-15T10:30:00Z",
-            updatedAt: "2024-03-15T10:30:00Z",
+            state: "AWAITING_GOAL",
+            creator: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
             tags: [],
-            deliverableType: "draft",
+            deliverable: {
+                id: "del_000",
+                name: "",
+                description: "",
+                type: "report"
+            },
             messages: [],
             workflow: null,
             workspace: {
-                id: "ws_2024_03_15_001",
-                name: "",
-                description: "",
-                assets: [],
-                tools: [],
-                settings: {}
-            }
-        },
-        isRightPanelOpen: false
-    },
-    {
-        timestamp: "2024-03-15T10:30:01Z",
-        description: "User initiates a new journey",
-        journey: {
-            id: "j_2024_03_15_001",
-            title: "",
-            goal: "",
-            state: "AWAITING_JOURNEY",
-            status: "draft",
-            creator: "Sarah Chen",
-            createdAt: "2024-03-15T10:30:00Z",
-            updatedAt: "2024-03-15T10:30:01Z",
-            tags: [],
-            deliverableType: "draft",
-            messages: [
-                {
-                    id: "msg_001",
-                    role: "user",
-                    content: "I need to analyze our client feedback from Q1 2024",
-                    timestamp: "2024-03-15T10:30:01Z",
-                    metadata: {
-                        type: "goal"
-                    }
-                }
-            ],
-            workflow: null,
-            workspace: {
-                id: "ws_2024_03_15_001",
-                name: "",
-                description: "",
-                assets: [],
-                tools: [],
-                settings: {}
-            }
-        },
-        isRightPanelOpen: false
-    },
-    {
-        timestamp: "2024-03-15T10:30:05Z",
-        description: "System proposes a journey card",
-        journey: {
-            id: "j_2024_03_15_001",
-            title: "Q1 Client Feedback Analysis",
-            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
-            state: "AWAITING_JOURNEY",
-            status: "draft",
-            creator: "Sarah Chen",
-            createdAt: "2024-03-15T10:30:00Z",
-            updatedAt: "2024-03-15T10:30:05Z",
-            tags: ["feedback", "analysis", "quarterly-review"],
-            deliverableType: "report",
-            messages: [
-                {
-                    id: "msg_001",
-                    role: "user",
-                    content: "I need to analyze our client feedback from Q1 2024",
-                    timestamp: "2024-03-15T10:30:01Z",
-                    metadata: {
-                        type: "goal"
-                    }
-                },
-                {
-                    id: "msg_002",
-                    role: "assistant",
-                    content: "I'll help you analyze the Q1 client feedback. I've created a journey card for this analysis - you can review it in the task area.",
-                    timestamp: "2024-03-15T10:30:05Z",
-                    metadata: {
-                        type: "status",
-                        actionButtons: [
-                            {
-                                id: "accept-journey",
-                                label: "Accept Journey",
-                                type: "primary",
-                                action: "accept_journey"
-                            },
-                            {
-                                id: "reject-journey",
-                                label: "Reject Journey",
-                                type: "danger",
-                                action: "reject_journey"
-                            }
-                        ]
-                    }
-                }
-            ],
-            workflow: null,
-            workspace: {
-                id: "ws_2024_03_15_001",
+                id: "ws_2024_03_15_000",
                 name: "",
                 description: "",
                 assets: [],
@@ -428,202 +48,61 @@ export const uiSnapshots: UISnapshot[] = [
         isRightPanelOpen: true
     },
     {
-        timestamp: "2024-03-15T10:30:15Z",
-        description: "User accepts the journey card",
-        journey: {
-            id: "j_2024_03_15_001",
-            title: "Q1 Client Feedback Analysis",
-            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
-            state: "AWAITING_WORKFLOW_DESIGN",
-            status: "active",
-            creator: "Sarah Chen",
-            createdAt: "2024-03-15T10:30:00Z",
-            updatedAt: "2024-03-15T10:30:15Z",
-            tags: ["feedback", "analysis", "quarterly-review"],
-            deliverableType: "report",
-            messages: [
-                {
-                    id: "msg_001",
-                    role: "user",
-                    content: "I need to analyze our client feedback from Q1 2024",
-                    timestamp: "2024-03-15T10:30:00Z",
-                    metadata: {
-                        type: "goal"
-                    }
-                },
-                {
-                    id: "msg_002",
-                    role: "assistant",
-                    content: "I'll help you analyze the Q1 client feedback. I've created a journey card for this analysis - you can review it in the task area.",
-                    timestamp: "2024-03-15T10:30:05Z",
-                    metadata: {
-                        type: "status"
-                    }
-                },
-                {
-                    id: "msg_003",
-                    role: "assistant",
-                    content: "Would you like me to propose a workflow for analyzing the client feedback?",
-                    timestamp: "2024-03-15T10:30:15Z",
-                    metadata: {
-                        type: "suggestion",
-                        actionButtons: [
-                            {
-                                id: "start-design",
-                                label: "Start Workflow Design",
-                                type: "primary",
-                                action: "start_design"
-                            }
-                        ]
-                    }
-                }
-            ],
-            workflow: null,
-            workspace: {
-                id: "ws_2024_03_15_001",
-                name: "Q1 Feedback Analysis Workspace",
-                description: "Workspace for analyzing Q1 2024 client feedback",
-                assets: [],
-                tools: [],
-                settings: {}
-            }
-        },
-        isRightPanelOpen: true
-    },
-    {
-        timestamp: "2024-03-15T10:30:20Z",
-        description: "System starts designing the workflow",
-        journey: {
-            id: "j_2024_03_15_001",
-            title: "Q1 Client Feedback Analysis",
-            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
-            state: "AWAITING_WORKFLOW_DESIGN",
-            status: "active",
-            creator: "Sarah Chen",
-            createdAt: "2024-03-15T10:30:00Z",
-            updatedAt: "2024-03-15T10:30:20Z",
-            tags: ["feedback", "analysis", "quarterly-review"],
-            deliverableType: "report",
-            messages: [
-                {
-                    id: "msg_001",
-                    role: "user",
-                    content: "I need to analyze our client feedback from Q1 2024",
-                    timestamp: "2024-03-15T10:30:00Z",
-                    metadata: {
-                        type: "goal"
-                    }
-                },
-                {
-                    id: "msg_002",
-                    role: "assistant",
-                    content: "I'll help you analyze the Q1 client feedback. I've created a journey card for this analysis - you can review it in the task area.",
-                    timestamp: "2024-03-15T10:30:05Z",
-                    metadata: {
-                        type: "status"
-                    }
-                },
-                {
-                    id: "msg_003",
-                    role: "assistant",
-                    content: "Would you like me to propose a workflow for analyzing the client feedback?",
-                    timestamp: "2024-03-15T10:30:15Z",
-                    metadata: {
-                        type: "suggestion"
-                    }
-                },
-                {
-                    id: "msg_004",
-                    role: "assistant",
-                    content: "I am designing a workflow now...",
-                    timestamp: "2024-03-15T10:30:20Z",
-                    metadata: {
-                        type: "status"
-                    }
-                }
-            ],
-            workflow: null,
-            workspace: {
-                id: "ws_2024_03_15_001",
-                name: "Q1 Feedback Analysis Workspace",
-                description: "Workspace for analyzing Q1 2024 client feedback",
-                assets: [],
-                tools: [],
-                settings: {}
-            }
-        },
-        isRightPanelOpen: true
-    },
-    {
-        timestamp: "2024-03-15T10:30:25Z",
-        description: "System proposes a workflow",
+        timestamp: new Date().toISOString(),
+        description: "Initial state with proposed and accepted workflow",
         journey: {
             id: "j_2024_03_15_001",
             title: "Q1 Client Feedback Analysis",
             goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
             state: "AWAITING_WORKFLOW_START",
-            status: "active",
             creator: "Sarah Chen",
-            createdAt: "2024-03-15T10:30:00Z",
-            updatedAt: "2024-03-15T10:30:25Z",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
             tags: ["feedback", "analysis", "quarterly-review"],
-            deliverableType: "report",
+            deliverable: {
+                id: "del_001",
+                name: "Q1 Client Feedback Report",
+                description: "Analysis report of client feedback from Q1 2024",
+                type: "report"
+            },
             messages: [
                 {
-                    id: "msg_001",
-                    role: "user",
-                    content: "I need to analyze our client feedback from Q1 2024",
-                    timestamp: "2024-03-15T10:30:00Z",
+                    id: 'msg_001',
+                    role: 'user',
+                    content: 'I need to analyze our client feedback from Q1 2024',
+                    timestamp: new Date().toISOString(),
                     metadata: {
-                        type: "goal"
+                        type: 'goal'
                     }
                 },
                 {
-                    id: "msg_002",
-                    role: "assistant",
-                    content: "I'll help you analyze the Q1 client feedback. I've created a journey card for this analysis - you can review it in the task area.",
-                    timestamp: "2024-03-15T10:30:05Z",
+                    id: 'msg_002',
+                    role: 'assistant',
+                    content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                    timestamp: new Date().toISOString(),
                     metadata: {
-                        type: "status"
+                        type: 'status'
                     }
                 },
                 {
-                    id: "msg_003",
-                    role: "assistant",
-                    content: "Would you like me to propose a workflow for analyzing the client feedback?",
-                    timestamp: "2024-03-15T10:30:15Z",
+                    id: 'msg_003',
+                    role: 'assistant',
+                    content: 'I have designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?',
+                    timestamp: new Date().toISOString(),
                     metadata: {
-                        type: "suggestion"
-                    }
-                },
-                {
-                    id: "msg_004",
-                    role: "assistant",
-                    content: "I am designing a workflow now...",
-                    timestamp: "2024-03-15T10:30:20Z",
-                    metadata: {
-                        type: "status"
-                    }
-                },
-                {
-                    id: "msg_005",
-                    role: "assistant",
-                    content: "I've designed a workflow with these steps: 1) Collect emails, 2) Extract feedback, 3) Analyze themes, 4) Generate report. Would you like to start?",
-                    timestamp: "2024-03-15T10:30:25Z",
-                    metadata: {
-                        type: "confirmation",
+                        type: 'confirmation',
                         actionButtons: [
                             {
-                                id: "accept-workflow",
-                                label: "Accept Workflow",
-                                type: "primary",
-                                action: "accept_workflow"
+                                id: 'accept-workflow',
+                                label: 'Accept Workflow',
+                                type: 'primary',
+                                action: 'accept_workflow'
                             },
                             {
-                                id: "reject-workflow",
-                                label: "Reject Workflow",
-                                type: "danger",
-                                action: "reject_workflow"
+                                id: 'reject-workflow',
+                                label: 'Reject Workflow',
+                                type: 'danger',
+                                action: 'reject_workflow'
                             }
                         ]
                     }
@@ -636,37 +115,58 @@ export const uiSnapshots: UISnapshot[] = [
                 steps: [
                     {
                         id: "step_001",
-                        name: "Email Collection",
-                        description: "Search and collect client emails from Q1 2024",
+                        name: "Collect Emails",
+                        description: "Gather all client feedback emails from Q1 2024",
                         status: "pending",
-                        agentType: "email_search",
+                        agentType: "email_collector",
                         level: 0,
-                        tools: ["email_search"],
+                        tools: ["email_retriever"],
                         inputs: {
-                            dateRange: "2024-01-01/2024-03-31",
-                            searchTerms: ["feedback", "review", "opinion"]
+                            timeRange: "2024-01-01 to 2024-03-31",
+                            source: "client_feedback"
                         },
                         outputs: {},
                         progress: 0,
-                        assets: [],
-                        isExpanded: true
+                        assets: []
                     },
                     {
                         id: "step_002",
-                        name: "Feedback Extraction",
-                        description: "Extract feedback points from collected emails",
+                        name: "Extract Feedback",
+                        description: "Extract key feedback points from the emails",
                         status: "pending",
-                        agentType: "feedback_extractor",
+                        agentType: "text_analyzer",
                         level: 0,
-                        tools: ["feedback_extractor"],
-                        inputs: {
-                            format: "structured_json",
-                            fields: ["sentiment", "topic", "urgency"]
-                        },
+                        tools: ["sentiment_analyzer", "topic_extractor"],
+                        inputs: {},
                         outputs: {},
                         progress: 0,
-                        assets: [],
-                        isExpanded: false
+                        assets: []
+                    },
+                    {
+                        id: "step_003",
+                        name: "Analyze Themes",
+                        description: "Identify common themes and patterns in the feedback",
+                        status: "pending",
+                        agentType: "theme_analyzer",
+                        level: 0,
+                        tools: ["theme_identifier", "pattern_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "step_004",
+                        name: "Generate Report",
+                        description: "Create a comprehensive analysis report",
+                        status: "pending",
+                        agentType: "report_generator",
+                        level: 0,
+                        tools: ["report_builder"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
                     }
                 ],
                 assets: []
@@ -675,6 +175,129 @@ export const uiSnapshots: UISnapshot[] = [
                 id: "ws_2024_03_15_001",
                 name: "Q1 Feedback Analysis Workspace",
                 description: "Workspace for analyzing Q1 2024 client feedback",
+                assets: [],
+                tools: [],
+                settings: {}
+            }
+        },
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "Journey goal approved, awaiting workflow design",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
+            state: "AWAITING_WORKFLOW_DESIGN",
+            creator: "Sarah Chen",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            tags: ["feedback", "analysis", "quarterly-review"],
+            deliverable: {
+                id: "del_001",
+                name: "Q1 Client Feedback Report",
+                description: "Analysis report of client feedback from Q1 2024",
+                type: "report"
+            },
+            messages: [
+                {
+                    id: 'msg_001',
+                    role: 'user',
+                    content: 'I need to analyze our client feedback from Q1 2024',
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        type: 'goal'
+                    }
+                },
+                {
+                    id: 'msg_002',
+                    role: 'assistant',
+                    content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        type: 'status'
+                    }
+                },
+                {
+                    id: 'msg_003',
+                    role: 'assistant',
+                    content: 'Great! I see you\'ve accepted the journey. Would you like me to propose a workflow for analyzing the client feedback?',
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        type: 'suggestion',
+                        actionButtons: [
+                            {
+                                id: 'start-design',
+                                label: 'Start Workflow Design',
+                                type: 'primary',
+                                action: 'start_design'
+                            }
+                        ]
+                    }
+                }
+            ],
+            workflow: null,
+            workspace: {
+                id: "ws_2024_03_15_001",
+                name: "Q1 Feedback Analysis Workspace",
+                description: "Workspace for analyzing Q1 2024 client feedback",
+                assets: [],
+                tools: [],
+                settings: {}
+            }
+        },
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "User sends initial message",
+        journey: null,
+        isRightPanelOpen: false
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "System proposes a journey card",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
+            state: "AWAITING_GOAL",
+            creator: "Sarah Chen",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            tags: ["feedback", "analysis", "quarterly-review"],
+            deliverable: {
+                id: "del_001",
+                name: "Q1 Client Feedback Report",
+                description: "Analysis report of client feedback from Q1 2024",
+                type: "report"
+            },
+            messages: [
+                {
+                    id: 'msg_001',
+                    role: 'user',
+                    content: 'I need to analyze our client feedback from Q1 2024',
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        type: 'goal'
+                    }
+                },
+                {
+                    id: 'msg_002',
+                    role: 'assistant',
+                    content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        type: 'status'
+                    }
+                }
+            ],
+            workflow: null,
+            workspace: {
+                id: "ws_2024_03_15_001",
+                name: "",
+                description: "",
                 assets: [],
                 tools: [],
                 settings: {}

@@ -1,10 +1,20 @@
 // Journey State Types
 export type JourneyState =
-    | 'AWAITING_JOURNEY'
+    | 'AWAITING_GOAL'
     | 'AWAITING_WORKFLOW_DESIGN'
     | 'AWAITING_WORKFLOW_START'
     | 'WORKFLOW_IN_PROGRESS'
     | 'WORKFLOW_COMPLETE';
+
+// Deliverable Types
+export type DeliverableType = 'summary' | 'draft' | 'report' | 'dataset' | 'visual' | 'decision' | 'plan';
+
+export interface Deliverable {
+    id: string;
+    name: string;
+    description: string;
+    type: DeliverableType;
+}
 
 // Message Types
 export type MessageType = 'goal' | 'clarification' | 'suggestion' | 'confirmation' | 'status' | 'result' | 'error';
@@ -132,12 +142,11 @@ export interface Journey {
     title: string;
     goal: string;
     state: JourneyState;
-    status: 'draft' | 'active' | 'completed' | 'failed';
     creator: string;
     createdAt: string;
     updatedAt: string;
     tags: string[];
-    deliverableType: 'summary' | 'draft' | 'report' | 'dataset' | 'visual' | 'decision' | 'plan';
+    deliverable: Deliverable;
 
     // Nested components
     messages: ChatMessage[];
