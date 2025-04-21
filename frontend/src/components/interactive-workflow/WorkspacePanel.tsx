@@ -127,7 +127,13 @@ export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({ journey, onActio
         return <div className="text-gray-500 dark:text-gray-400">Waiting for goal</div>;
     }
 
+    if (!journey.workspace) {
+        return <div className="text-gray-500 dark:text-gray-400">No workspace to display</div>;
+    }
+
     switch (journey.workspace.objectType) {
+        case 'none':
+            return <div className="text-gray-500 dark:text-gray-400">No content to display</div>;
         case 'proposed_journey':
             return renderProposedJourney(journey.workspace.object as Journey, onAction);
         case 'proposed_workflow':

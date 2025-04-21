@@ -23,7 +23,7 @@ export interface ActionButton {
     id: string;
     label: string;
     type: 'primary' | 'secondary' | 'danger';
-    action: 'accept_journey' | 'reject_journey' | 'edit_journey' | 'start_design' | 'accept_workflow' | 'reject_workflow';
+    action: 'accept_journey' | 'reject_journey' | 'edit_journey' | 'start_design' | 'accept_workflow' | 'reject_workflow' | 'edit_workflow';
 }
 
 export interface ChatMessage {
@@ -124,15 +124,17 @@ export interface Workflow {
     currentStepIndex: number;
     steps: WorkflowStep[];
     assets: Asset[];
+    actionButtons?: ActionButton[];
 }
 
 // Workspace Types
-export type WorkspaceObjectType = 'proposed_journey' | 'proposed_workflow' | 'workflow_step';
+export type WorkspaceObjectType = 'none' | 'proposed_journey' | 'proposed_workflow' | 'workflow_step';
 
 export interface Workspace {
     id: string;
     objectType: WorkspaceObjectType;
-    object: Journey | Workflow | WorkflowStep;
+    object: Journey | Workflow | WorkflowStep | null;
+    actionButtons?: ActionButton[];
 }
 
 // Journey Types (Top Level)
