@@ -59,11 +59,11 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ journey }) => {
                     {isActive && (
                         <div className="flex items-center gap-2 mb-1">
                             <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isRecording
-                                ? 'bg-red-500 animate-pulse'
+                                ? 'bg-green-500 animate-pulse'
                                 : 'bg-green-500'
                                 }`} />
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {isRecording ? 'ACTIVE' : 'Active'}
+                                {isRecording ? 'IN PROGRESS' : 'Active'}
                             </span>
                         </div>
                     )}

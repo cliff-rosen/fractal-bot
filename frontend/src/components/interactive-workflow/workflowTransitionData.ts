@@ -60,9 +60,13 @@ export const uiSnapshots: UISnapshot[] = [
                         id: "ws_2024_03_15_000",
                         objectType: "proposed_journey",
                         object: {} as Journey
-                    }
+                    },
+                    assets: [],
+                    agents: []
                 }
-            }
+            },
+            assets: [],
+            agents: []
         },
         isRightPanelOpen: true
     },
@@ -100,7 +104,9 @@ export const uiSnapshots: UISnapshot[] = [
                 id: "ws_2024_03_15_001",
                 objectType: "none",
                 object: null
-            }
+            },
+            assets: [],
+            agents: []
         },
         isRightPanelOpen: true
     },
@@ -167,9 +173,11 @@ export const uiSnapshots: UISnapshot[] = [
                         id: "ws_2024_03_15_001",
                         objectType: "proposed_journey",
                         object: {} as Journey
-                    }
+                    },
                 }
-            }
+            },
+            assets: [],
+            agents: []
         },
         isRightPanelOpen: true
     },
@@ -231,8 +239,10 @@ export const uiSnapshots: UISnapshot[] = [
                     steps: [],
                     assets: []
                 },
-                actionButtons: []
-            }
+                actionButtons: [],
+            },
+            assets: [],
+            agents: []
         },
         isRightPanelOpen: true
     },
@@ -285,7 +295,7 @@ export const uiSnapshots: UISnapshot[] = [
                 {
                     id: 'msg_004',
                     role: 'assistant',
-                    content: 'I have designed a workflow with these steps:\n\n1. Collect emails\n2. Extract feedback\n3. Analyze themes\n4. Generate report\n\nWould you like to start?',
+                    content: 'I have designed a workflow with these steps:\n\n1. Collect emails\n2. Extract feedback\n3. Analyze themes\n4. Generate report\n\nPlease review it and either accept, reject or edit it to proceed.',
                     timestamp: new Date().toISOString(),
                     metadata: {
                         type: 'confirmation'
@@ -357,29 +367,851 @@ export const uiSnapshots: UISnapshot[] = [
                             assets: []
                         }
                     ],
-                    assets: []
                 },
                 actionButtons: [
                     {
                         id: 'accept-workflow',
                         label: 'Accept Workflow',
                         type: 'primary',
-                        action: 'accept_workflow'
+                        action: 'accept_workflow',
+                        onClick: () => { }
                     },
                     {
                         id: 'reject-workflow',
                         label: 'Reject Workflow',
                         type: 'danger',
-                        action: 'reject_workflow'
+                        action: 'reject_workflow',
+                        onClick: () => { }
                     },
                     {
                         id: 'edit-workflow',
                         label: 'Edit Workflow',
                         type: 'secondary',
-                        action: 'edit_workflow'
+                        action: 'edit_workflow',
+                        onClick: () => { }
                     }
                 ]
-            }
+            },
+            assets: [],
+            agents: []
+        },
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "Workflow accepted, workflow in workflow area",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze client feedback from Q1 2024 to identify key themes and actionable insights",
+            state: "AWAITING_WORKFLOW_START",
+            creator: "user",
+            createdAt: "2024-03-15T10:00:00Z",
+            updatedAt: "2024-03-15T10:00:00Z",
+            tags: ["analysis", "client-feedback", "Q1-2024"],
+            deliverable: {
+                id: "d_2024_03_15_001",
+                name: "Client Feedback Analysis Report",
+                description: "A comprehensive analysis of client feedback from Q1 2024",
+                type: "report"
+            },
+            messages: [
+                {
+                    id: "m_2024_03_15_001",
+                    role: "user",
+                    content: "I need to analyze client feedback from Q1 2024",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_002",
+                    role: "assistant",
+                    content: "I've created a journey card for analyzing Q1 2024 client feedback. Please review and approve it.",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_003",
+                    role: "assistant",
+                    content: "I've designed a workflow for analyzing the client feedback. Here's what I propose:\n\n1. **Data Collection**: Gather all client feedback from Q1 2024\n2. **Theme Analysis**: Identify recurring themes and patterns\n3. **Sentiment Analysis**: Evaluate overall sentiment and key concerns\n4. **Insight Generation**: Generate actionable insights and recommendations",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_004",
+                    role: "assistant",
+                    content: "You've accepted the proposed workflow. The workflow is now ready to start. Would you like to begin the analysis?",
+                    timestamp: "2024-03-15T10:00:00Z",
+                    metadata: {
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "start_workflow",
+                                label: "Start Workflow",
+                                type: "primary",
+                                action: "start_design",
+                                onClick: () => { }
+                            },
+                            {
+                                id: "reject_workflow",
+                                label: "Reject",
+                                type: "danger",
+                                action: "reject_workflow",
+                                onClick: () => { }
+                            }
+                        ]
+                    }
+                }
+            ],
+            workflow: {
+                id: "w_2024_03_15_001",
+                status: "running",
+                currentStepIndex: 0,
+                steps: [
+                    {
+                        id: "s_2024_03_15_001",
+                        name: "Data Collection",
+                        description: "Gather all client feedback from Q1 2024",
+                        status: "ready",
+                        agentType: "Data Collector",
+                        level: 0,
+                        tools: ["feedback_collector"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_002",
+                        name: "Theme Analysis",
+                        description: "Identify recurring themes and patterns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["theme_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_003",
+                        name: "Sentiment Analysis",
+                        description: "Evaluate overall sentiment and key concerns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["sentiment_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_004",
+                        name: "Insight Generation",
+                        description: "Generate actionable insights and recommendations",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["insight_generator"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    }
+                ],
+                assets: []
+            },
+            workspace: {
+                id: "ws_2024_03_15_001",
+                objectType: "none",
+                object: null
+            },
+            assets: [],
+            agents: []
+        },
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "Workflow started with agent",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze client feedback from Q1 2024 to identify key themes and actionable insights",
+            state: "WORKFLOW_IN_PROGRESS",
+            creator: "user",
+            createdAt: "2024-03-15T10:00:00Z",
+            updatedAt: "2024-03-15T10:00:00Z",
+            tags: ["analysis", "client-feedback", "Q1-2024"],
+            deliverable: {
+                id: "d_2024_03_15_001",
+                name: "Client Feedback Analysis Report",
+                description: "A comprehensive analysis of client feedback from Q1 2024",
+                type: "report"
+            },
+            messages: [
+                {
+                    id: "m_2024_03_15_001",
+                    role: "user",
+                    content: "I need to analyze client feedback from Q1 2024",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_002",
+                    role: "assistant",
+                    content: "I've created a journey card for analyzing Q1 2024 client feedback. Please review and approve it.",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_003",
+                    role: "assistant",
+                    content: "I've designed a workflow for analyzing the client feedback. Here's what I propose:\n\n1. **Data Collection**: Gather all client feedback from Q1 2024\n2. **Theme Analysis**: Identify recurring themes and patterns\n3. **Sentiment Analysis**: Evaluate overall sentiment and key concerns\n4. **Insight Generation**: Generate actionable insights and recommendations",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_004",
+                    role: "assistant",
+                    content: "You've accepted the proposed workflow. The workflow is now ready to start. Would you like to begin the analysis?",
+                    timestamp: "2024-03-15T10:00:00Z",
+                    metadata: {
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "start_workflow",
+                                label: "Start Workflow",
+                                type: "primary",
+                                action: "start_design",
+                                onClick: () => { }
+                            },
+                            {
+                                id: "reject_workflow",
+                                label: "Reject",
+                                type: "danger",
+                                action: "reject_workflow",
+                                onClick: () => { }
+                            }
+                        ]
+                    }
+                },
+                {
+                    id: "m_2024_03_15_005",
+                    role: "assistant",
+                    content: "I've started the workflow. The Data Collector agent will begin gathering client feedback from Q1 2024.",
+                    timestamp: "2024-03-15T10:00:00Z"
+                }
+            ],
+            workflow: {
+                id: "w_2024_03_15_001",
+                status: "running",
+                currentStepIndex: 0,
+                steps: [
+                    {
+                        id: "s_2024_03_15_001",
+                        name: "Data Collection",
+                        description: "Gather all client feedback from Q1 2024",
+                        status: "running",
+                        agentType: "Data Collector",
+                        level: 0,
+                        tools: ["feedback_collector"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 25,
+                        assets: [
+                            {
+                                id: "a_2024_03_15_001",
+                                title: "Q1 2024 Client Feedback Dataset",
+                                type: "input",
+                                format: "json",
+                                content: {},
+                                metadata: {
+                                    creator: "Data Collector",
+                                    createdAt: "2024-03-15T10:00:00Z",
+                                    updatedAt: "2024-03-15T10:00:00Z",
+                                    tags: ["raw-data", "client-feedback", "Q1-2024"],
+                                    stepId: "s_2024_03_15_001",
+                                    toolId: "feedback_collector"
+                                },
+                                version: 1,
+                                history: []
+                            }
+                        ]
+                    },
+                    {
+                        id: "s_2024_03_15_002",
+                        name: "Theme Analysis",
+                        description: "Identify recurring themes and patterns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["theme_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_003",
+                        name: "Sentiment Analysis",
+                        description: "Evaluate overall sentiment and key concerns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["sentiment_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_004",
+                        name: "Insight Generation",
+                        description: "Generate actionable insights and recommendations",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["insight_generator"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    }
+                ],
+                assets: [
+                    {
+                        id: "a_2024_03_15_001",
+                        title: "Q1 2024 Client Feedback Dataset",
+                        type: "input",
+                        format: "json",
+                        content: {},
+                        metadata: {
+                            creator: "Data Collector",
+                            createdAt: "2024-03-15T10:00:00Z",
+                            updatedAt: "2024-03-15T10:00:00Z",
+                            tags: ["raw-data", "client-feedback", "Q1-2024"],
+                            stepId: "s_2024_03_15_001",
+                            toolId: "feedback_collector"
+                        },
+                        version: 1,
+                        history: []
+                    }
+                ]
+            },
+            workspace: {
+                id: "ws_2024_03_15_001",
+                objectType: "workflow_step",
+                object: {
+                    id: "s_2024_03_15_001",
+                    name: "Data Collection",
+                    description: "Gather all client feedback from Q1 2024",
+                    status: "running",
+                    agentType: "Data Collector",
+                    level: 0,
+                    tools: ["feedback_collector"],
+                    inputs: {},
+                    outputs: {},
+                    progress: 25,
+                    assets: [
+                        {
+                            id: "a_2024_03_15_001",
+                            title: "Q1 2024 Client Feedback Dataset",
+                            type: "input",
+                            format: "json",
+                            content: {},
+                            metadata: {
+                                creator: "Data Collector",
+                                createdAt: "2024-03-15T10:00:00Z",
+                                updatedAt: "2024-03-15T10:00:00Z",
+                                tags: ["raw-data", "client-feedback", "Q1-2024"],
+                                stepId: "s_2024_03_15_001",
+                                toolId: "feedback_collector"
+                            },
+                            version: 1,
+                            history: []
+                        }
+                    ]
+                },
+                actionButtons: [
+                    {
+                        id: "accept_data",
+                        label: "Accept and Add to Assets",
+                        type: "primary",
+                        action: "accept_workflow",
+                        onClick: () => { }
+                    }
+                ]
+            },
+            assets: [],
+            agents: [
+                {
+                    id: "agent_001",
+                    name: "Data Collector",
+                    description: "Gathers all client feedback from Q1 2024",
+                    capabilities: ["data_collection", "data_processing"],
+                    tools: ["feedback_collector"],
+                    configuration: {},
+                    inputs: {
+                        searchTerms: ["feedback", "review", "opinion"],
+                        dateRange: "2024-01-01/2024-03-31"
+                    },
+                    outputs: {
+                        emailList: []
+                    }
+                }
+            ]
+        },
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "Data Collection complete, output ready for confirmation",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze client feedback from Q1 2024 to identify key themes and actionable insights",
+            state: "WORKFLOW_IN_PROGRESS",
+            creator: "user",
+            createdAt: "2024-03-15T10:00:00Z",
+            updatedAt: "2024-03-15T10:00:00Z",
+            tags: ["analysis", "client-feedback", "Q1-2024"],
+            deliverable: {
+                id: "d_2024_03_15_001",
+                name: "Client Feedback Analysis Report",
+                description: "A comprehensive analysis of client feedback from Q1 2024",
+                type: "report"
+            },
+            messages: [
+                {
+                    id: "m_2024_03_15_001",
+                    role: "user",
+                    content: "I need to analyze client feedback from Q1 2024",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_002",
+                    role: "assistant",
+                    content: "I've created a journey card for analyzing Q1 2024 client feedback. Please review and approve it.",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_003",
+                    role: "assistant",
+                    content: "I've designed a workflow for analyzing the client feedback. Here's what I propose:\n\n1. **Data Collection**: Gather all client feedback from Q1 2024\n2. **Theme Analysis**: Identify recurring themes and patterns\n3. **Sentiment Analysis**: Evaluate overall sentiment and key concerns\n4. **Insight Generation**: Generate actionable insights and recommendations",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_004",
+                    role: "assistant",
+                    content: "You've accepted the proposed workflow. The workflow is now ready to start. Would you like to begin the analysis?",
+                    timestamp: "2024-03-15T10:00:00Z",
+                    metadata: {
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "start_workflow",
+                                label: "Start Workflow",
+                                type: "primary",
+                                action: "start_design",
+                                onClick: () => { }
+                            },
+                            {
+                                id: "reject_workflow",
+                                label: "Reject",
+                                type: "danger",
+                                action: "reject_workflow",
+                                onClick: () => { }
+                            }
+                        ]
+                    }
+                },
+                {
+                    id: "m_2024_03_15_005",
+                    role: "assistant",
+                    content: "I've started the workflow. The Data Collector agent will begin gathering client feedback from Q1 2024.",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_006",
+                    role: "assistant",
+                    content: "The Data Collector agent has completed gathering all client feedback from Q1 2024. I've compiled the data into a structured dataset. Please review the output in the workspace and confirm if you'd like to accept it and add it to the workflow assets.",
+                    timestamp: "2024-03-15T10:00:00Z",
+                    metadata: {
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "accept_data",
+                                label: "Accept and Add to Assets",
+                                type: "primary",
+                                action: "accept_workflow",
+                                onClick: () => { }
+                            }
+                        ]
+                    }
+                }
+            ],
+            workflow: {
+                id: "w_2024_03_15_001",
+                status: "running",
+                currentStepIndex: 0,
+                steps: [
+                    {
+                        id: "s_2024_03_15_001",
+                        name: "Data Collection",
+                        description: "Gather all client feedback from Q1 2024",
+                        status: "completed",
+                        agentType: "Data Collector",
+                        level: 0,
+                        tools: ["feedback_collector"],
+                        inputs: {},
+                        outputs: {
+                            dataset: {
+                                id: "ds_2024_03_15_001",
+                                name: "Q1 2024 Client Feedback Dataset",
+                                description: "Structured dataset containing all client feedback from Q1 2024",
+                                size: "2.5MB",
+                                format: "json",
+                                recordCount: 1250,
+                                dateRange: "2024-01-01 to 2024-03-31"
+                            }
+                        },
+                        progress: 100,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_002",
+                        name: "Theme Analysis",
+                        description: "Identify recurring themes and patterns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["theme_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_003",
+                        name: "Sentiment Analysis",
+                        description: "Evaluate overall sentiment and key concerns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["sentiment_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_004",
+                        name: "Insight Generation",
+                        description: "Generate actionable insights and recommendations",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["insight_generator"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    }
+                ],
+                assets: []
+            },
+            workspace: {
+                id: "ws_2024_03_15_001",
+                objectType: "workflow_step",
+                object: {
+                    id: "s_2024_03_15_001",
+                    name: "Data Collection",
+                    description: "Gather all client feedback from Q1 2024",
+                    status: "completed",
+                    agentType: "Data Collector",
+                    level: 0,
+                    tools: ["feedback_collector"],
+                    inputs: {},
+                    outputs: {
+                        dataset: {
+                            id: "ds_2024_03_15_001",
+                            name: "Q1 2024 Client Feedback Dataset",
+                            description: "Structured dataset containing all client feedback from Q1 2024",
+                            size: "2.5MB",
+                            format: "json",
+                            recordCount: 1250,
+                            dateRange: "2024-01-01 to 2024-03-31"
+                        }
+                    },
+                    progress: 100,
+                    assets: []
+                },
+                actionButtons: [
+                    {
+                        id: "accept_data",
+                        label: "Accept and Add to Assets",
+                        type: "primary",
+                        action: "accept_workflow",
+                        onClick: () => { }
+                    }
+                ]
+            },
+            assets: [],
+            agents: []
+        },
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "Data Collection output accepted, ready for Theme Analysis",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze client feedback from Q1 2024 to identify key themes and actionable insights",
+            state: "WORKFLOW_IN_PROGRESS",
+            creator: "user",
+            createdAt: "2024-03-15T10:00:00Z",
+            updatedAt: "2024-03-15T10:00:00Z",
+            tags: ["analysis", "client-feedback", "Q1-2024"],
+            deliverable: {
+                id: "d_2024_03_15_001",
+                name: "Client Feedback Analysis Report",
+                description: "A comprehensive analysis of client feedback from Q1 2024",
+                type: "report"
+            },
+            messages: [
+                {
+                    id: "m_2024_03_15_001",
+                    role: "user",
+                    content: "I need to analyze client feedback from Q1 2024",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_002",
+                    role: "assistant",
+                    content: "I've created a journey card for analyzing Q1 2024 client feedback. Please review and approve it.",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_003",
+                    role: "assistant",
+                    content: "I've designed a workflow for analyzing the client feedback. Here's what I propose:\n\n1. **Data Collection**: Gather all client feedback from Q1 2024\n2. **Theme Analysis**: Identify recurring themes and patterns\n3. **Sentiment Analysis**: Evaluate overall sentiment and key concerns\n4. **Insight Generation**: Generate actionable insights and recommendations",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_004",
+                    role: "assistant",
+                    content: "You've accepted the proposed workflow. The workflow is now ready to start. Would you like to begin the analysis?",
+                    timestamp: "2024-03-15T10:00:00Z",
+                    metadata: {
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "start_workflow",
+                                label: "Start Workflow",
+                                type: "primary",
+                                action: "start_design",
+                                onClick: () => { }
+                            },
+                            {
+                                id: "reject_workflow",
+                                label: "Reject",
+                                type: "danger",
+                                action: "reject_workflow",
+                                onClick: () => { }
+                            }
+                        ]
+                    }
+                },
+                {
+                    id: "m_2024_03_15_005",
+                    role: "assistant",
+                    content: "I've started the workflow. The Data Collector agent will begin gathering client feedback from Q1 2024.",
+                    timestamp: "2024-03-15T10:00:00Z"
+                },
+                {
+                    id: "m_2024_03_15_006",
+                    role: "assistant",
+                    content: "The Data Collector agent has completed gathering all client feedback from Q1 2024. I've compiled the data into a structured dataset. Please review the output in the workspace and confirm if you'd like to accept it and add it to the workflow assets.",
+                    timestamp: "2024-03-15T10:00:00Z",
+                    metadata: {
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "accept_data",
+                                label: "Accept and Add to Assets",
+                                type: "primary",
+                                action: "accept_workflow",
+                                onClick: () => { }
+                            }
+                        ]
+                    }
+                },
+                {
+                    id: "m_2024_03_15_007",
+                    role: "assistant",
+                    content: "I've added the Q1 2024 Client Feedback Dataset to the workflow assets. The Theme Analysis agent is ready to begin analyzing the data for recurring themes and patterns. Would you like to proceed with the theme analysis?",
+                    timestamp: "2024-03-15T10:00:00Z",
+                    metadata: {
+                        type: "confirmation",
+                        actionButtons: [
+                            {
+                                id: "start_theme_analysis",
+                                label: "Start Theme Analysis",
+                                type: "primary",
+                                action: "start_design",
+                                onClick: () => { }
+                            }
+                        ]
+                    }
+                }
+            ],
+            workflow: {
+                id: "w_2024_03_15_001",
+                status: "running",
+                currentStepIndex: 1,
+                steps: [
+                    {
+                        id: "s_2024_03_15_001",
+                        name: "Data Collection",
+                        description: "Gather all client feedback from Q1 2024",
+                        status: "completed",
+                        agentType: "Data Collector",
+                        level: 0,
+                        tools: ["feedback_collector"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 100,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_002",
+                        name: "Theme Analysis",
+                        description: "Identify recurring themes and patterns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["theme_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_003",
+                        name: "Sentiment Analysis",
+                        description: "Evaluate overall sentiment and key concerns",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["sentiment_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "s_2024_03_15_004",
+                        name: "Insight Generation",
+                        description: "Generate actionable insights and recommendations",
+                        status: "pending",
+                        agentType: "Analyst",
+                        level: 0,
+                        tools: ["insight_generator"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    }
+                ],
+                assets: [
+                    {
+                        id: "ds_2024_03_15_001",
+                        title: "Q1 2024 Client Feedback Dataset",
+                        type: "input",
+                        format: "json",
+                        content: {},
+                        metadata: {
+                            creator: "Data Collector",
+                            createdAt: "2024-03-15T10:00:00Z",
+                            updatedAt: "2024-03-15T10:00:00Z",
+                            tags: ["raw-data", "client-feedback", "Q1-2024"],
+                            stepId: "s_2024_03_15_001",
+                            toolId: "feedback_collector"
+                        },
+                        version: 1,
+                        history: []
+                    }
+                ]
+            },
+            workspace: {
+                id: "ws_2024_03_15_001",
+                objectType: "none",
+                object: null
+            },
+            assets: [
+                {
+                    id: "ds_2024_03_15_001",
+                    title: "Q1 2024 Client Feedback Dataset",
+                    type: "input",
+                    format: "json",
+                    content: {},
+                    metadata: {
+                        creator: "Data Collector",
+                        createdAt: "2024-03-15T10:00:00Z",
+                        updatedAt: "2024-03-15T10:00:00Z",
+                        tags: ["raw-data", "client-feedback", "Q1-2024"],
+                        stepId: "s_2024_03_15_001",
+                        toolId: "feedback_collector"
+                    },
+                    version: 1,
+                    history: []
+                }
+            ],
+            agents: [
+                {
+                    id: "agent_001",
+                    name: "Data Collector",
+                    description: "Gathers all client feedback from Q1 2024",
+                    capabilities: ["data_collection", "data_processing"],
+                    tools: ["feedback_collector"],
+                    configuration: {},
+                    inputs: {
+                        searchTerms: ["feedback", "review", "opinion"],
+                        dateRange: "2024-01-01/2024-03-31"
+                    },
+                    outputs: {
+                        emailList: []
+                    }
+                },
+                {
+                    id: "agent_002",
+                    name: "Theme Analyst",
+                    description: "Analyzes feedback for recurring themes",
+                    capabilities: ["theme_analysis", "pattern_recognition"],
+                    tools: ["theme_analyzer"],
+                    configuration: {},
+                    inputs: {},
+                    outputs: {}
+                },
+                {
+                    id: "agent_003",
+                    name: "Sentiment Analyst",
+                    description: "Evaluates sentiment in feedback",
+                    capabilities: ["sentiment_analysis", "emotion_detection"],
+                    tools: ["sentiment_analyzer"],
+                    configuration: {},
+                    inputs: {},
+                    outputs: {}
+                },
+                {
+                    id: "agent_004",
+                    name: "Insight Generator",
+                    description: "Generates actionable insights from analysis",
+                    capabilities: ["insight_generation", "recommendation"],
+                    tools: ["insight_generator"],
+                    configuration: {},
+                    inputs: {},
+                    outputs: {}
+                }
+            ]
         },
         isRightPanelOpen: true
     }

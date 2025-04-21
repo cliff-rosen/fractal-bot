@@ -106,7 +106,7 @@ export interface WorkflowStep {
     id: string;
     name: string;
     description: string;
-    status: 'pending' | 'running' | 'completed' | 'failed';
+    status: 'pending' | 'ready' | 'running' | 'completed' | 'failed';
     agentType: string;
     level: number;              // Depth in the tree (0 for main steps)
     tools: string[];           // Tools used in this step
@@ -154,6 +154,8 @@ export interface Journey {
     messages: ChatMessage[];
     workflow: Workflow | null;
     workspace: Workspace;
+    assets: Asset[];  // Assets at journey level
+    agents: Agent[];  // Agents at journey level
 }
 
 // Agent Types

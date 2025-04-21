@@ -5,76 +5,86 @@ interface AgentPanelProps {
     journey: Journey | null;
 }
 
+const getAgentIcon = (agent: Agent) => {
+    if (agent.capabilities.includes('data_collection')) return '🔍';
+    if (agent.capabilities.includes('analysis')) return '📊';
+    if (agent.capabilities.includes('generation')) return '✨';
+    return '🤖';
+};
+
+const getAgentColor = (agent: Agent) => {
+    if (agent.capabilities.includes('data_collection')) return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+    if (agent.capabilities.includes('analysis')) return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
+    if (agent.capabilities.includes('generation')) return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+    return 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600';
+};
+
 export const AgentPanel: React.FC<AgentPanelProps> = ({ journey }) => {
-    if (!journey?.workflow?.steps.length) {
-        return <div className="h-24 w-full flex items-center justify-center text-gray-500 dark:text-gray-400">No active agent</div>;
+    if (!journey) {
+        return <div className="text-gray-500 dark:text-gray-400">No journey selected</div>;
     }
 
-    const currentStep = journey.workflow.steps[journey.workflow.currentStepIndex];
-    if (!currentStep) {
-        return <div className="h-24 w-full flex items-center justify-center text-gray-500 dark:text-gray-400">No active step</div>;
-    }
-
-    const agent: Agent = {
-        id: currentStep.id,
-        name: "Email Search Agent",
-        description: "Searches through email archives for customer feedback",
-        capabilities: [],
-        tools: currentStep.tools,
-        configuration: {},
-        inputs: {
-            searchTerms: ["feedback", "review", "opinion"],
-            dateRange: "Q1 2024"
-        },
-        outputs: {
-            emailList: [
-                "Customer feedback on new feature - 2024-01-15",
-                "Product review from enterprise client - 2024-02-03",
-                "Support ticket feedback - 2024-03-10"
-            ]
-        }
-    };
+    const agents = journey.agents || [];
 
     return (
-        <div className="h-24 w-full">
-            <div className="bg-white dark:bg-gray-800 rounded shadow-sm h-full flex flex-col">
-                <div className="flex items-center justify-between px-2 py-1 border-b border-gray-100 dark:border-gray-700">
-                    <h2 className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {agent.name} • {currentStep.agentType}
-                    </h2>
-                    <span className={`text-xs px-1 py-0.5 rounded flex-shrink-0 ${currentStep.status === 'running' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' :
-                        currentStep.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
-                            'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
-                        }`}>
-                        {currentStep.status}
-                    </span>
-                </div>
-
-                <div className="grid grid-cols-2 flex-1 text-[10px]">
-                    <div className="flex flex-col p-1 border-r border-gray-100 dark:border-gray-700">
-                        <div className="text-gray-500 dark:text-gray-400 text-center">Inputs</div>
-                        <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-0.5">
-                                <span className="text-gray-500">🔍</span>
-                                <span className="text-gray-900 dark:text-gray-100 truncate">Search Terms</span>
-                            </div>
-                            <div className="flex items-center gap-0.5">
-                                <span className="text-gray-500">📅</span>
-                                <span className="text-gray-900 dark:text-gray-100 truncate">Q1 2024</span>
-                            </div>
-                        </div>
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Agents</h3>
+                {agents.length === 0 ? (
+                    <div className="text-gray-500 dark:text-gray-400">
+                        No agents active
                     </div>
-
-                    <div className="flex flex-col p-1">
-                        <div className="text-gray-500 dark:text-gray-400 text-center">Outputs</div>
-                        <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-0.5">
-                                <span className="text-gray-500">📧</span>
-                                <span className="text-gray-900 dark:text-gray-100 truncate">3 emails found</span>
+                ) : (
+                    <div className="space-y-2">
+                        {agents.map(agent => (
+                            <div
+                                key={agent.id}
+                                className={`p-3 rounded-lg border ${getAgentColor(agent)}`}
+                            >
+                                <div className="flex items-center space-x-2 mb-2">
+                                    <div className="text-4xl">{getAgentIcon(agent)}</div>
+                                    <div>
+                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {agent.name}
+                                        </div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                            {agent.capabilities.join(' • ')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                    {agent.description}
+                                </div>
+                                <div className="space-y-1">
+                                    {agent.inputs && Object.entries(agent.inputs).length > 0 && (
+                                        <div className="text-xs">
+                                            <span className="font-medium text-gray-700 dark:text-gray-300">Inputs:</span>
+                                            <ul className="list-disc list-inside">
+                                                {Object.entries(agent.inputs).map(([key, value]) => (
+                                                    <li key={key} className="text-gray-500 dark:text-gray-400">
+                                                        {key}: {Array.isArray(value) ? value.join(', ') : value}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {agent.outputs && Object.entries(agent.outputs).length > 0 && (
+                                        <div className="text-xs">
+                                            <span className="font-medium text-gray-700 dark:text-gray-300">Outputs:</span>
+                                            <ul className="list-disc list-inside">
+                                                {Object.entries(agent.outputs).map(([key, value]) => (
+                                                    <li key={key} className="text-gray-500 dark:text-gray-400">
+                                                        {key}: {Array.isArray(value) ? value.join(', ') : value}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        ))}
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
