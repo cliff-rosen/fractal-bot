@@ -151,7 +151,6 @@ const InteractiveWorkflowTest: React.FC = () => {
                                     <div className="flex-1 overflow-y-auto p-4">
                                         <WorkspacePanel
                                             journey={currentSnapshot.journey}
-                                            workflow={currentSnapshot.journey?.workflow}
                                         />
                                     </div>
                                 </div>

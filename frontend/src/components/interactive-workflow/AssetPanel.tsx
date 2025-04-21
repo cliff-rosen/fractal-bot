@@ -38,26 +38,14 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({ journey }) => {
         return <div className="text-gray-500 dark:text-gray-400">No journey selected</div>;
     }
 
-    if (!journey.workspace.assets.length) {
-        return <div className="text-gray-500 dark:text-gray-400">No assets generated yet</div>;
-    }
-
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4">
-            {journey.workspace.assets.map(asset => (
-                <div
-                    key={asset.id}
-                    className={`${getAssetColor(asset)} rounded-lg p-4 border flex flex-col items-center justify-center hover:shadow-md transition-shadow cursor-pointer`}
-                >
-                    <div className="text-4xl mb-2">{getAssetIcon(asset)}</div>
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 text-center truncate w-full">
-                        {asset.title}
-                    </h3>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        {asset.type} • {asset.format}
-                    </div>
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Assets</h3>
+                <div className="text-gray-500 dark:text-gray-400">
+                    No assets generated yet
                 </div>
-            ))}
+            </div>
         </div>
     );
 }; 

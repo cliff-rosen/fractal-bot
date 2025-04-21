@@ -44,7 +44,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
                                     }`} />
                                 <div className="flex-1 min-w-0">
                                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                        {step.name}
+                                        {step.name} • {step.agentType}
                                     </div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                         {step.description}
@@ -52,7 +52,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({ workflow }) => {
                                 </div>
                                 {index === workflow.currentStepIndex && (
                                     <div className="text-xs px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 whitespace-nowrap">
-                                        Current {workflow.currentStepIndex}
+                                        Current
                                     </div>
                                 )}
                             </div>

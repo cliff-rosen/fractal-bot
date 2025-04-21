@@ -1,4 +1,4 @@
-import { Journey, Workflow, ChatMessage, JourneyState, ActionButton } from './types';
+import { Journey, Workflow, ChatMessage, JourneyState, ActionButton, WorkflowStep } from './types';
 
 export interface TransitionStep {
     state: JourneyState;
@@ -38,11 +38,30 @@ export const uiSnapshots: UISnapshot[] = [
             workflow: null,
             workspace: {
                 id: "ws_2024_03_15_000",
-                name: "",
-                description: "",
-                assets: [],
-                tools: [],
-                settings: {}
+                objectType: "proposed_journey",
+                object: {
+                    id: "j_2024_03_15_000",
+                    title: "",
+                    goal: "",
+                    state: "AWAITING_GOAL",
+                    creator: "",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    tags: [],
+                    deliverable: {
+                        id: "del_000",
+                        name: "",
+                        description: "",
+                        type: "report"
+                    },
+                    messages: [],
+                    workflow: null,
+                    workspace: {
+                        id: "ws_2024_03_15_000",
+                        objectType: "proposed_journey",
+                        object: {} as Journey
+                    }
+                }
             }
         },
         isRightPanelOpen: true
@@ -115,89 +134,83 @@ export const uiSnapshots: UISnapshot[] = [
                 steps: [
                     {
                         id: "step_001",
-                        name: "Initial Analysis",
-                        description: "Analyzing the initial requirements",
+                        name: "Collect Emails",
+                        description: "Gathering all relevant customer feedback emails from Q1 2024",
                         status: "running",
-                        agentType: "analyzer",
+                        agentType: "collector",
                         level: 0,
-                        tools: ["requirement_analyzer"],
-                        inputs: {},
+                        tools: ["email_search"],
+                        inputs: {
+                            dateRange: "2024-01-01/2024-03-31",
+                            searchTerms: ["feedback", "review", "opinion"]
+                        },
                         outputs: {},
                         progress: 30,
-                        assets: [{
-                            id: "asset_001",
-                            title: "Initial Requirements Analysis",
-                            type: "intermediate",
-                            format: "text",
-                            content: "Analyzing the initial requirements to determine the scope and approach...",
-                            metadata: {
-                                creator: "System",
-                                createdAt: new Date().toISOString(),
-                                updatedAt: new Date().toISOString(),
-                                tags: ["analysis", "requirements"],
-                                stepId: "step_001",
-                                toolId: "requirement_analyzer"
-                            },
-                            version: 1,
-                            history: []
-                        }]
+                        assets: []
+                    },
+                    {
+                        id: "step_002",
+                        name: "Extract Feedback",
+                        description: "Processing emails to extract relevant feedback content",
+                        status: "pending",
+                        agentType: "extractor",
+                        level: 0,
+                        tools: ["text_extractor"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "step_003",
+                        name: "Analyze Themes",
+                        description: "Identifying key themes and sentiment from the feedback",
+                        status: "pending",
+                        agentType: "analyzer",
+                        level: 0,
+                        tools: ["theme_analyzer", "sentiment_analyzer"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
+                    },
+                    {
+                        id: "step_004",
+                        name: "Generate Report",
+                        description: "Creating a comprehensive analysis report",
+                        status: "pending",
+                        agentType: "reporter",
+                        level: 0,
+                        tools: ["report_generator"],
+                        inputs: {},
+                        outputs: {},
+                        progress: 0,
+                        assets: []
                     }
                 ],
-                assets: [{
-                    id: "asset_001",
-                    title: "Initial Requirements Analysis",
-                    type: "intermediate",
-                    format: "text",
-                    content: "Analyzing the initial requirements to determine the scope and approach...",
-                    metadata: {
-                        creator: "System",
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        tags: ["analysis", "requirements"],
-                        stepId: "step_001",
-                        toolId: "requirement_analyzer"
-                    },
-                    version: 1,
-                    history: []
-                }]
+                assets: []
             },
             workspace: {
                 id: "ws_2024_03_15_001",
-                name: "Q1 Feedback Analysis Workspace",
-                description: "Workspace for analyzing Q1 2024 client feedback",
-                assets: [
-                    {
-                        id: "asset_001",
-                        title: "Initial Requirements Analysis",
-                        type: "intermediate",
-                        format: "text",
-                        content: "Analyzing the initial requirements to determine the scope and approach...",
-                        metadata: {
-                            creator: "System",
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString(),
-                            tags: ["analysis", "requirements"],
-                            stepId: "step_001",
-                            toolId: "requirement_analyzer"
-                        },
-                        version: 1,
-                        history: []
-                    }
-                ],
-                tools: [
-                    {
-                        id: "requirement_analyzer",
-                        name: "Requirement Analyzer",
-                        description: "Analyzes requirements to determine scope and approach",
-                        category: "analysis",
-                        capabilities: ["text_analysis", "scope_determination"],
-                        parameters: [],
-                        icon: "🔍"
-                    }
-                ],
-                settings: {}
+                objectType: "workflow_step",
+                object: {
+                    id: "step_001",
+                    name: "Collect Emails",
+                    description: "Gathering all relevant customer feedback emails from Q1 2024",
+                    status: "running",
+                    agentType: "collector",
+                    level: 0,
+                    tools: ["email_search"],
+                    inputs: {
+                        dateRange: "2024-01-01/2024-03-31",
+                        searchTerms: ["feedback", "review", "opinion"]
+                    },
+                    outputs: {},
+                    progress: 30,
+                    assets: []
+                }
             }
         },
         isRightPanelOpen: true
-    },
+    }
 ]; 

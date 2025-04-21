@@ -127,13 +127,12 @@ export interface Workflow {
 }
 
 // Workspace Types
+export type WorkspaceObjectType = 'proposed_journey' | 'proposed_workflow' | 'workflow_step';
+
 export interface Workspace {
     id: string;
-    name: string;
-    description?: string;
-    assets: Asset[];
-    tools: Tool[];
-    settings: Record<string, any>;
+    objectType: WorkspaceObjectType;
+    object: Journey | Workflow | WorkflowStep;
 }
 
 // Journey Types (Top Level)
@@ -163,14 +162,11 @@ export interface Agent {
     tools: string[];
     configuration: Record<string, any>;
     inputs: {
-        feedbackData?: string;
-        scope?: string;
-        timePeriod?: string;
+        searchTerms?: string[];
+        dateRange?: string;
     };
     outputs: {
-        themes?: string[];
-        sentiment?: string;
-        recommendations?: string[];
+        emailList?: string[];
     };
     metrics?: {
         usageCount: number;
