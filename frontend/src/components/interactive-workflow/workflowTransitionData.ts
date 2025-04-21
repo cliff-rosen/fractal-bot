@@ -1932,7 +1932,7 @@ export const uiSnapshots: UISnapshot[] = [
             workflow: {
                 id: "w_2024_03_15_001",
                 status: "running",
-                currentStepIndex: 1,
+                currentStepIndex: 2,
                 steps: [
                     {
                         id: "s_2024_03_15_001",
@@ -2052,6 +2052,18 @@ export const uiSnapshots: UISnapshot[] = [
                 }
             ],
             agents: [
+                {
+                    id: "agent_003",
+                    name: "Sentiment Analyst",
+                    description: "Analyzes feedback for sentiment",
+                    capabilities: ["sentiment_analysis", "emotion_detection"],
+                    tools: ["sentiment_analyzer"],
+                    configuration: {},
+                    inputs: {},
+                    outputs: {},
+                    status: "active"
+                }
+
             ]
         }
     }
