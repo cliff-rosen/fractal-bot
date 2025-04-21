@@ -1,11 +1,12 @@
 import React from 'react';
-import { Journey, Workflow, WorkflowStep, WorkspaceObjectType } from './types';
+import { Journey, Workflow, WorkflowStep, WorkspaceObjectType, ActionButton } from './types';
 
 interface WorkspacePanelProps {
     journey: Journey | null;
+    onAction?: (action: ActionButton['action']) => void;
 }
 
-const renderProposedJourney = (journey: Journey) => {
+const renderProposedJourney = (journey: Journey, onAction?: (action: ActionButton['action']) => void) => {
     return (
         <div className="p-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
@@ -25,6 +26,28 @@ const renderProposedJourney = (journey: Journey) => {
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Deliverable</h3>
                         <p className="text-gray-900 dark:text-gray-100">{journey.deliverable.name}</p>
                     </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-6 flex gap-3">
+                    <button
+                        onClick={() => onAction?.('accept_journey')}
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                    >
+                        Accept
+                    </button>
+                    <button
+                        onClick={() => onAction?.('reject_journey')}
+                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                    >
+                        Reject
+                    </button>
+                    <button
+                        onClick={() => onAction?.('edit_journey')}
+                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-md transition-colors"
+                    >
+                        Edit
+                    </button>
                 </div>
             </div>
         </div>
@@ -99,14 +122,14 @@ const renderWorkflowStep = (step: WorkflowStep) => {
     );
 };
 
-export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({ journey }) => {
+export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({ journey, onAction }) => {
     if (!journey?.goal) {
         return <div className="text-gray-500 dark:text-gray-400">Waiting for goal</div>;
     }
 
     switch (journey.workspace.objectType) {
         case 'proposed_journey':
-            return renderProposedJourney(journey.workspace.object as Journey);
+            return renderProposedJourney(journey.workspace.object as Journey, onAction);
         case 'proposed_workflow':
             return renderProposedWorkflow(journey.workspace.object as Workflow);
         case 'workflow_step':

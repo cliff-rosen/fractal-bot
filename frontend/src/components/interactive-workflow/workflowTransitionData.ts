@@ -73,6 +73,75 @@ export const uiSnapshots: UISnapshot[] = [
             id: "j_2024_03_15_001",
             title: "Q1 Client Feedback Analysis",
             goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
+            state: "AWAITING_GOAL",
+            creator: "Sarah Chen",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            tags: ["feedback", "analysis", "quarterly-review"],
+            deliverable: {
+                id: "del_001",
+                name: "Q1 Client Feedback Report",
+                description: "Analysis report of client feedback from Q1 2024",
+                type: "report"
+            },
+            messages: [
+                {
+                    id: 'msg_001',
+                    role: 'user',
+                    content: 'I need to analyze our client feedback from Q1 2024',
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        type: 'goal'
+                    }
+                },
+                {
+                    id: 'msg_002',
+                    role: 'assistant',
+                    content: 'I will help you analyze the Q1 client feedback. I have created a journey card for this analysis - you can review it in the task area.',
+                    timestamp: new Date().toISOString(),
+                    metadata: {
+                        type: 'status'
+                    }
+                }
+            ],
+            workflow: null,
+            workspace: {
+                id: "ws_2024_03_15_001",
+                objectType: "proposed_journey",
+                object: {
+                    id: "j_2024_03_15_001",
+                    title: "Q1 Client Feedback Analysis",
+                    goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
+                    state: "AWAITING_WORKFLOW_DESIGN",
+                    creator: "Sarah Chen",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    tags: ["feedback", "analysis", "quarterly-review"],
+                    deliverable: {
+                        id: "del_001",
+                        name: "Q1 Client Feedback Report",
+                        description: "Analysis report of client feedback from Q1 2024",
+                        type: "report"
+                    },
+                    messages: [],
+                    workflow: null,
+                    workspace: {
+                        id: "ws_2024_03_15_001",
+                        objectType: "proposed_journey",
+                        object: {} as Journey
+                    }
+                }
+            }
+        },
+        isRightPanelOpen: true
+    },
+    {
+        timestamp: new Date().toISOString(),
+        description: "Journey approved, workflow presented",
+        journey: {
+            id: "j_2024_03_15_001",
+            title: "Q1 Client Feedback Analysis",
+            goal: "Analyze customer feedback from Q1 2024 to identify key themes and sentiment",
             state: "WORKFLOW_IN_PROGRESS",
             creator: "Sarah Chen",
             createdAt: new Date().toISOString(),

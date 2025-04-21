@@ -34,6 +34,7 @@ const InteractiveWorkflowTest: React.FC = () => {
         switch (action) {
             case 'accept_journey':
             case 'reject_journey':
+            case 'edit_journey':
             case 'start_design':
             case 'accept_workflow':
             case 'reject_workflow':
@@ -143,18 +144,17 @@ const InteractiveWorkflowTest: React.FC = () => {
                             </div>
 
                             {/* Workspace Panel */}
-                            {currentSnapshot.journey && currentSnapshot.journey.status !== 'draft' && currentSnapshot.journey.state !== 'AWAITING_WORKFLOW_DESIGN' && (
-                                <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                    <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workspace</h2>
-                                    </div>
-                                    <div className="flex-1 overflow-y-auto p-4">
-                                        <WorkspacePanel
-                                            journey={currentSnapshot.journey}
-                                        />
-                                    </div>
+                            <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+                                    <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Workspace</h2>
                                 </div>
-                            )}
+                                <div className="flex-1 overflow-y-auto p-4">
+                                    <WorkspacePanel
+                                        journey={currentSnapshot.journey}
+                                        onAction={handleAction}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Right Column */}

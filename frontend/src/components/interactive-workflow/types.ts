@@ -23,7 +23,7 @@ export interface ActionButton {
     id: string;
     label: string;
     type: 'primary' | 'secondary' | 'danger';
-    action: 'accept_journey' | 'reject_journey' | 'start_design' | 'accept_workflow' | 'reject_workflow';
+    action: 'accept_journey' | 'reject_journey' | 'edit_journey' | 'start_design' | 'accept_workflow' | 'reject_workflow';
 }
 
 export interface ChatMessage {
