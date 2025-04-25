@@ -28,13 +28,11 @@ class BotRequest(BaseModel):
 async def generate_stream():
     """A sample streaming node that simulates an LLM generating tokens"""
 
-    # First status message
     message = "Starting the analysis process...".split(" ")
     for token in message:
         yield {"token": token, "metadata": {"type": "status"}}
         await asyncio.sleep(0.2)
     
-    # First status update
     yield {
         "status": {
             "id": "update-1",
@@ -48,7 +46,6 @@ async def generate_stream():
     }
     await asyncio.sleep(1)
     
-    # Second status message
     message = "Now analyzing the collected data...".split(" ")
     for token in message:
         yield {"token": token, "metadata": {"type": "status"}}
@@ -61,17 +58,18 @@ async def generate_stream():
             "timestamp": datetime.now().isoformat(),
             "title": "Analysis",
             "status": "current",
-            "details": "Processing and analyzing the collected data",
+            "content": "Processing and analyzing the collected data",
             "progress": 60,
             "icon": "🔍"
         }
     }
     await asyncio.sleep(1)
     
-    # Final status message
-    yield {"token": "Analysis complete. Generating insights...", "metadata": {"type": "status"}}
-    await asyncio.sleep(1)
-    
+    message = "Analysis complete. Generating insights...".split(" ")
+    for token in message:
+        yield {"token": token, "metadata": {"type": "status"}}
+        await asyncio.sleep(0.2)
+
     # Final status update
     yield {
         "status": {
@@ -79,7 +77,7 @@ async def generate_stream():
             "timestamp": datetime.now().isoformat(),
             "title": "Insight Generation",
             "status": "pending",
-            "details": "Will generate actionable insights from the analysis",
+            "content": "Will generate actionable insights from the analysis",
             "progress": 0,
             "icon": "💡"
         }
@@ -101,11 +99,7 @@ async def bot_stream(request: Request):
                     "data": json.dumps(chunk)
                 }
                 
-            # Send completion event
-            yield {
-                "event": "complete",
-                "data": json.dumps({"status": "complete"})
-            }
+
                 
         except Exception as e:
             # Handle errors
