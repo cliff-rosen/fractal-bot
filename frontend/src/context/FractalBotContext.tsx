@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { FractalBotState, createInitialState } from '@/components/fractal-bot/types/state';
 import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent, AgentType, AgentStatus } from '@/types/agent';
 import { Message, MessageRole } from '@/types/message';
 import { AgentJob, AssetConfig } from '@/types/agent-job';
-import { fractalBotReducer } from '@/components/fractal-bot/state/reducer';
 import { botApi } from '@/lib/api/botApi';
 import { assetApi } from '@/lib/api/assetApi';
 import { useToast } from '@/components/ui/use-toast';
