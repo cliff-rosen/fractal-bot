@@ -1,16 +1,17 @@
 import React from 'react';
 import { FileText, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
-import type { Workspace } from '../types/index';
+import type { Workspace as WorkspaceType, Asset } from '../types';
 import ProposedMission from './ProposedMission';
 import ProposedWorkflow from './ProposedWorkflow';
 import StepDetails from './workflow/StepDetails';
+import ProgressUpdateView from './ProgressUpdateView';
 
-interface WorkspaceViewProps {
-    workspace: Workspace;
+interface WorkspaceProps {
+    workspace: WorkspaceType;
 }
 
-export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
-    const getStatusIcon = (status: Workspace['status']) => {
+const Workspace: React.FC<WorkspaceProps> = ({ workspace }) => {
+    const getStatusIcon = (status: WorkspaceType['status']) => {
         switch (status) {
             case 'completed':
                 return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
@@ -23,7 +24,7 @@ export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
         }
     };
 
-    const getStatusText = (status: Workspace['status']) => {
+    const getStatusText = (status: WorkspaceType['status']) => {
         switch (status) {
             case 'completed':
                 return 'Completed';
@@ -36,7 +37,7 @@ export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
         }
     };
 
-    const getStatusColor = (status: Workspace['status']) => {
+    const getStatusColor = (status: WorkspaceType['status']) => {
         switch (status) {
             case 'completed':
                 return 'text-emerald-700 bg-emerald-100';
@@ -77,6 +78,17 @@ export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
                     );
                 }
                 break;
+            case 'progressUpdate':
+                return (
+                    <div className="p-6">
+                        <h2 className="text-2xl font-bold mb-6">{workspace.title}</h2>
+                        {workspace.content?.progressUpdates && (
+                            <ProgressUpdateView updates={workspace.content.progressUpdates} />
+                        )}
+                    </div>
+                );
+            default:
+                return <div>Unsupported workspace type</div>;
         }
 
         return null;
@@ -120,27 +132,8 @@ export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
                     </div>
                 )}
             </div>
-
-            {/* Action Buttons */}
-            {workspace.actionButtons && workspace.actionButtons.length > 0 && (
-                <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
-                    {workspace.actionButtons.map((button, index) => (
-                        <button
-                            key={index}
-                            onClick={button.onClick}
-                            disabled={button.disabled}
-                            className={`px-6 py-2 rounded-lg transition-colors border ${button.variant === 'primary'
-                                ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border-emerald-100 dark:border-emerald-800'
-                                : button.variant === 'danger'
-                                    ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border-red-100 dark:border-red-800'
-                                    : 'bg-gray-50 dark:bg-[#252b3b] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'
-                                } ${button.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            {button.label}
-                        </button>
-                    ))}
-                </div>
-            )}
         </div>
     );
-} 
+};
+
+export default Workspace; 

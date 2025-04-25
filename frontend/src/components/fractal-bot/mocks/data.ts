@@ -283,5 +283,50 @@ export const mockDataSnapshotSample: MockDataSnapshot = {
     workspaceState: mockWorkspaceState
 };
 
-// Array of mock data snapshots
-export const mockDataSnapshots: MockDataSnapshots = [mockDataSnapshot0, mockDataSnapshot1, mockDataSnapshot2, mockDataSnapshot2a, mockDataSnapshot2b, mockDataSnapshot3, mockDataSnapshot3a, mockDataSnapshot4];
+// Progress update workspace mock
+export const progressUpdateWorkspace: Workspace = {
+    id: 'progress-workspace-1',
+    type: 'progressUpdate',
+    title: 'Workflow Progress',
+    status: 'current',
+    content: {
+        progressUpdates: [
+            {
+                id: 'update-1',
+                timestamp: new Date().toISOString(),
+                title: 'Data Collection',
+                status: 'completed',
+                details: 'Successfully collected all required data points from customer feedback',
+                progress: 100,
+                icon: '📊'
+            },
+            {
+                id: 'update-3',
+                timestamp: new Date().toISOString(),
+                title: 'Insight Generation',
+                status: 'pending',
+                details: 'Will generate actionable insights from the analysis',
+                progress: 0,
+                icon: '💡'
+            }
+        ]
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+};
+
+// Export all mock data snapshots
+export const mockDataSnapshots: MockDataSnapshots = [
+    mockDataSnapshot0,
+    mockDataSnapshot1,
+    mockDataSnapshot2,
+    mockDataSnapshot2a,
+    mockDataSnapshot2b,
+    mockDataSnapshot3,
+    mockDataSnapshot3a,
+    mockDataSnapshot4,
+    {
+        ...mockDataSnapshot4,
+        workspace: progressUpdateWorkspace
+    }
+];

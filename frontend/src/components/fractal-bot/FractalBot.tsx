@@ -5,14 +5,16 @@ import Workflow from './components/Workflow';
 import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import { mockDataSnapshots } from './mocks/data';
-import { ChatMessage } from './types/index';
+import { ChatMessage, Workspace as WorkspaceType } from './types/index';
 import { botApi } from '@/lib/api/botApi';
 
 export default function App() {
-  const [currentDataSnapshotIdx, setCurrentDataSnapshotIdx] = useState(0);
+  const [currentDataSnapshotIdx, setCurrentDataSnapshotIdx] = useState(8);
+  const [currentWorkspaceObj, setCurrentWorkspaceObj] = useState<WorkspaceType>(mockDataSnapshots[8].workspace);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingMessage, setStreamingMessage] = useState<string>('');
+
 
   const handleSendMessage = async (message: ChatMessage) => {
 
@@ -26,6 +28,8 @@ export default function App() {
         // Parse the SSE data
         const lines = update.data.split('\n');
         for (const line of lines) {
+          console.log('line', line);
+
           if (line.startsWith('data: ')) {
             const jsonStr = line.slice(6); // Remove 'data: ' prefix
             try {
@@ -34,6 +38,10 @@ export default function App() {
                 console.log('data.token', data.token);
                 setStreamingMessage(prev => prev + data.token + ' ');
                 finalContent += ' ' + data.token;
+              }
+              if (data.status) {
+                console.log('data.status', data.status);
+                setCurrentWorkspaceObj(data.status);
               }
             } catch (e) {
               console.warn('Failed to parse SSE data:', e);
@@ -90,7 +98,7 @@ export default function App() {
 
             {/* Workspace Canvas */}
             <div className="flex-1 overflow-y-auto">
-              <Workspace workspace={mockDataSnapshots[currentDataSnapshotIdx].workspace} />
+              <Workspace workspace={currentWorkspaceObj} />
             </div>
           </div>
 

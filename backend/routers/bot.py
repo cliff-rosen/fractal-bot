@@ -27,12 +27,63 @@ class BotRequest(BaseModel):
 
 async def generate_stream():
     """A sample streaming node that simulates an LLM generating tokens"""
-    source = 'Hello, how are you there?'
-    words = source.split()
-    for word in words:
-        # Simulate token generation delay
-        await asyncio.sleep(.2)
-        yield {"token": word, "metadata": {"temperature": 0.7}}
+
+    # First status message
+    message = "Starting the analysis process...".split(" ")
+    for token in message:
+        yield {"token": token, "metadata": {"type": "status"}}
+        await asyncio.sleep(0.2)
+    
+    # First status update
+    yield {
+        "status": {
+            "id": "update-1",
+            "timestamp": datetime.now().isoformat(),
+            "title": "Data Collection",
+            "status": "completed",
+            "details": "Successfully collected all required data points",
+            "progress": 100,
+            "icon": "📊"
+        }
+    }
+    await asyncio.sleep(1)
+    
+    # Second status message
+    message = "Now analyzing the collected data...".split(" ")
+    for token in message:
+        yield {"token": token, "metadata": {"type": "status"}}
+        await asyncio.sleep(0.2)
+    
+    # Second status update
+    yield {
+        "status": {
+            "id": "update-2",
+            "timestamp": datetime.now().isoformat(),
+            "title": "Analysis",
+            "status": "current",
+            "details": "Processing and analyzing the collected data",
+            "progress": 60,
+            "icon": "🔍"
+        }
+    }
+    await asyncio.sleep(1)
+    
+    # Final status message
+    yield {"token": "Analysis complete. Generating insights...", "metadata": {"type": "status"}}
+    await asyncio.sleep(1)
+    
+    # Final status update
+    yield {
+        "status": {
+            "id": "update-3",
+            "timestamp": datetime.now().isoformat(),
+            "title": "Insight Generation",
+            "status": "pending",
+            "details": "Will generate actionable insights from the analysis",
+            "progress": 0,
+            "icon": "💡"
+        }
+    }
 
 
 @router.get("/stream")

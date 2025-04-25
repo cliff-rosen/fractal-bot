@@ -3,7 +3,17 @@ export type Status = 'completed' | 'current' | 'pending' | 'failed';
 export type AssetStatus = 'pendingCompletion' | 'pendingApproval' | 'ready' | 'archived' | 'error';
 
 // Workspace types
-export type WorkspaceType = 'proposedMission' | 'proposedWorkflowDesign' | 'workflowStepStatus' | 'stepDetails' | 'thinking';
+export type WorkspaceType = 'proposedMission' | 'proposedWorkflowDesign' | 'workflowStepStatus' | 'stepDetails' | 'thinking' | 'progressUpdate';
+
+export type ProgressUpdate = {
+    id: string;
+    timestamp: string;
+    title: string;
+    status: Status;
+    details: string;
+    progress?: number; // Optional progress percentage (0-100)
+    icon?: string; // Optional icon name
+};
 
 export type Workspace = {
     id: string;
@@ -16,6 +26,7 @@ export type Workspace = {
         mission?: Mission;
         workflow?: Workflow;
         assets?: Asset[];
+        progressUpdates?: ProgressUpdate[]; // Array of progress updates
     };
     actionButtons?: {
         label: string;
