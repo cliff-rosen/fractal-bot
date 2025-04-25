@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
 import type { ChatMessage } from '../types/index';
-import { botApi } from '@/lib/api/botApi';
-import { useToast } from '@/components/ui/use-toast';
 
 interface ChatProps {
     messages: ChatMessage[];
@@ -15,7 +13,6 @@ export default function Chat({ messages, onNewMessage, streamingMessage }: ChatP
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const { toast } = useToast();
 
     useEffect(() => {
         inputRef.current?.focus();
@@ -41,14 +38,14 @@ export default function Chat({ messages, onNewMessage, streamingMessage }: ChatP
             timestamp: new Date().toISOString()
         };
 
-        onNewMessage(userMessage);
+        await onNewMessage(userMessage);
 
         setIsLoading(false);
-            // Use setTimeout to ensure focus happens after the DOM updates
-            setTimeout(() => {
-                inputRef.current?.focus();
-            }, 0);
-        
+        // Use setTimeout to ensure focus happens after the DOM updates
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 0);
+
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {

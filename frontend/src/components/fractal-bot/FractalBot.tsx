@@ -18,15 +18,7 @@ export default function App() {
 
     setMessages((prevMessages) => [...prevMessages, message]);
 
-
     try {
-      // Create a temporary message for streaming
-      const tempBotMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: '',
-        timestamp: new Date().toISOString()
-      };
 
       // Start streaming
       let finalContent = '';
@@ -52,8 +44,10 @@ export default function App() {
 
       // Update the final message with the complete content
       const finalMessage: ChatMessage = {
-        ...tempBotMessage,
-        content: finalContent
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: finalContent,
+        timestamp: new Date().toISOString()
       };
       setMessages((prevMessages) => [...prevMessages, finalMessage]);
 
