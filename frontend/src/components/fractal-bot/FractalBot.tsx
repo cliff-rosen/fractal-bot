@@ -6,14 +6,63 @@ import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import { mockDataSnapshots } from './mocks/data';
 import { ChatMessage } from './types/index';
+import { botApi } from '@/lib/api/botApi';
 
 export default function App() {
   const [currentDataSnapshotIdx, setCurrentDataSnapshotIdx] = useState(0);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [streamingMessage, setStreamingMessage] = useState<string>('');
 
-  const handleNewMessage = (message: ChatMessage) => {
+  const handleSendMessage = async (message: ChatMessage) => {
+
     setMessages((prevMessages) => [...prevMessages, message]);
+
+
+    try {
+      // Create a temporary message for streaming
+      const tempBotMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '',
+        timestamp: new Date().toISOString()
+      };
+
+      // Start streaming
+      let finalContent = '';
+      for await (const update of botApi.streamNessage()) {
+        // Parse the SSE data
+        const lines = update.data.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6); // Remove 'data: ' prefix
+            try {
+              const data = JSON.parse(jsonStr);
+              if (data.token) {
+                console.log('data.token', data.token);
+                setStreamingMessage(prev => prev + data.token + ' ');
+                finalContent += ' ' + data.token;
+              }
+            } catch (e) {
+              console.warn('Failed to parse SSE data:', e);
+            }
+          }
+        }
+      }
+
+      // Update the final message with the complete content
+      const finalMessage: ChatMessage = {
+        ...tempBotMessage,
+        content: finalContent
+      };
+      setMessages((prevMessages) => [...prevMessages, finalMessage]);
+
+    } catch (error) {
+      console.error('Error streaming message:', error);
+    } finally {
+      setStreamingMessage('');
+      // Use setTimeout to ensure focus happens after the DOM updates
+    }
   };
 
   return (
@@ -25,7 +74,8 @@ export default function App() {
           <div key="chat-rail" className="col-span-3 h-full overflow-hidden">
             <Chat
               messages={messages}
-              onNewMessage={handleNewMessage}
+              streamingMessage={streamingMessage}
+              onNewMessage={handleSendMessage}
             />
           </div>
 

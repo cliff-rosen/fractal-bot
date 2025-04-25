@@ -66,8 +66,6 @@ async def bot_stream(request: Request):
     return EventSourceResponse(event_generator())
 
 
-
-
 @router.get("/run_bot_1", response_model=ChatResponse)
 async def run_bot_1():
 

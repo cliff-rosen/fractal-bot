@@ -6,13 +6,13 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface ChatProps {
     messages: ChatMessage[];
+    streamingMessage: string;
     onNewMessage: (message: ChatMessage) => void;
 }
 
-export default function Chat({ messages, onNewMessage }: ChatProps) {
+export default function Chat({ messages, onNewMessage, streamingMessage }: ChatProps) {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [streamingMessage, setStreamingMessage] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
@@ -31,6 +31,8 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
 
     const handleSendMessage = async () => {
         if (!input.trim() || isLoading) return;
+        setInput('');
+        setIsLoading(true);
 
         const userMessage: ChatMessage = {
             id: Date.now().toString(),
@@ -40,62 +42,13 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
         };
 
         onNewMessage(userMessage);
-        setInput('');
-        setIsLoading(true);
-        setStreamingMessage('');
 
-        try {
-            // Create a temporary message for streaming
-            const tempBotMessage: ChatMessage = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: '',
-                timestamp: new Date().toISOString()
-            };
-
-            // Start streaming
-            let finalContent = '';
-            for await (const update of botApi.streamNessage()) {
-                // Parse the SSE data
-                const lines = update.data.split('\n');
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const jsonStr = line.slice(6); // Remove 'data: ' prefix
-                        try {
-                            const data = JSON.parse(jsonStr);
-                            if (data.token) {
-                                setStreamingMessage(prev => prev + data.token + ' ');
-                                finalContent += ' ' + data.token;
-                            }
-                        } catch (e) {
-                            console.warn('Failed to parse SSE data:', e);
-                        }
-                    }
-                }
-            }
-
-            // Update the final message with the complete content
-            const finalMessage: ChatMessage = {
-                ...tempBotMessage,
-                content: finalContent
-            };
-            onNewMessage(finalMessage);
-
-        } catch (error) {
-            console.error('Error streaming message:', error);
-            toast({
-                title: "Error",
-                description: "Failed to stream message. Please try again.",
-                variant: "destructive",
-            });
-        } finally {
-            setIsLoading(false);
-            setStreamingMessage('');
+        setIsLoading(false);
             // Use setTimeout to ensure focus happens after the DOM updates
             setTimeout(() => {
                 inputRef.current?.focus();
             }, 0);
-        }
+        
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
