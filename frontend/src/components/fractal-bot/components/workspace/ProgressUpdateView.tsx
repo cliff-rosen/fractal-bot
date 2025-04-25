@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProgressUpdate } from '../types';
+import { ProgressUpdate } from '../../types';
 import { format } from 'date-fns';
 
 interface ProgressUpdateViewProps {
@@ -7,6 +7,8 @@ interface ProgressUpdateViewProps {
 }
 
 const ProgressUpdateView: React.FC<ProgressUpdateViewProps> = ({ updates }) => {
+
+    console.log('updates', updates);
     return (
         <div className="space-y-4">
             {updates.map((update) => (

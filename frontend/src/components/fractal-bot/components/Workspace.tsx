@@ -1,10 +1,10 @@
 import React from 'react';
 import { FileText, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import type { Workspace as WorkspaceType, Asset } from '../types';
-import ProposedMission from './ProposedMission';
-import ProposedWorkflow from './ProposedWorkflow';
+import ProposedMission from './workspace/ProposedMission';
+import ProposedWorkflow from './workspace/ProposedWorkflow';
 import StepDetails from './workflow/StepDetails';
-import ProgressUpdateView from './ProgressUpdateView';
+import ProgressUpdateView from './workspace/ProgressUpdateView';
 
 interface WorkspaceProps {
     workspace: WorkspaceType;
@@ -81,7 +81,6 @@ const Workspace: React.FC<WorkspaceProps> = ({ workspace }) => {
             case 'progressUpdate':
                 return (
                     <div className="p-6">
-                        <h2 className="text-2xl font-bold mb-6">{workspace.title}</h2>
                         {workspace.content?.progressUpdates && (
                             <ProgressUpdateView updates={workspace.content.progressUpdates} />
                         )}

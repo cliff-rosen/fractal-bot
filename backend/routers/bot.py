@@ -37,10 +37,8 @@ async def generate_stream():
         "status": {
             "id": "update-1",
             "timestamp": datetime.now().isoformat(),
-            "title": "Data Collection",
-            "status": "completed",
-            "details": "Successfully collected all required data points",
-            "progress": 100,
+            "title": "Update from the agent",
+            "details": "This is the first status update",
             "icon": "📊"
         }
     }
@@ -56,10 +54,8 @@ async def generate_stream():
         "status": {
             "id": "update-2",
             "timestamp": datetime.now().isoformat(),
-            "title": "Analysis",
-            "status": "current",
-            "content": "Processing and analyzing the collected data",
-            "progress": 60,
+            "title": "Update from the agent",
+            "details": "This is the second status update",
             "icon": "🔍"
         }
     }
@@ -75,10 +71,8 @@ async def generate_stream():
         "status": {
             "id": "update-3",
             "timestamp": datetime.now().isoformat(),
-            "title": "Insight Generation",
-            "status": "pending",
-            "content": "Will generate actionable insights from the analysis",
-            "progress": 0,
+            "title": "Update from the agent",
+            "details": "This is the third status update",
             "icon": "💡"
         }
     }

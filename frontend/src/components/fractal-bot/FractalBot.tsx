@@ -21,27 +21,22 @@ export default function App() {
     setMessages((prevMessages) => [...prevMessages, message]);
 
     try {
-
-      // Start streaming
       let finalContent = '';
       for await (const update of botApi.streamNessage()) {
-        // Parse the SSE data
         const lines = update.data.split('\n');
         for (const line of lines) {
-          console.log('line', line);
-
           if (line.startsWith('data: ')) {
             const jsonStr = line.slice(6); // Remove 'data: ' prefix
             try {
               const data = JSON.parse(jsonStr);
               if (data.token) {
-                console.log('data.token', data.token);
                 setStreamingMessage(prev => prev + data.token + ' ');
                 finalContent += ' ' + data.token;
               }
               if (data.status) {
-                console.log('data.status', data.status);
-                setCurrentWorkspaceObj(data.status);
+                const newStatusMessage = data.status;
+                const newContent = [{ ...currentWorkspaceObj.content, progressUpdates: [newStatusMessage] }];
+                setCurrentWorkspaceObj((prev) => ({ ...prev, content: newContent }));
               }
             } catch (e) {
               console.warn('Failed to parse SSE data:', e);
