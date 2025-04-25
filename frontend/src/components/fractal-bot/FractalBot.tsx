@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { ChatSection } from './components/ChatSection';
 import { AssetsSection } from './components/AssetsSection';
-import { AgentsSection } from './components/AgentsSection';
-import { AssetModal } from './components/AssetModal';
 import { Asset, FileType, DataType, AssetStatus } from '@/types/asset';
 import { Agent } from '@/types/agent';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { useToast } from '@/components/ui/use-toast';
 import { getFileType, getDataType } from '@/lib/utils/assets/assetUtils';
+import Mission from './components/Mission';
+import Workflow from './components/Workflow';
+import Workspace from './components/Workspace';
+import { mockDataSnapshots } from './types/data';
 
 const FractalBotContent: React.FC = () => {
     const [inputMessage, setInputMessage] = useState('');
@@ -15,6 +17,8 @@ const FractalBotContent: React.FC = () => {
     const { state, processMessage, removeAsset, addAsset, updateAsset, saveAsset } = useFractalBot();
     const { messages, agents, assets } = state;
     const { toast } = useToast();
+
+    const currentDataSnapshotIdx = 0;
 
     const handleSendMessage = async (message: string) => {
         setInputMessage('');
@@ -169,50 +173,51 @@ const FractalBotContent: React.FC = () => {
     };
 
     return (
-        <div className="flex h-screen gap-4 p-4 bg-gray-50 dark:bg-gray-900">
-            {/* Left Panel: Chat */}
-            <div className="w-[500px] flex-shrink-0 h-full">
-                <ChatSection
-                    messages={messages}
-                    inputMessage={inputMessage}
-                    isProcessing={state.metadata.isProcessing}
-                    onSendMessage={handleSendMessage}
-                    onInputChange={setInputMessage}
-                />
-            </div>
+        <div className="flex-1 min-h-0 pt-14">
+            <div className="grid grid-cols-12 gap-6 h-full">
+                {/* Left Chat Rail (cols 1-3) */}
+                <div className="col-span-3 h-full overflow-hidden">
+                    <ChatSection
+                        messages={messages}
+                        inputMessage={inputMessage}
+                        isProcessing={state.metadata.isProcessing}
+                        onSendMessage={handleSendMessage}
+                        onInputChange={setInputMessage}
+                    />
+                </div>
 
-            {/* Middle Panel: Assets */}
-            <div className="flex-1 min-w-[400px]">
-                <AssetsSection
-                    assets={assets}
-                    onAssetClick={handleAssetClick}
-                    onDeleteAsset={handleDeleteAsset}
-                    onUploadAndAddAsset={handleUploadAndAddAsset}
-                    onRetrieveAsset={handleRetrieveAsset}
-                />
-            </div>
+                {/* Main Content Area (cols 4-9) */}
+                <div className="col-span-6 h-full flex flex-col">
+                    {/* Mission Header */}
+                    <div className="sticky top-14 z-30 bg-white shadow-lg rounded-2xl p-6 mb-6">
+                        <Mission mission={mockDataSnapshots[currentDataSnapshotIdx].mission} />
+                    </div>
 
-            {/* Right Panel: Agents */}
-            <div className="w-[450px] flex-shrink-0">
-                <AgentsSection
-                    agents={Object.values(agents)}
-                    onAgentClick={handleAgentClick}
-                    onApproveAgent={handleApproveAgent}
-                />
-            </div>
+                    {/* Stage Tracker */}
+                    <div className="mb-6">
+                        <Workflow
+                            workflow={mockDataSnapshots[currentDataSnapshotIdx].mission.workflow}
+                            workspaceState={mockDataSnapshots[currentDataSnapshotIdx].workspaceState}
+                        />
+                    </div>
 
-            {/* Asset Modal */}
-            {selectedAsset && (
-                <AssetModal
-                    asset={selectedAsset}
-                    onClose={() => setSelectedAsset(null)}
-                    onSaveToDb={handleSaveAsset}
-                    onUpdate={(updatedAsset) => {
-                        updateAsset(updatedAsset.asset_id, updatedAsset);
-                        setSelectedAsset(updatedAsset);
-                    }}
-                />
-            )}
+                    {/* Workspace Canvas */}
+                    <div className="flex-1 overflow-y-auto">
+                        <Workspace workspace={mockDataSnapshots[currentDataSnapshotIdx].workspace} />
+                    </div>
+                </div>
+
+                {/* Right Assets Rail (cols 10-12) */}
+                <div className="col-span-3 h-full overflow-hidden">
+                    <AssetsSection
+                        assets={assets}
+                        onAssetClick={handleAssetClick}
+                        onDeleteAsset={handleDeleteAsset}
+                        onUploadAndAddAsset={handleUploadAndAddAsset}
+                        onRetrieveAsset={handleRetrieveAsset}
+                    />
+                </div>
+            </div>
         </div>
     );
 };
