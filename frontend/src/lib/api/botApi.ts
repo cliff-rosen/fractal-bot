@@ -1,10 +1,11 @@
 import { Message, ChatResponse, Asset } from '../../components/fractal-bot/types/state';
 import { api, handleApiError } from './index';
+import { makeStreamRequest, StreamUpdate } from './streamUtils';
 
 export interface MessageHistory {
     role: string;
     content: string;
-    timestamp: Date;
+    timestamp: string;
 }
 
 export interface SendMessageRequest {
@@ -28,7 +29,7 @@ export const botApi = {
             const messageHistory: MessageHistory[] = history.map(msg => ({
                 role: msg.role,
                 content: msg.content,
-                timestamp: msg.timestamp
+                timestamp: msg.timestamp.toISOString()
             }));
 
             const response = await api.post<SendMessageResponse>('/api/bot/run', {
@@ -41,5 +42,9 @@ export const botApi = {
             console.error('Error sending message:', error);
             throw new Error(handleApiError(error));
         }
+    },
+
+    stream: async function* (): AsyncGenerator<StreamUpdate> {
+        yield* makeStreamRequest('/api/bot/stream', {});
     }
 }; 

@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Dict, Any
+import asyncio
+import json
+from sse_starlette.sse import EventSourceResponse
 
 from database import get_db
 from services.bot_service import BotService
@@ -21,6 +24,48 @@ class BotRequest(BaseModel):
     message: str
     history: List[MessageHistory] = []
     assets: List[Asset] = []
+
+async def generate_stream():
+    """A sample streaming node that simulates an LLM generating tokens"""
+    source = 'Hello, how are you there?'
+    words = source.split()
+    for word in words:
+        # Simulate token generation delay
+        await asyncio.sleep(.2)
+        yield {"token": word, "metadata": {"temperature": 0.7}}
+
+
+@router.get("/stream")
+async def bot_stream(request: Request):
+    """Endpoint that streams responses from the graph"""
+    
+    async def event_generator():
+        """Generate SSE events from graph outputs"""
+        try:
+            # Directly iterate over the async generator
+            async for chunk in generate_stream():
+                # Convert chunk to JSON and yield as SSE event
+                yield {
+                    "event": "message",
+                    "data": json.dumps(chunk)
+                }
+                
+            # Send completion event
+            yield {
+                "event": "complete",
+                "data": json.dumps({"status": "complete"})
+            }
+                
+        except Exception as e:
+            # Handle errors
+            yield {
+                "event": "error",
+                "data": json.dumps({"status": "error", "message": str(e)})
+            }
+    
+    return EventSourceResponse(event_generator())
+
+
 
 
 @router.get("/run_bot_1", response_model=ChatResponse)
