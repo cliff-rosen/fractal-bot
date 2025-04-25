@@ -52,7 +52,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ workspace }) => {
 
     const renderContent = () => {
         if (!workspace.content) return null;
-
+        console.log('workspace', workspace);
         switch (workspace.type) {
             case 'proposedMission':
                 if (workspace.content.mission) {

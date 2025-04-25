@@ -35,7 +35,8 @@ export default function App() {
               }
               if (data.status) {
                 const newStatusMessage = data.status;
-                const newContent = [{ ...currentWorkspaceObj.content, progressUpdates: [newStatusMessage] }];
+                const currentContent = currentWorkspaceObj.content;
+                const newContent = { ...currentContent, progressUpdates: [newStatusMessage] };
                 setCurrentWorkspaceObj((prev) => ({ ...prev, content: newContent }));
               }
             } catch (e) {
