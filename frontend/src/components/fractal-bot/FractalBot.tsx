@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Header from './components/Header';
 import Chat from './components/Chat';
 import Mission from './components/Mission';
 import Workflow from './components/Workflow';
@@ -25,7 +24,7 @@ export default function App() {
           {/* Main Content Area (cols 4-9) */}
           <div className="col-span-6 h-full flex flex-col">
             {/* Mission Header */}
-            <div className="sticky top-14 z-30 bg-white shadow-lg rounded-2xl p-6 mb-6">
+            <div className="sticky top-14 z-30 bg-white dark:bg-[#1e2330] shadow-lg rounded-2xl p-6 mb-6">
               <Mission mission={mockDataSnapshots[currentDataSnapshotIdx].mission} />
             </div>
 

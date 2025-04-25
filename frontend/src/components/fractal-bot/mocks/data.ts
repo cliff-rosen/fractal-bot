@@ -1,4 +1,4 @@
-import { Mission, Stage, Step, Asset, ChatMessage, Workspace, Workflow, WorkspaceState } from '../types';
+import { Mission, Stage, Step, Asset, ChatMessage, Workspace, Workflow, WorkspaceState } from '../types/index';
 import { mockDataSnapshot0 } from './mockDataSnapshot0';
 import { mockDataSnapshot1 } from './mockDataSnapshot1';
 import { mockDataSnapshot2 } from './mockDataSnapshot2';

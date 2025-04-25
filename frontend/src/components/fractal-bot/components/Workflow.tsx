@@ -14,15 +14,15 @@ export default function Workflow({ className = '', workflow, workspaceState }: W
     const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('compact');
 
     return (
-        <div className={`bg-white rounded-2xl shadow p-6 ${className}`}>
+        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow p-6 ${className}`}>
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Workflow Stages</h2>
+                <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow Stages</h2>
                 <div className="flex space-x-2">
                     <button
                         onClick={() => setViewMode('compact')}
                         className={`p-2 rounded-lg ${viewMode === 'compact'
-                            ? 'bg-blue-50 text-blue-600'
-                            : 'text-gray-400 hover:bg-gray-50'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                            : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                     >
                         <LayoutGrid className="w-5 h-5" />
@@ -30,8 +30,8 @@ export default function Workflow({ className = '', workflow, workspaceState }: W
                     <button
                         onClick={() => setViewMode('expanded')}
                         className={`p-2 rounded-lg ${viewMode === 'expanded'
-                            ? 'bg-blue-50 text-blue-600'
-                            : 'text-gray-400 hover:bg-gray-50'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                            : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                     >
                         <List className="w-5 h-5" />

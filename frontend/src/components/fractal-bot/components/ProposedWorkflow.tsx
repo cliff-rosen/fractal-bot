@@ -9,24 +9,24 @@ export default function ProposedWorkflow({ workflow }: ProposedWorkflowProps) {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Proposed Workflow</h2>
-                <h1 className="text-2xl font-semibold text-gray-900 mt-1">{workflow.name}</h1>
-                <p className="mt-3 text-gray-600 leading-relaxed">
+                <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Proposed Workflow</h2>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-200 mt-1">{workflow.name}</h1>
+                <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
                     {workflow.description}
                 </p>
             </div>
 
             <div className="mt-6">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Stages</h3>
+                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stages</h3>
                 <div className="mt-2 space-y-4">
                     {workflow.stages.map((stage, index) => (
-                        <div key={stage.id} className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="text-sm font-medium text-gray-900">{stage.name}</h4>
-                            <p className="mt-1 text-sm text-gray-600">{stage.description}</p>
-                            <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                        <div key={stage.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200">{stage.name}</h4>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{stage.description}</p>
+                            <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
                                 {stage.steps.map((step, stepIndex) => (
                                     <li key={step.id} className="flex items-center">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></span>
+                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
                                         {step.name}
                                     </li>
                                 ))}

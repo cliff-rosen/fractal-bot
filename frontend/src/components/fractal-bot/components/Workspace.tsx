@@ -83,17 +83,17 @@ export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow">
+        <div className="bg-white dark:bg-[#1e2330] rounded-2xl shadow">
             {/* Header */}
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Workspace</h2>
-                        <h3 className="text-lg font-medium text-gray-800 mt-1">{workspace.title}</h3>
+                        <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workspace</h2>
+                        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mt-1">{workspace.title}</h3>
                     </div>
                     <div className="flex items-center space-x-2">
                         {getStatusIcon(workspace.status)}
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(workspace.status)}`}>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(workspace.status)} dark:bg-opacity-20`}>
                             {getStatusText(workspace.status)}
                         </span>
                     </div>
@@ -101,18 +101,18 @@ export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
             </div>
 
             {/* Content Area */}
-            <div className="p-6">
+            <div className="p-6 dark:bg-[#1e2330]">
                 {renderContent()}
 
                 {workspace.content?.assets && workspace.content.assets.length > 0 && (
                     <div className="grid grid-cols-2 gap-4 mt-6">
                         {workspace.content.assets.map(asset => (
-                            <div key={asset.id} className="p-4 bg-gray-50 rounded-lg">
+                            <div key={asset.id} className="p-4 bg-gray-50 dark:bg-[#252b3b] rounded-lg">
                                 <div className="flex items-center space-x-3">
-                                    <FileText className="w-5 h-5 text-gray-400" />
+                                    <FileText className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                                     <div>
-                                        <h4 className="text-sm font-medium text-gray-900">{asset.name}</h4>
-                                        <p className="text-xs text-gray-500">{asset.type}</p>
+                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200">{asset.name}</h4>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{asset.type}</p>
                                     </div>
                                 </div>
                             </div>
@@ -123,17 +123,17 @@ export default function WorkspaceView({ workspace }: WorkspaceViewProps) {
 
             {/* Action Buttons */}
             {workspace.actionButtons && workspace.actionButtons.length > 0 && (
-                <div className="p-6 border-t border-gray-100 flex justify-end space-x-3">
+                <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
                     {workspace.actionButtons.map((button, index) => (
                         <button
                             key={index}
                             onClick={button.onClick}
                             disabled={button.disabled}
                             className={`px-6 py-2 rounded-lg transition-colors border ${button.variant === 'primary'
-                                ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border-emerald-100 dark:border-emerald-800'
                                 : button.variant === 'danger'
-                                    ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-100'
-                                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-gray-200'
+                                    ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 border-red-100 dark:border-red-800'
+                                    : 'bg-gray-50 dark:bg-[#252b3b] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'
                                 } ${button.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {button.label}

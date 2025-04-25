@@ -19,6 +19,20 @@ class BotRequest(BaseModel):
     history: List[MessageHistory] = []
     assets: List[Asset] = []
 
+
+@router.get("/test", response_model=ChatResponse)
+async def test_bot_response():
+    return ChatResponse(
+        message=Message(
+            message_id="1",
+            role=MessageRole.ASSISTANT,
+            content="Hello, how are you?",
+            timestamp=datetime.now()
+        )
+    )
+
+
+
 @router.post("/run", response_model=ChatResponse)
 async def run_bot(
     request: BotRequest,

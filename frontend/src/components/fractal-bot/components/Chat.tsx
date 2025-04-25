@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
-import type { ChatMessage } from '../types';
+import type { ChatMessage } from '../types/index';
 
 interface ChatProps {
     messages: ChatMessage[];
@@ -19,9 +19,9 @@ export default function Chat({ messages }: ChatProps) {
     }, [messages]);
 
     return (
-        <div className="h-full flex flex-col bg-white rounded-lg shadow-sm">
-            <div className="px-4 py-3 border-b">
-                <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Chat</h2>
+        <div className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+            <div className="px-4 py-3 border-b dark:border-gray-700">
+                <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Chat</h2>
             </div>
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -33,7 +33,7 @@ export default function Chat({ messages }: ChatProps) {
                         <div
                             className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
                                 ? 'bg-blue-500 text-white'
-                                : 'bg-gray-100 text-gray-800'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                                 }`}
                         >
                             {message.content}
@@ -44,18 +44,18 @@ export default function Chat({ messages }: ChatProps) {
             </div>
 
             {/* Input Area */}
-            <div className="border-t p-4">
+            <div className="border-t dark:border-gray-700 p-4">
                 <div className="flex items-center space-x-2">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 p-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     />
                     <button
                         onClick={() => setInput('')}
-                        className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                     >
                         <Send className="w-5 h-5" />
                     </button>
