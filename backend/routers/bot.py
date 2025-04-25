@@ -20,14 +20,13 @@ class BotRequest(BaseModel):
     assets: List[Asset] = []
 
 
-@router.get("/test", response_model=ChatResponse)
-async def test_bot_response():
+@router.get("/run_bot_1", response_model=ChatResponse)
+async def run_bot_1():
     return ChatResponse(
-        message=Message(
-            message_id="1",
+        message=Message.create(
+            id="1",
             role=MessageRole.ASSISTANT,
-            content="Hello, how are you?",
-            timestamp=datetime.now()
+            content="I am bot 1"
         )
     )
 

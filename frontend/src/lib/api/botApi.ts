@@ -16,6 +16,12 @@ export interface SendMessageRequest {
 export interface SendMessageResponse extends ChatResponse { }
 
 export const botApi = {
+
+    runBot1: async (): Promise<SendMessageResponse> => {
+        const response = await api.get<SendMessageResponse>('/api/bot/run_bot_1');
+        return response.data;
+    },
+
     sendMessage: async (message: string, history: Message[], assets: Asset[]): Promise<SendMessageResponse> => {
         try {
             // Convert Message[] to MessageHistory[]

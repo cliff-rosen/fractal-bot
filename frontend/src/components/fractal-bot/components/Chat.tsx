@@ -1,14 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
 import type { ChatMessage } from '../types/index';
+import { botApi } from '@/lib/api/botApi';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ChatProps {
     messages: ChatMessage[];
+    onNewMessage: (message: ChatMessage) => void;
 }
 
-export default function Chat({ messages }: ChatProps) {
+export default function Chat({ messages, onNewMessage }: ChatProps) {
     const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { toast } = useToast();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -17,6 +22,54 @@ export default function Chat({ messages }: ChatProps) {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    const convertMessageToChatMessage = (message: any): ChatMessage => {
+        return {
+            id: message.id,
+            role: message.role.toLowerCase() as 'user' | 'assistant',
+            content: message.content,
+            timestamp: typeof message.timestamp === 'string'
+                ? message.timestamp
+                : message.timestamp.toISOString()
+        };
+    };
+
+    const handleSendMessage = async () => {
+        if (!input.trim() || isLoading) return;
+
+        const userMessage: ChatMessage = {
+            id: Date.now().toString(),
+            role: 'user',
+            content: input,
+            timestamp: new Date().toISOString()
+        };
+
+        onNewMessage(userMessage);
+        setInput('');
+        setIsLoading(true);
+
+        try {
+            const response = await botApi.runBot1();
+            const botMessage = convertMessageToChatMessage(response.message);
+            onNewMessage(botMessage);
+        } catch (error) {
+            console.log('error', error);
+            toast({
+                title: "Error",
+                description: "Failed to send message. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
 
     return (
         <div className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
@@ -50,12 +103,15 @@ export default function Chat({ messages }: ChatProps) {
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
                         placeholder="Type a message..."
                         className="flex-1 p-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                        disabled={isLoading}
                     />
                     <button
-                        onClick={() => setInput('')}
-                        className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        onClick={handleSendMessage}
+                        disabled={isLoading || !input.trim()}
+                        className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
                     >
                         <Send className="w-5 h-5" />
                     </button>

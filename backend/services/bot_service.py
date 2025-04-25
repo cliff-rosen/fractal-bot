@@ -283,11 +283,10 @@ class BotService:
                              tool_use_history: List[Dict[str, Any]]) -> ChatResponse:
         """Create final chat response"""
         return ChatResponse(
-            message=Message(
-                message_id=str(uuid.uuid4()),
+            message=Message.create(
+                id=str(uuid.uuid4()),
                 role=MessageRole.ASSISTANT,
                 content=response,
-                timestamp=datetime.now(),
                 metadata=self._get_message_metadata(processed_response)
             ),
             sideEffects={
