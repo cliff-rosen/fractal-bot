@@ -7,6 +7,7 @@ import time
 import random
 import operator
 from serpapi import GoogleSearch
+import uuid
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -20,19 +21,10 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import StreamWriter, Send
 
+from schemas.bot import Message, ChatResponse, MessageRole
+import os
 
-from ..config.settings import (
-    DEFAULT_MODEL,
-    MAX_ITERATIONS,  
-    SCORE_THRESHOLD,
-    IMPROVEMENT_THRESHOLD,
-    MAX_SEARCH_RESULTS,
-    LOG_LEVEL,
-    LOG_FORMAT,
-    TAVILY_API_KEY,
-    OPENAI_API_KEY,
-    SERPAPI_API_KEY
-)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 from .utils.prompts import (
     create_question_improvement_prompt
@@ -40,7 +32,7 @@ from .utils.prompts import (
 
 class State(TypedDict):
     """State for the RAVE workflow"""
-    messages: Annotated[list, add_messages]
+    messages: List[Message]
 
 def validate_state(state: State) -> bool:
     """Validate the state before processing"""
@@ -57,7 +49,7 @@ def getModel(node_name: str, config: Dict[str, Any], writer: Optional[Callable] 
     Returns:
         ChatOpenAI instance configured with the appropriate model
     """
-    model_name = DEFAULT_MODEL
+    model_name = "gpt-4o-mini"
     
     
     # Create base model configuration
@@ -69,6 +61,21 @@ def getModel(node_name: str, config: Dict[str, Any], writer: Optional[Callable] 
     return ChatOpenAI(**chat_config)
 
 ### Nodes
+
+async def mock_llm(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
+    """Mock LLM"""
+    if writer:
+        writer({"msg": "Mock LLM"})
+
+    message = Message(
+        id=str(uuid.uuid4()),
+        role=MessageRole.ASSISTANT,
+        content="Hello, how are you?",
+        timestamp=datetime.now().isoformat()
+    )
+
+    return {"messages": [message]}
+
 def improve_question(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Improve the question for clarity and completeness"""
     writer({"msg": "Improving question for clarity and completeness..."})
@@ -98,10 +105,10 @@ def improve_question(state: State, writer: StreamWriter, config: Dict[str, Any])
 graph_builder = StateGraph(State)
 
 # Add nodes
-graph_builder.add_node("improve_question", improve_question)
+graph_builder.add_node("mock_llm", mock_llm)
 
 # Add edges
-graph_builder.add_edge(START, "improve_question")
+graph_builder.add_edge(START, "mock_llm")
 
 # Compile the graph
 compiled = graph_builder.compile()

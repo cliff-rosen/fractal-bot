@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db
-from services.bot_service import BotService
-from schemas import Message, ChatResponse, MessageRole, Asset
 from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Dict, Any
+
+from database import get_db
+from services.bot_service import BotService
+from schemas import Message, ChatResponse, MessageRole, Asset
+from agents.simple_agent import graph, State
+import uuid
 
 router = APIRouter(prefix="/api/bot", tags=["bot"])
 
@@ -22,14 +25,23 @@ class BotRequest(BaseModel):
 
 @router.get("/run_bot_1", response_model=ChatResponse)
 async def run_bot_1():
-    return ChatResponse(
-        message=Message.create(
-            id="1",
-            role=MessageRole.ASSISTANT,
-            content="I am bot 1"
-        )
+
+    id = str(uuid.uuid4())
+    timestamp = datetime.now().isoformat()
+    messages = [
+        Message(id=id, role=MessageRole.USER, content="Hello, how are you?", timestamp=timestamp)
+    ]
+
+    response = await graph.ainvoke({"messages": messages}, stream_mode="values")
+    
+    # Transform the response into a ChatResponse
+    chat_response = ChatResponse(
+        message=response["messages"][0],
+        status="success",
+        error=None
     )
 
+    return chat_response
 
 
 @router.post("/run", response_model=ChatResponse)
