@@ -14,7 +14,12 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [streamingMessage, setStreamingMessage] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
+
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -23,17 +28,6 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
     useEffect(() => {
         scrollToBottom();
     }, [messages, streamingMessage]);
-
-    const convertMessageToChatMessage = (message: any): ChatMessage => {
-        return {
-            id: message.id,
-            role: message.role.toLowerCase() as 'user' | 'assistant',
-            content: message.content,
-            timestamp: typeof message.timestamp === 'string'
-                ? message.timestamp
-                : message.timestamp.toISOString()
-        };
-    };
 
     const handleSendMessage = async () => {
         if (!input.trim() || isLoading) return;
@@ -58,10 +52,10 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
                 content: '',
                 timestamp: new Date().toISOString()
             };
-            onNewMessage(tempBotMessage);
 
             // Start streaming
-            for await (const update of botApi.stream()) {
+            let finalContent = '';
+            for await (const update of botApi.streamNessage()) {
                 // Parse the SSE data
                 const lines = update.data.split('\n');
                 for (const line of lines) {
@@ -71,6 +65,7 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
                             const data = JSON.parse(jsonStr);
                             if (data.token) {
                                 setStreamingMessage(prev => prev + data.token + ' ');
+                                finalContent += ' ' + data.token;
                             }
                         } catch (e) {
                             console.warn('Failed to parse SSE data:', e);
@@ -82,7 +77,7 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
             // Update the final message with the complete content
             const finalMessage: ChatMessage = {
                 ...tempBotMessage,
-                content: streamingMessage.trim()
+                content: finalContent
             };
             onNewMessage(finalMessage);
 
@@ -96,6 +91,10 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
         } finally {
             setIsLoading(false);
             setStreamingMessage('');
+            // Use setTimeout to ensure focus happens after the DOM updates
+            setTimeout(() => {
+                inputRef.current?.focus();
+            }, 0);
         }
     };
 
@@ -142,6 +141,7 @@ export default function Chat({ messages, onNewMessage }: ChatProps) {
             <div className="p-4 border-t dark:border-gray-700">
                 <div className="flex items-center space-x-2">
                     <input
+                        ref={inputRef}
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
