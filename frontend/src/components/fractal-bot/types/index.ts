@@ -134,4 +134,11 @@ export type WorkspaceState = {
     // First element is the top-level step, last element is the current step
     currentStepPath: string[];
     viewMode: 'compact' | 'expanded';
+}
+
+export interface Tool {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
 } 

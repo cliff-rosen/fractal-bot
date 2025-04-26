@@ -1,4 +1,4 @@
-import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState } from './index';
+import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState, Tool } from './index';
 
 // default workspace object
 export const workspaceTemplate: Workspace = {
@@ -56,4 +56,49 @@ export const workspaceStateTemplate: WorkspaceState = {
 
 // default assets object
 export const assetsTemplate: Asset[] = [];
+
+export const toolsTemplate: Tool[] = [
+    {
+        id: 'web-search',
+        name: 'Web Search',
+        description: 'Search the web for information',
+        category: 'Search'
+    },
+    {
+        id: 'email-search',
+        name: 'Email Search',
+        description: 'Search through email content',
+        category: 'Search'
+    },
+    {
+        id: 'extract-info',
+        name: 'Extract Info',
+        description: 'Extract information from documents',
+        category: 'Document Processing'
+    },
+    {
+        id: 'add-to-kb',
+        name: 'Add to KB',
+        description: 'Add information to knowledge base',
+        category: 'Knowledge Base'
+    },
+    {
+        id: 'search-kb',
+        name: 'Search KB',
+        description: 'Search the knowledge base',
+        category: 'Knowledge Base'
+    },
+    {
+        id: 'generate-query',
+        name: 'Generate Query',
+        description: 'Generate optimized search queries',
+        category: 'Query Processing'
+    },
+    {
+        id: 'improve-question',
+        name: 'Improve Question',
+        description: 'Enhance and clarify questions',
+        category: 'Query Processing'
+    }
+];
 

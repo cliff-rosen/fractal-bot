@@ -4,12 +4,12 @@ import Mission from './components/Mission';
 import Workflow from './components/Workflow';
 import Workspace from './components/Workspace';
 import Assets from './components/Assets';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState } from './types/index';
+import Tools from './components/Tools';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool } from './types/index';
 import { getDataFromLine } from './utils/utils'
 import { botApi } from '@/lib/api/botApi';
-import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate } from './types/type-defaults';
+import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from './types/type-defaults';
 import { Message, MessageRole } from '@/types/message';
-
 
 export default function App() {
   const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>(workspaceTemplate);
@@ -19,7 +19,24 @@ export default function App() {
   const [currentWorkspaceState, setCurrentWorkspaceState] = useState<WorkspaceState>(workspaceStateTemplate);
   const [currentMessages, setCurrentMessages] = useState<ChatMessage[]>([]);
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState<string>('');
+  const [currentTools, setCurrentTools] = useState<Tool[]>(toolsTemplate);
+  const [selectedToolIds, setSelectedToolIds] = useState<string[]>([]);
 
+  const handleToolSelect = (toolId: string) => {
+    setSelectedToolIds(prev =>
+      prev.includes(toolId)
+        ? prev.filter(id => id !== toolId)
+        : [...prev, toolId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedToolIds(currentTools.map(tool => tool.id));
+  };
+
+  const handleClearAll = () => {
+    setSelectedToolIds([]);
+  };
 
   const handleSendMessage = async (message: ChatMessage) => {
     setCurrentMessages((prevMessages) => [...prevMessages, message]);
@@ -72,7 +89,6 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col">
-
       <div className="flex-1 min-h-0 pt-14">
         <div className="grid grid-cols-12 gap-6 h-full">
           {/* Left Chat Rail (cols 1-3) */}
@@ -105,9 +121,20 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Assets Rail (cols 10-12) */}
-          <div key="assets-rail" className="col-span-3 h-full overflow-hidden">
-            <Assets assets={currentAssets} />
+          {/* Right Rail (cols 10-12) */}
+          <div key="right-rail" className="col-span-3 h-full overflow-hidden flex flex-col">
+            <div className="h-1/2 overflow-y-auto">
+              <Tools
+                tools={currentTools}
+                selectedToolIds={selectedToolIds}
+                onToolSelect={handleToolSelect}
+                onSelectAll={handleSelectAll}
+                onClearAll={handleClearAll}
+              />
+            </div>
+            <div className="h-1/2 overflow-y-auto border-t dark:border-gray-700 mt-2">
+              <Assets assets={currentAssets} />
+            </div>
           </div>
         </div>
       </div>
