@@ -62,43 +62,242 @@ export const toolsTemplate: Tool[] = [
         id: 'web-search',
         name: 'Web Search',
         description: 'Search the web for information',
-        category: 'Search'
+        category: 'Search',
+        inputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Search Query',
+                description: 'The search terms to look for on the web'
+            }
+        ],
+        outputs: [
+            {
+                type: 'string',
+                is_array: true,
+                name: 'Search Results',
+                description: 'List of relevant web search results'
+            }
+        ]
     },
     {
         id: 'email-search',
         name: 'Email Search',
         description: 'Search through email content',
-        category: 'Search'
+        category: 'Search',
+        inputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Search Query',
+                description: 'The search terms to look for in emails'
+            }
+        ],
+        outputs: [
+            {
+                type: 'string',
+                is_array: true,
+                name: 'Email Results',
+                description: 'List of matching email content'
+            }
+        ]
     },
     {
         id: 'extract-info',
         name: 'Extract Info',
         description: 'Extract information from documents',
-        category: 'Document Processing'
+        category: 'Document Processing',
+        inputs: [
+            {
+                type: 'file',
+                is_array: false,
+                name: 'Document',
+                description: 'The document to extract information from'
+            }
+        ],
+        outputs: [
+            {
+                type: 'object',
+                is_array: false,
+                name: 'Extracted Information',
+                description: 'Structured data extracted from the document'
+            }
+        ]
     },
     {
         id: 'add-to-kb',
         name: 'Add to KB',
         description: 'Add information to knowledge base',
-        category: 'Knowledge Base'
+        category: 'Knowledge Base',
+        inputs: [
+            {
+                type: 'object',
+                is_array: false,
+                name: 'Knowledge Item',
+                description: 'The information to add to the knowledge base'
+            }
+        ],
+        outputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Knowledge ID',
+                description: 'Unique identifier for the added knowledge'
+            }
+        ]
     },
     {
         id: 'search-kb',
         name: 'Search KB',
         description: 'Search the knowledge base',
-        category: 'Knowledge Base'
+        category: 'Knowledge Base',
+        inputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Search Query',
+                description: 'The search terms to look for in the knowledge base'
+            }
+        ],
+        outputs: [
+            {
+                type: 'object',
+                is_array: true,
+                name: 'Knowledge Results',
+                description: 'List of matching knowledge base entries'
+            }
+        ]
     },
     {
         id: 'generate-query',
         name: 'Generate Query',
         description: 'Generate optimized search queries',
-        category: 'Query Processing'
+        category: 'Query Processing',
+        inputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Question',
+                description: 'The question to generate a search query for'
+            }
+        ],
+        outputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Search Query',
+                description: 'Optimized search query for the question'
+            }
+        ]
     },
     {
         id: 'improve-question',
         name: 'Improve Question',
         description: 'Enhance and clarify questions',
-        category: 'Query Processing'
+        category: 'Query Processing',
+        inputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Question',
+                description: 'The question to improve'
+            }
+        ],
+        outputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Improved Question',
+                description: 'Enhanced and clarified version of the question'
+            }
+        ]
+    },
+    {
+        id: 'retrieval',
+        name: 'Retrieval',
+        description: 'Retrieve relevant information for a question through a multi-step process',
+        category: 'Information Retrieval',
+        inputs: [
+            {
+                type: 'string',
+                is_array: false,
+                name: 'Question',
+                description: 'The question to retrieve information for'
+            }
+        ],
+        outputs: [
+            {
+                type: 'object',
+                is_array: true,
+                name: 'Retrieved Information',
+                description: 'List of relevant information retrieved for the question'
+            }
+        ],
+        steps: [
+            {
+                name: 'Generate Query',
+                description: 'Convert the question into an optimized search query',
+                tool_id: 'generate-query',
+                inputs: [
+                    {
+                        type: 'string',
+                        is_array: false,
+                        name: 'Question',
+                        description: 'The question to generate a search query for'
+                    }
+                ],
+                outputs: [
+                    {
+                        type: 'string',
+                        is_array: false,
+                        name: 'Search Query',
+                        description: 'Optimized search query for the question'
+                    }
+                ]
+            },
+            {
+                name: 'Web Search',
+                description: 'Search the web using the generated query',
+                tool_id: 'web-search',
+                inputs: [
+                    {
+                        type: 'string',
+                        is_array: false,
+                        name: 'Search Query',
+                        description: 'The search terms to look for on the web'
+                    }
+                ],
+                outputs: [
+                    {
+                        type: 'string',
+                        is_array: true,
+                        name: 'Search Results',
+                        description: 'List of relevant web search results'
+                    }
+                ]
+            },
+            {
+                name: 'Extract Information',
+                description: 'Extract relevant information from search results',
+                tool_id: 'extract-info',
+                inputs: [
+                    {
+                        type: 'string',
+                        is_array: true,
+                        name: 'Search Results',
+                        description: 'The search results to extract information from'
+                    }
+                ],
+                outputs: [
+                    {
+                        type: 'object',
+                        is_array: true,
+                        name: 'Extracted Information',
+                        description: 'Structured information extracted from search results'
+                    }
+                ]
+            }
+        ]
     }
 ];
 
