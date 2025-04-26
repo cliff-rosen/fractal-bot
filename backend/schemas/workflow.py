@@ -23,7 +23,7 @@ class Variable(BaseModel):
     type: VariableType = Field(description="Type of the variable")
     description: Optional[str] = Field(None, description="Description of the variable")
     required: bool = Field(default=True, description="Whether the variable is required")
-    schema: SchemaValue = Field(description="Schema defining the variable type and structure")
+    value_schema: SchemaValue = Field(description="Schema defining the variable type and structure")
 
 class EvaluationCondition(BaseModel):
     condition_id: str = Field(description="Unique identifier for the condition")
@@ -51,7 +51,7 @@ class WorkflowStepCreate(BaseModel):
 class WorkflowVariableCreate(BaseModel):
     variable_id: str
     name: str
-    schema: SchemaValue
+    value_schema: SchemaValue
     io_type: str
 
 class WorkflowCreate(BaseModel):
@@ -81,8 +81,13 @@ class WorkflowStepResponse(WorkflowStepCreate):
     class Config:
         from_attributes = True
 
-class WorkflowVariableResponse(WorkflowVariableCreate):
+class WorkflowVariableResponse(BaseModel):
+    variable_id: str
     workflow_id: str
+    name: str
+    description: Optional[str] = None
+    value_schema: SchemaValue
+    io_type: str
     created_at: datetime
     updated_at: datetime
 

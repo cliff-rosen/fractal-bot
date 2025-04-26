@@ -69,14 +69,14 @@ class WorkflowService:
         # Create state variables if provided
         if workflow_data.state:
             for var_data in workflow_data.state:
-                schema = var_data.schema.model_dump()
+                schema = var_data.value_schema.model_dump()
                 var = WorkflowVariable(
                     variable_id=var_data.variable_id or str(uuid4()),
                     workflow_id=workflow.workflow_id,
                     name=var_data.name,
                     description=schema.get('description'),
                     type=schema['type'],
-                    schema=schema,
+                    value_schema=schema,
                     io_type=var_data.io_type,
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow()
@@ -193,7 +193,7 @@ class WorkflowService:
                     workflow_id=variable.workflow_id,
                     name=variable.name,
                     description=variable.description,
-                    schema=variable.schema,
+                    value_schema=variable.value_schema,
                     io_type=variable.io_type,
                     created_at=variable.created_at,
                     updated_at=variable.updated_at
@@ -352,14 +352,14 @@ class WorkflowService:
                 for var_data in workflow_data.state:
                     # Handle both Pydantic models and dicts
                     var_dict = var_data.model_dump() if hasattr(var_data, 'model_dump') else var_data
-                    schema = var_dict['schema']
+                    schema = var_dict['value_schema']
                     var = WorkflowVariable(
                         variable_id=var_dict.get('variable_id', str(uuid4())),
                         workflow_id=workflow_id,
                         name=var_dict['name'],
                         description=schema.get('description'),
                         type=schema['type'],
-                        schema=schema,
+                        value_schema=schema,
                         io_type=var_dict['io_type'],
                         created_at=datetime.utcnow(),
                         updated_at=datetime.utcnow()
@@ -447,7 +447,7 @@ class WorkflowService:
                 'name': token['name'],
                 'description': f"Value for {{{{{token['name']}}}}} in the prompt" if token_type == 'string' 
                              else f"File content for <<file:{token['name']}>> in the prompt",
-                'schema': schema,
+                'value_schema': schema,
                 'required': token.get('required', True)  # Default to required
             })
         
@@ -467,7 +467,7 @@ class WorkflowService:
             outputs = [{
                 'name': 'response',
                 'description': prompt_template.output_schema.get('description', 'Complete output object'),
-                'schema': prompt_template.output_schema
+                'value_schema': prompt_template.output_schema
             }]
             
         else:
@@ -481,7 +481,7 @@ class WorkflowService:
             outputs.append({
                 'name': 'response',
                 'description': prompt_template.output_schema.get('description', 'LLM response'),
-                'schema': schema
+                'value_schema': schema
             })
         
         return {

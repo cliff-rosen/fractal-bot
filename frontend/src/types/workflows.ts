@@ -67,6 +67,7 @@ export interface WorkflowVariable extends Omit<Variable, 'name'> {
     // For outputs, this distinguishes between final outputs (results of the workflow)
     // and intermediate outputs (used within the workflow but not part of the final result)
     variable_role?: WorkflowVariableRole;
+    value_schema: Schema;
 }
 
 // Branded type for workflow step IDs
@@ -172,7 +173,8 @@ export const createWorkflowVariable = (
     schema,
     io_type,
     variable_role,
-    ...(io_type === 'input' ? { required } : {})
+    ...(io_type === 'input' ? { required } : {}),
+    value_schema: schema
 });
 
 // Helper function to create an array schema

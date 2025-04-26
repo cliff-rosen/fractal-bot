@@ -284,7 +284,7 @@ class WorkflowVariable(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text)
     type = Column(String(50), nullable=False)
-    schema = Column(JSON, nullable=False)
+    value_schema = Column(JSON, nullable=False)
     io_type = Column(String(10), nullable=False)  # 'input' or 'output'
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -292,7 +292,7 @@ class WorkflowVariable(Base):
     # Relationships
     workflow = relationship("Workflow", back_populates="variables")
 
-    @validates('schema')
+    @validates('value_schema')
     def validate_schema(self, key: str, value: Any) -> Dict:
         """Validate schema field to ensure it's a proper dictionary."""
         if value is None:

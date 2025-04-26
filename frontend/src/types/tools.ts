@@ -10,7 +10,7 @@ export type ToolOutputName = string & { readonly __brand: unique symbol };
 // Tool parameter definition
 export interface ToolParameter {
     name: ToolParameterName;  // Parameter name in the tool's context
-    schema: Schema;           // Structure definition
+    value_schema: Schema;           // Structure definition
     required?: boolean;       // Whether this parameter must be provided
     default?: SchemaValueType;// Default value if not provided
     description?: string;     // Describes this parameter to tool users
@@ -19,7 +19,7 @@ export interface ToolParameter {
 // Tool output definition
 export interface ToolOutput {
     name: ToolOutputName;     // Output name in the tool's context
-    schema: Schema;           // Structure definition
+    value_schema: Schema;           // Structure definition
     description?: string;     // Describes this output to tool users
 }
 

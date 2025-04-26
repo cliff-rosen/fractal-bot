@@ -15,6 +15,7 @@ export const createWorkflowVariable = (
         variable_id,
         name: name as WorkflowVariableName,
         schema,
+        value_schema: schema,
         io_type,
         required
     };

@@ -13,24 +13,24 @@ class SchemaValue(BaseModel):
 class ParameterSchema(BaseModel):
     name: str = Field(description="Name of the parameter")
     description: str = Field(description="Description of the parameter")
-    schema: SchemaValue = Field(description="Schema defining the parameter type and structure")
+    value_schema: SchemaValue = Field(description="Schema defining the parameter type and structure")
 
 class OutputSchema(BaseModel):
     name: str = Field(description="Name of the output")
     description: str = Field(description="Description of the output")
-    schema: SchemaValue = Field(description="Schema defining the output type and structure")
+    value_schema: SchemaValue = Field(description="Schema defining the output type and structure")
 
 class ToolParameter(BaseModel):
     name: str = Field(description="Name of the parameter")
     description: str = Field(description="Description of the parameter")
-    schema: SchemaValue = Field(description="Schema defining the parameter type and structure")
+    value_schema: SchemaValue = Field(description="Schema defining the parameter type and structure")
     required: bool = Field(default=True, description="Whether the parameter is required")
     default: Optional[Any] = Field(None, description="Default value for the parameter")
 
 class ToolOutput(BaseModel):
     name: str = Field(description="Name of the output")
     description: str = Field(description="Description of the output")
-    schema: SchemaValue = Field(description="Schema defining the output type and structure")
+    value_schema: SchemaValue = Field(description="Schema defining the output type and structure")
 
 class ToolSignature(BaseModel):
     parameters: List[ToolParameter]
