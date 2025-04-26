@@ -11,11 +11,11 @@ export const setStreamSessionExpiredHandler = (handler: () => void) => {
     sessionExpiredHandler = handler;
 };
 
-export async function* makeStreamRequest(endpoint: string, params: Record<string, string | string[]>): AsyncGenerator<StreamUpdate> {
+export async function* makeStreamRequest(endpoint: string, params: Record<string, any>, method: 'GET' | 'POST' = 'GET'): AsyncGenerator<StreamUpdate> {
     const queryString = Object.entries(params)
         .map(([key, value]) => {
-            if (Array.isArray(value)) {
-                // For arrays, use POST with JSON body
+            if (Array.isArray(value) || method === 'POST' || typeof value !== 'string') {
+                // For arrays, objects, or POST requests, use POST with JSON body
                 return null;
             }
             return `${key}=${encodeURI(value)}`;
@@ -24,17 +24,18 @@ export async function* makeStreamRequest(endpoint: string, params: Record<string
         .join('&');
 
     const token = localStorage.getItem('authToken');
-    const hasArrayParams = Object.values(params).some(Array.isArray);
+    const hasComplexParams = Object.values(params).some(value => Array.isArray(value) || typeof value !== 'string');
+    const usePost = method === 'POST' || hasComplexParams;
 
     const response = await fetch(
-        `${settings.apiUrl}${endpoint}${queryString ? `?${queryString}` : ''}`,
+        `${settings.apiUrl}${endpoint}${!usePost && queryString ? `?${queryString}` : ''}`,
         {
-            method: hasArrayParams ? 'POST' : 'GET',
+            method: usePost ? 'POST' : 'GET',
             headers: {
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                ...(hasArrayParams ? { 'Content-Type': 'application/json' } : {}),
+                ...(usePost ? { 'Content-Type': 'application/json' } : {}),
             },
-            ...(hasArrayParams ? { body: JSON.stringify(params) } : {}),
+            ...(usePost ? { body: JSON.stringify(params) } : {}),
         }
     );
 

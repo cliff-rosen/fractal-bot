@@ -19,10 +19,25 @@ export interface SendMessageResponse extends ChatResponse { }
 
 export const botApi = {
 
-    runBot1: async (): Promise<SendMessageResponse> => {
-        const response = await api.get<SendMessageResponse>('/api/bot/run_bot_1');
-        return response.data;
+
+    streamMessage: async function* (message: string, history: Message[]): AsyncGenerator<StreamUpdate> {
+        // Convert Message[] to MessageHistory[]
+        const messageHistory: MessageHistory[] = history.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+            timestamp: msg.timestamp.toISOString()
+        }));
+
+        const requestBody = {
+            message,
+            history: messageHistory,
+            assets: [] // We can add assets support later if needed
+        };
+
+        yield* makeStreamRequest('/api/bot/stream', requestBody, 'POST');
     },
+
+
 
     sendMessage: async (message: string, history: Message[], assets: Asset[]): Promise<SendMessageResponse> => {
         try {
@@ -45,54 +60,4 @@ export const botApi = {
         }
     },
 
-    streamMessage: async function* (message: string, history: Message[]): AsyncGenerator<StreamUpdate> {
-        // Convert Message[] to MessageHistory[]
-        const messageHistory: MessageHistory[] = history.map(msg => ({
-            role: msg.role,
-            content: msg.content,
-            timestamp: msg.timestamp.toISOString()
-        }));
-
-        const requestBody = {
-            message,
-            history: messageHistory,
-            assets: [] // We can add assets support later if needed
-        };
-
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(`${settings.apiUrl}/api/bot/stream2`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const reader = response.body?.getReader();
-        if (!reader) {
-            throw new Error('No reader available');
-        }
-
-        try {
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const text = new TextDecoder().decode(value);
-                const lines = text.split('\n');
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        yield { data: line };
-                    }
-                }
-            }
-        } finally {
-            reader.releaseLock();
-        }
-    }
 }; 

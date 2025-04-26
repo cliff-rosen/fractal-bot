@@ -26,8 +26,8 @@ class BotRequest(BaseModel):
     assets: List[Asset] = []
 
 
-@router.post("/stream2")
-async def bot_stream2(request: Request, bot_request: BotRequest):
+@router.post("/stream")
+async def bot_stream(request: Request, bot_request: BotRequest):
     """Endpoint that streams responses from the graph"""
     
     async def event_generator():
@@ -70,26 +70,6 @@ async def bot_stream2(request: Request, bot_request: BotRequest):
     return EventSourceResponse(event_generator())
 
 
-
-@router.get("/run_bot_1", response_model=ChatResponse)
-async def run_bot_1():
-
-    id = str(uuid.uuid4())
-    timestamp = datetime.now().isoformat()
-    messages = [
-        Message(id=id, role=MessageRole.USER, content="Hello, how are you?", timestamp=timestamp)
-    ]
-
-    response = await graph.ainvoke({"messages": messages}, stream_mode="values")
-    
-    # Transform the response into a ChatResponse
-    chat_response = ChatResponse(
-        message=response["messages"][0],
-        status="success",
-        error=None
-    )
-
-    return chat_response
 
 
 @router.post("/run", response_model=ChatResponse)
