@@ -8,6 +8,7 @@ import random
 import operator
 from serpapi import GoogleSearch
 import uuid
+import asyncio
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -61,18 +62,46 @@ def getModel(node_name: str, config: Dict[str, Any], writer: Optional[Callable] 
     return ChatOpenAI(**chat_config)
 
 ### Nodes
+log_template = {
+    "id": "update-1",
+    "timestamp": datetime.now().isoformat(),
+    "title": "Update from the agent",
+    "details": "This is the first status update",
+    "icon": "📊",
+    "status": "in_progress"
+}
 
 async def mock_llm(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
-    """Mock LLM"""
+    """Mock LLM that streams responses"""
+    log_template["status"] = "in_progress"
+    log_template["details"] = "The agent is working on the task"
     if writer:
-        writer({"msg": "Mock LLM"})
+        writer({"status": log_template})
+
+    message_parts = ["Hello,", " how", " are", " you", "?"]
+    for part in message_parts:
+        await asyncio.sleep(0.3)  # Simulate processing time
+        if writer:
+            writer({
+                "token": part, 
+                "metadata": {
+                    "type": "token",
+                    "timestamp": datetime.now().isoformat()
+                }
+            })
 
     message = Message(
         id=str(uuid.uuid4()),
         role=MessageRole.ASSISTANT,
-        content="Hello, how are you?",
+        content="hello",
         timestamp=datetime.now().isoformat()
     )
+
+    log_template["status"] = "completed"
+    log_template["details"] = "The agent has completed the task"
+    if writer:
+        writer({"status": log_template})
+
 
     return {"messages": [message]}
 
@@ -109,7 +138,8 @@ graph_builder.add_node("mock_llm", mock_llm)
 
 # Add edges
 graph_builder.add_edge(START, "mock_llm")
+graph_builder.add_edge("mock_llm", END)
 
-# Compile the graph
+# Compile the graph with streaming support
 compiled = graph_builder.compile()
 graph = compiled 

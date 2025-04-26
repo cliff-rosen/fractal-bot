@@ -104,6 +104,37 @@ async def bot_stream(request: Request):
     
     return EventSourceResponse(event_generator())
 
+@router.get("/stream2")
+async def bot_stream2(request: Request):
+    """Endpoint that streams responses from the graph"""
+    
+    async def event_generator():
+        """Generate SSE events from graph outputs"""
+        try:
+            # Create initial message
+            id = str(uuid.uuid4())
+            timestamp = datetime.now().isoformat()
+            messages = [
+                Message(id=id, role=MessageRole.USER, content="Hello, how are you?", timestamp=timestamp)
+            ]
+            
+            # Stream responses from the graph
+            async for chunk in graph.astream({"messages": messages}, stream_mode="custom"):
+                yield {
+                    "event": "message",
+                    "data": json.dumps(chunk)
+                }
+                
+        except Exception as e:
+            # Handle errors
+            yield {
+                "event": "error",
+                "data": json.dumps({"status": "error", "message": str(e)})
+            }
+    
+    return EventSourceResponse(event_generator())
+
+
 
 @router.get("/run_bot_1", response_model=ChatResponse)
 async def run_bot_1():

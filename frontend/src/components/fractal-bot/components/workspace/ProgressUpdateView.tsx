@@ -8,7 +8,6 @@ interface ProgressUpdateViewProps {
 
 const ProgressUpdateView: React.FC<ProgressUpdateViewProps> = ({ updates }) => {
 
-    console.log('updates', updates);
     return (
         <div className="space-y-4">
             {updates.map((update) => (
@@ -28,7 +27,7 @@ const ProgressUpdateView: React.FC<ProgressUpdateViewProps> = ({ updates }) => {
                                     {update.title}
                                 </h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {format(new Date(update.timestamp), 'MMM d, yyyy HH:mm')}
+                                    {/* {format(new Date(update.timestamp), 'MMM d, yyyy HH:mm')} */}
                                 </p>
                             </div>
                         </div>

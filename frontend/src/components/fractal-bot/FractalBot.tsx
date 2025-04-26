@@ -5,24 +5,30 @@ import Workflow from './components/Workflow';
 import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import { mockDataSnapshots } from './mocks/data';
-import { ChatMessage, Workspace as WorkspaceType } from './types/index';
+import { ChatMessage, Workspace as WorkspaceType, processMessageTemplate, workspaceTemplate } from './types/index';
 import { botApi } from '@/lib/api/botApi';
 
 export default function App() {
   const [currentDataSnapshotIdx, setCurrentDataSnapshotIdx] = useState(8);
-  const [currentWorkspaceObj, setCurrentWorkspaceObj] = useState<WorkspaceType>(mockDataSnapshots[8].workspace);
+  const [currentWorkspaceObj, setCurrentWorkspaceObj] = useState<WorkspaceType>(mockDataSnapshots[0].workspace);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingMessage, setStreamingMessage] = useState<string>('');
+
+  // function to update the content of the current workspace object
+  const updateWorkspaceContent = (content: any) => {
+    setCurrentWorkspaceObj({ ...workspaceProcessMessageTemplate, content: content });
+  }
 
 
   const handleSendMessage = async (message: ChatMessage) => {
 
     setMessages((prevMessages) => [...prevMessages, message]);
+    setCurrentWorkspaceObj({ ...workspaceTemplate, content: { progressUpdates: [processMessageTemplate] } });
 
     try {
       let finalContent = '';
-      for await (const update of botApi.streamNessage()) {
+      for await (const update of botApi.streamMessage()) {
         const lines = update.data.split('\n');
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -37,7 +43,7 @@ export default function App() {
                 const newStatusMessage = data.status;
                 const currentContent = currentWorkspaceObj.content;
                 const newContent = { ...currentContent, progressUpdates: [newStatusMessage] };
-                setCurrentWorkspaceObj((prev) => ({ ...prev, content: newContent }));
+                updateWorkspaceContent(newContent);
               }
             } catch (e) {
               console.warn('Failed to parse SSE data:', e);
@@ -54,6 +60,7 @@ export default function App() {
         timestamp: new Date().toISOString()
       };
       setMessages((prevMessages) => [...prevMessages, finalMessage]);
+      updateWorkspaceContent(workspaceTemplate);
 
     } catch (error) {
       console.error('Error streaming message:', error);

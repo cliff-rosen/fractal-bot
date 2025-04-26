@@ -44,7 +44,7 @@ export const botApi = {
         }
     },
 
-    streamNessage: async function* (): AsyncGenerator<StreamUpdate> {
-        yield* makeStreamRequest('/api/bot/stream', {});
+    streamMessage: async function* (): AsyncGenerator<StreamUpdate> {
+        yield* makeStreamRequest('/api/bot/stream2', {});
     }
 }; 
