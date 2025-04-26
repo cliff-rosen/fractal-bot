@@ -13,15 +13,34 @@ interface ToolsProps {
     onToolSelect: (toolId: string) => void;
     onSelectAll: () => void;
     onClearAll: () => void;
+    onToggleItemView: () => void;
+    isItemViewMode: boolean;
 }
 
-const Tools: React.FC<ToolsProps> = ({ tools, selectedToolIds, onToolSelect, onSelectAll, onClearAll }) => {
+const Tools: React.FC<ToolsProps> = ({
+    tools,
+    selectedToolIds,
+    onToolSelect,
+    onSelectAll,
+    onClearAll,
+    onToggleItemView,
+    isItemViewMode
+}) => {
     return (
         <div className="flex flex-col h-full bg-white/95 dark:bg-gray-800/95">
             <div className="px-4 py-3 border-b dark:border-gray-700">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tools</h2>
                     <div className="flex space-x-2">
+                        <button
+                            onClick={onToggleItemView}
+                            className={`text-xs px-2 py-1 rounded ${isItemViewMode
+                                ? 'bg-blue-500 text-white'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                }`}
+                        >
+                            Manage Tools
+                        </button>
                         <button
                             onClick={onSelectAll}
                             className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"

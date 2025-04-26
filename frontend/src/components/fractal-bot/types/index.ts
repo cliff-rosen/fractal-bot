@@ -159,4 +159,10 @@ export interface Tool {
     inputs: SchemaType[];
     outputs: SchemaType[];
     steps?: ToolStep[];
+}
+
+export interface ItemView {
+    title: string;
+    type: 'tools' | 'assets' | 'none';
+    isOpen: boolean;
 } 

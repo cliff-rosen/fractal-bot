@@ -5,7 +5,8 @@ import Workflow from './components/Workflow';
 import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import Tools from './components/Tools';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool } from './types/index';
+import ItemView from './components/ItemView';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType } from './types/index';
 import { getDataFromLine } from './utils/utils'
 import { botApi } from '@/lib/api/botApi';
 import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from './types/type-defaults';
@@ -21,6 +22,11 @@ export default function App() {
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState<string>('');
   const [currentTools, setCurrentTools] = useState<Tool[]>(toolsTemplate);
   const [selectedToolIds, setSelectedToolIds] = useState<string[]>([]);
+  const [currentItemView, setCurrentItemView] = useState<ItemViewType>({
+    title: '',
+    type: 'none',
+    isOpen: false
+  });
 
   const handleToolSelect = (toolId: string) => {
     setSelectedToolIds(prev =>
@@ -36,6 +42,21 @@ export default function App() {
 
   const handleClearAll = () => {
     setSelectedToolIds([]);
+  };
+
+  const handleOpenToolsManager = () => {
+    setCurrentItemView({
+      title: 'Tools Manager',
+      type: 'tools',
+      isOpen: true
+    });
+  };
+
+  const handleCloseItemView = () => {
+    setCurrentItemView(prev => ({
+      ...prev,
+      isOpen: false
+    }));
   };
 
   const handleSendMessage = async (message: ChatMessage) => {
@@ -89,7 +110,7 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="flex-1 min-h-0 pt-14">
+      <div className="flex-1 min-h-0">
         <div className="grid grid-cols-12 gap-6 h-full">
           {/* Left Chat Rail (cols 1-3) */}
           <div key="chat-rail" className="col-span-3 h-full overflow-hidden">
@@ -100,42 +121,61 @@ export default function App() {
             />
           </div>
 
-          {/* Main Content Area (cols 4-9) */}
-          <div key="main-content" className="col-span-6 h-full flex flex-col">
-            {/* Mission Header */}
-            <div className="sticky top-14 z-30 bg-white dark:bg-[#1e2330] shadow-lg rounded-2xl p-6 mb-6">
-              <Mission mission={currentMission} />
-            </div>
-
-            {/* Stage Tracker */}
-            <div className="mb-6">
-              <Workflow
-                workflow={currentWorkflow}
-                workspaceState={currentWorkspaceState}
-              />
-            </div>
-
-            {/* Workspace Canvas */}
-            <div className="flex-1 overflow-y-auto">
-              <Workspace workspace={currentWorkspace} />
-            </div>
-          </div>
-
-          {/* Right Rail (cols 10-12) */}
-          <div key="right-rail" className="col-span-3 h-full overflow-hidden flex flex-col">
-            <div className="h-1/2 overflow-y-auto">
-              <Tools
+          {/* Main Content Area (cols 4-12) */}
+          {currentItemView.isOpen ? (
+            <div key="item-view" className="col-span-9 h-full">
+              <ItemView
+                itemView={currentItemView}
                 tools={currentTools}
                 selectedToolIds={selectedToolIds}
                 onToolSelect={handleToolSelect}
                 onSelectAll={handleSelectAll}
                 onClearAll={handleClearAll}
+                onClose={handleCloseItemView}
               />
             </div>
-            <div className="h-1/2 overflow-y-auto border-t dark:border-gray-700 mt-2">
-              <Assets assets={currentAssets} />
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Main Content Area (cols 4-9) */}
+              <div key="main-content" className="col-span-6 h-full flex flex-col">
+                {/* Mission Header */}
+                <div className="sticky top-14 z-30 bg-white dark:bg-[#1e2330] shadow-lg rounded-2xl p-6 mb-6">
+                  <Mission mission={currentMission} />
+                </div>
+
+                {/* Stage Tracker */}
+                <div className="mb-6">
+                  <Workflow
+                    workflow={currentWorkflow}
+                    workspaceState={currentWorkspaceState}
+                  />
+                </div>
+
+                {/* Workspace Canvas */}
+                <div className="flex-1 overflow-y-auto">
+                  <Workspace workspace={currentWorkspace} />
+                </div>
+              </div>
+
+              {/* Right Rail (cols 10-12) */}
+              <div key="right-rail" className="col-span-3 h-full overflow-hidden flex flex-col">
+                <div className="h-1/2 overflow-y-auto">
+                  <Tools
+                    tools={currentTools}
+                    selectedToolIds={selectedToolIds}
+                    onToolSelect={handleToolSelect}
+                    onSelectAll={handleSelectAll}
+                    onClearAll={handleClearAll}
+                    onToggleItemView={handleOpenToolsManager}
+                    isItemViewMode={currentItemView.isOpen}
+                  />
+                </div>
+                <div className="h-1/2 overflow-y-auto border-t dark:border-gray-700 mt-2">
+                  <Assets assets={currentAssets} />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
