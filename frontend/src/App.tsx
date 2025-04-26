@@ -110,6 +110,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/workflows" />} />
 
+            {/* Fractal Bot routes */}
+            <Route path="/fractal-bot" element={<FractalBotPage />} />
+
             {/* Workflow routes */}
             <Route path="/workflows" element={<WorkflowsManager />} />
             <Route path="/workflows/:id" element={<Workflow />} />
@@ -133,7 +136,6 @@ function App() {
             <Route path="/agent-workflow" element={<AgentWorkflowPage />} />
             <Route path="/test" element={<TestPage />} />
             <Route path="/interactive-workflow" element={<InteractiveWorkflowTest />} />
-            <Route path="/fractal-bot" element={<FractalBotPage />} />
 
             {/* Email auth routes */}
             <Route path="/email/auth/success" element={<EmailAuthSuccess />} />

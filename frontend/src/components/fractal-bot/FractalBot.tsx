@@ -5,9 +5,11 @@ import Workflow from './components/Workflow';
 import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState } from './types/index';
+import { getDataFromLine } from './utils/utils'
 import { botApi } from '@/lib/api/botApi';
 import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate } from './types/type-defaults';
 import { Message, MessageRole } from '@/types/message';
+
 
 export default function App() {
   const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>(workspaceTemplate);
@@ -22,8 +24,9 @@ export default function App() {
   const handleSendMessage = async (message: ChatMessage) => {
     setCurrentMessages((prevMessages) => [...prevMessages, message]);
 
+    let finalContent = '';
+
     try {
-      let finalContent = '';
       // Convert ChatMessage[] to Message[]
       const messages: Message[] = currentMessages.map(msg => ({
         message_id: msg.id,
@@ -35,23 +38,17 @@ export default function App() {
       for await (const update of botApi.streamMessage(message.content, messages)) {
         const lines = update.data.split('\n');
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6); // Remove 'data: ' prefix
-            try {
-              const data = JSON.parse(jsonStr);
-              if (data.token) {
-                setCurrentStreamingMessage(prev => prev + data.token + ' ');
-                finalContent += ' ' + data.token;
-              }
-              if (data.status) {
-                const newStatusMessage = data.status;
-                const currentContent = currentWorkspace.content;
-                const newContent = { ...currentContent, text: newStatusMessage };
-                setCurrentWorkspace((prevWorkspace) => ({ ...prevWorkspace, status: "current", content: newContent }));
-              }
-            } catch (e) {
-              console.warn('Failed to parse SSE data:', e);
-            }
+          const data = getDataFromLine(line);
+
+          if (data.token) {
+            setCurrentStreamingMessage(prev => prev + data.token);
+            finalContent += data.token;
+          }
+          if (data.status) {
+            const newStatusMessage = data.status;
+            const currentContent = currentWorkspace.content;
+            const newContent = { ...currentContent, text: newStatusMessage };
+            setCurrentWorkspace((prevWorkspace) => ({ ...prevWorkspace, status: "current", content: newContent }));
           }
         }
       }
@@ -70,8 +67,8 @@ export default function App() {
       console.error('Error streaming message:', error);
     } finally {
       setCurrentStreamingMessage('');
-    }
-  };
+    };
+  }
 
   return (
     <div className="h-screen flex flex-col">
