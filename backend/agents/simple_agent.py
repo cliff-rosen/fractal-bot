@@ -50,8 +50,7 @@ def getModel(node_name: str, config: Dict[str, Any], writer: Optional[Callable] 
     Returns:
         ChatOpenAI instance configured with the appropriate model
     """
-    model_name = "gpt-4o-mini"
-    
+    model_name = "gpt-4o-mini"  
     
     # Create base model configuration
     chat_config = {
@@ -93,6 +92,50 @@ async def mock_llm(state: State, writer: StreamWriter, config: Dict[str, Any]) -
 
     return {"messages": [message]}
 
+# create actual call to LLM
+async def llm_call(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
+    """Process messages through the LLM and stream the response"""
+    if writer:
+        writer({"status": "in_progress"})
+
+    llm = getModel("llm", config, writer)
+    
+    # Convert messages to LangChain format
+    langchain_messages = []
+    for msg in state["messages"]:
+        if msg.role == MessageRole.USER:
+            langchain_messages.append(HumanMessage(content=msg.content))
+        elif msg.role == MessageRole.ASSISTANT:
+            langchain_messages.append(AIMessage(content=msg.content))
+        elif msg.role == MessageRole.SYSTEM:
+            langchain_messages.append(SystemMessage(content=msg.content))
+
+    # Stream the response
+    response_content = ""
+    async for chunk in llm.astream(langchain_messages):
+        if writer:
+            writer({
+                "token": chunk.content,
+                "metadata": {
+                    "type": "token",
+                    "timestamp": datetime.now().isoformat()
+                }
+            })
+        response_content += chunk.content
+
+    # Create the response message
+    response_message = Message(
+        id=str(uuid.uuid4()),
+        role=MessageRole.ASSISTANT,
+        content=response_content,
+        timestamp=datetime.now().isoformat()
+    )
+
+    if writer:
+        writer({"status": "completed"})
+
+    return {"messages": [response_message]}
+
 def improve_question(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Improve the question for clarity and completeness"""
     writer({"msg": "Improving question for clarity and completeness..."})
@@ -122,11 +165,10 @@ def improve_question(state: State, writer: StreamWriter, config: Dict[str, Any])
 graph_builder = StateGraph(State)
 
 # Add nodes
-graph_builder.add_node("mock_llm", mock_llm)
-
+graph_builder.add_node("llm_call", llm_call)
 # Add edges
-graph_builder.add_edge(START, "mock_llm")
-graph_builder.add_edge("mock_llm", END)
+graph_builder.add_edge(START, "llm_call")
+graph_builder.add_edge("llm_call", END)
 
 # Compile the graph with streaming support
 compiled = graph_builder.compile()

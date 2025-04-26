@@ -4,9 +4,10 @@ import Mission from './components/Mission';
 import Workflow from './components/Workflow';
 import Workspace from './components/Workspace';
 import Assets from './components/Assets';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType } from './types/index';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState } from './types/index';
 import { botApi } from '@/lib/api/botApi';
 import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate } from './types/type-defaults';
+import { Message, MessageRole } from '@/types/message';
 
 export default function App() {
   const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>(workspaceTemplate);
@@ -19,12 +20,19 @@ export default function App() {
 
 
   const handleSendMessage = async (message: ChatMessage) => {
-
     setCurrentMessages((prevMessages) => [...prevMessages, message]);
 
     try {
       let finalContent = '';
-      for await (const update of botApi.streamMessage()) {
+      // Convert ChatMessage[] to Message[]
+      const messages: Message[] = currentMessages.map(msg => ({
+        message_id: msg.id,
+        role: msg.role === 'user' ? MessageRole.USER : MessageRole.ASSISTANT,
+        content: msg.content,
+        timestamp: new Date(msg.timestamp)
+      }));
+
+      for await (const update of botApi.streamMessage(message.content, messages)) {
         const lines = update.data.split('\n');
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -62,7 +70,6 @@ export default function App() {
       console.error('Error streaming message:', error);
     } finally {
       setCurrentStreamingMessage('');
-      // Use setTimeout to ensure focus happens after the DOM updates
     }
   };
 

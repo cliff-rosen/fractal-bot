@@ -25,98 +25,33 @@ class BotRequest(BaseModel):
     history: List[MessageHistory] = []
     assets: List[Asset] = []
 
-async def generate_stream():
-    """A sample streaming node that simulates an LLM generating tokens"""
 
-    message = "Starting the analysis process...".split(" ")
-    for token in message:
-        yield {"token": token, "metadata": {"type": "status"}}
-        await asyncio.sleep(0.2)
-    
-    yield {
-        "status": {
-            "id": "update-1",
-            "timestamp": datetime.now().isoformat(),
-            "title": "Update from the agent",
-            "details": "This is the first status update",
-            "icon": "📊"
-        }
-    }
-    await asyncio.sleep(1)
-    
-    message = "Now analyzing the collected data...".split(" ")
-    for token in message:
-        yield {"token": token, "metadata": {"type": "status"}}
-        await asyncio.sleep(0.2)
-    
-    # Second status update
-    yield {
-        "status": {
-            "id": "update-2",
-            "timestamp": datetime.now().isoformat(),
-            "title": "Update from the agent",
-            "details": "This is the second status update",
-            "icon": "🔍"
-        }
-    }
-    await asyncio.sleep(1)
-    
-    message = "Analysis complete. Generating insights...".split(" ")
-    for token in message:
-        yield {"token": token, "metadata": {"type": "status"}}
-        await asyncio.sleep(0.2)
-
-    # Final status update
-    yield {
-        "status": {
-            "id": "update-3",
-            "timestamp": datetime.now().isoformat(),
-            "title": "Update from the agent",
-            "details": "This is the third status update",
-            "icon": "💡"
-        }
-    }
-
-
-@router.get("/stream")
-async def bot_stream(request: Request):
+@router.post("/stream2")
+async def bot_stream2(request: Request, bot_request: BotRequest):
     """Endpoint that streams responses from the graph"""
     
     async def event_generator():
         """Generate SSE events from graph outputs"""
         try:
-            # Directly iterate over the async generator
-            async for chunk in generate_stream():
-                # Convert chunk to JSON and yield as SSE event
-                yield {
-                    "event": "message",
-                    "data": json.dumps(chunk)
-                }
-                
-
-                
-        except Exception as e:
-            # Handle errors
-            yield {
-                "event": "error",
-                "data": json.dumps({"status": "error", "message": str(e)})
-            }
-    
-    return EventSourceResponse(event_generator())
-
-@router.get("/stream2")
-async def bot_stream2(request: Request):
-    """Endpoint that streams responses from the graph"""
-    
-    async def event_generator():
-        """Generate SSE events from graph outputs"""
-        try:
-            # Create initial message
-            id = str(uuid.uuid4())
-            timestamp = datetime.now().isoformat()
+            # Convert history to Message objects
             messages = [
-                Message(id=id, role=MessageRole.USER, content="Hello, how are you?", timestamp=timestamp)
+                Message(
+                    id=str(uuid.uuid4()),
+                    role=MessageRole.USER if msg.role == "user" else MessageRole.ASSISTANT,
+                    content=msg.content,
+                    timestamp=msg.timestamp.isoformat()
+                )
+                for msg in bot_request.history
             ]
+            
+            # Add the current message
+            current_message = Message(
+                id=str(uuid.uuid4()),
+                role=MessageRole.USER,
+                content=bot_request.message,
+                timestamp=datetime.now().isoformat()
+            )
+            messages.append(current_message)
             
             # Stream responses from the graph
             async for chunk in graph.astream({"messages": messages}, stream_mode="custom"):
