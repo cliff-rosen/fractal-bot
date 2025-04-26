@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import CondensedWorkflow from './workflow/CondensedWorkflow';
 import FullWorkflow from './workflow/FullWorkflow';
-import type { Workflow, WorkspaceState } from '../types';
+import type { Workflow, WorkspaceState } from '../types/index';
 
 interface WorkflowProps {
     className?: string;
