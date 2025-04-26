@@ -3,7 +3,7 @@ export type Status = 'completed' | 'current' | 'pending' | 'failed' | 'in_progre
 export type AssetStatus = 'pendingCompletion' | 'pendingApproval' | 'ready' | 'archived' | 'error';
 
 // Workspace types
-export type WorkspaceType = 'proposedMission' | 'proposedWorkflowDesign' | 'workflowStepStatus' | 'stepDetails' | 'thinking' | 'progressUpdate';
+export type WorkspaceType = 'proposedMission' | 'proposedWorkflowDesign' | 'workflowStepStatus' | 'stepDetails' | 'thinking' | 'progressUpdate' | 'text';
 
 export type ProgressUpdate = {
     id: string;
@@ -38,25 +38,6 @@ export type Workspace = {
     updatedAt: string;
 }
 
-export const processMessageTemplate: ProgressUpdate = {
-    id: 'process-message-template',
-    timestamp: new Date().toISOString(),
-    title: 'progress update',
-    details: 'working...',
-    status: 'in_progress'
-}
-
-export const workspaceTemplate: Workspace = {
-    id: 'workspace-template',
-    type: 'progressUpdate',
-    title: '',
-    status: 'current',
-    content: {
-        progressUpdates: [processMessageTemplate]
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-}
 
 // Asset types
 export type Asset = {

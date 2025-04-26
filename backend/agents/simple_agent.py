@@ -62,21 +62,11 @@ def getModel(node_name: str, config: Dict[str, Any], writer: Optional[Callable] 
     return ChatOpenAI(**chat_config)
 
 ### Nodes
-log_template = {
-    "id": "update-1",
-    "timestamp": datetime.now().isoformat(),
-    "title": "Update from the agent",
-    "details": "This is the first status update",
-    "icon": "📊",
-    "status": "in_progress"
-}
 
 async def mock_llm(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Mock LLM that streams responses"""
-    log_template["status"] = "in_progress"
-    log_template["details"] = "The agent is working on the task"
     if writer:
-        writer({"status": log_template})
+        writer({"status": "in_progress"})
 
     message_parts = ["Hello,", " how", " are", " you", "?"]
     for part in message_parts:
@@ -97,10 +87,8 @@ async def mock_llm(state: State, writer: StreamWriter, config: Dict[str, Any]) -
         timestamp=datetime.now().isoformat()
     )
 
-    log_template["status"] = "completed"
-    log_template["details"] = "The agent has completed the task"
     if writer:
-        writer({"status": log_template})
+        writer({"status": "completed"})
 
 
     return {"messages": [message]}

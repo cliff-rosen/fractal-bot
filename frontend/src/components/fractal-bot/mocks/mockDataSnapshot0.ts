@@ -41,7 +41,7 @@ export const mockDataSnapshot0: MockDataSnapshot = {
     chatMessages: [],
     workspace: {
         id: '',
-        type: 'workflowStepStatus',
+        type: 'text',
         title: '',
         status: 'pending',
         content: {

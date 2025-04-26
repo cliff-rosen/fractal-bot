@@ -85,6 +85,16 @@ const Workspace: React.FC<WorkspaceProps> = ({ workspace }) => {
                         )}
                     </div>
                 );
+            case 'text':
+                if (workspace.content.text) {
+                    return (
+                        <div className="mb-4">
+                            <p className="text-gray-600 whitespace-pre-wrap">{workspace.content.text}</p>
+                        </div>
+                    );
+                }
+                break;
+
             default:
                 return <div>Unsupported workspace type</div>;
         }
