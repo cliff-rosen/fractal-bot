@@ -22,6 +22,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import StreamWriter, Send
+from langgraph.graph.message import Command
 
 from schemas.bot import Message, ChatResponse, MessageRole, Mission, Tool, Asset, MissionProposal
 import os
@@ -250,11 +251,8 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
                 "next_node": next_node
             })
 
-        return {
-            "messages": [response_message],
-            "supervisor_response": supervisor_response.dict(),
-            "next_node": next_node
-        }
+        return Command(goto=next_node, mission_proposal=state["mission_proposal"])
+
 
     except Exception as e:
         if writer:
@@ -275,18 +273,8 @@ graph_builder.add_node("mission_proposal_node", mission_proposal_node)
 
 # Add edges
 graph_builder.add_edge(START, "supervisor_node")
+graph_builder.add_edge("mission_proposal_node", "supervisor_node")
 
-# Fix conditional edges
-def route_supervisor(state: Dict[str, Any]) -> str:
-    next_node = state.get("next_node")
-    if next_node == "mission_proposal_node":
-        return "mission_proposal_node"
-    return END
-
-graph_builder.add_conditional_edges(
-    "supervisor_node",
-    route_supervisor
-)
 
 # Compile the graph with streaming support
 compiled = graph_builder.compile()
