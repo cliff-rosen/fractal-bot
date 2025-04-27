@@ -50,7 +50,7 @@ async def bot_stream(request: Request, bot_request: BotRequest):
                 messages=messages,
                 mission=bot_request.mission,
                 selectedTools=bot_request.selectedTools,
-                assets=bot_request.assets
+                assets=[]
             )
             
             # Stream responses from the graph
@@ -62,6 +62,7 @@ async def bot_stream(request: Request, bot_request: BotRequest):
                 
         except Exception as e:
             # Handle errors
+            print(f"Error: {e}")
             yield {
                 "event": "error",
                 "data": json.dumps({"status": "error", "message": str(e)})

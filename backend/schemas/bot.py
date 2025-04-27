@@ -7,10 +7,12 @@ from enum import Enum
 class Asset(BaseModel):
     id: str
     name: str
-    description: str
+    type: str
     status: str
-    created_at: datetime
-    updated_at: datetime
+    content: Any
+    createdAt: str
+    updatedAt: str
+    version: int
 
 ### TOOLS ###
 
@@ -46,18 +48,18 @@ class Step(BaseModel):
     assets: Dict[str, List[str]]
     tool: Optional[Dict[str, Any]] = None
     substeps: Optional[List['Step']] = None
-    created_at: datetime
-    updated_at: datetime
+    createdAt: str
+    updatedAt: str
 
 class Stage(BaseModel):
     id: str
     name: str
     description: str
     status: str
-    steps: List['Step']
-    assets: List[Asset]
-    created_at: datetime
-    updated_at: datetime
+    steps: List[Step]
+    assets: Dict[str, List[str]]
+    createdAt: str
+    updatedAt: str
 
 class Workflow(BaseModel):
     id: str
@@ -66,8 +68,8 @@ class Workflow(BaseModel):
     status: str
     stages: List[Stage]
     assets: List[Asset]
-    created_at: datetime
-    updated_at: datetime
+    createdAt: str
+    updatedAt: str
 
 class Mission(BaseModel):
     id: str
@@ -79,8 +81,8 @@ class Mission(BaseModel):
     assets: List[Asset]
     inputs: List[str]
     outputs: List[str]
-    created_at: datetime
-    updated_at: datetime
+    createdAt: str
+    updatedAt: str
 
 ### BOT REQUEST ###
 ### CHAT ###
@@ -113,16 +115,20 @@ class ChatResponse(BaseModel):
     sideEffects: Optional[Dict[str, Any]] = Field(
         default_factory=dict,
         description="Optional side effects from the bot's response"
-    ) 
+    )
+
+class MessageHistory(BaseModel):
+    role: str
+    content: str
+    timestamp: datetime
 
 class BaseMessage(BaseModel):
     role: str
     content: str
     timestamp: datetime
 
-
 class BotRequest(BaseModel):
     message: str
-    history: List[BaseMessage]
+    history: List[MessageHistory]
     mission: Mission
     selectedTools: List[Tool]

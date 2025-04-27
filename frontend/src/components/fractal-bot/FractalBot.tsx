@@ -12,7 +12,7 @@ import { botApi } from '@/lib/api/botApi';
 import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from './types/type-defaults';
 import { Message, MessageRole } from '@/types/message';
 
-export default function App() {
+export default function FractalBot() {
   const [currentWorkspaceState, setCurrentWorkspaceState] = useState<WorkspaceState>(workspaceStateTemplate);
   const [currentMessages, setCurrentMessages] = useState<ChatMessage[]>([]);
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState<string>('');
