@@ -84,6 +84,14 @@ class Mission(BaseModel):
     createdAt: str
     updatedAt: str
 
+class MissionProposal(BaseModel):
+    title: str
+    description: str
+    goal: str
+    inputs: List[str]
+    outputs: List[str]
+    success_criteria: List[str]
+
 ### BOT REQUEST ###
 ### CHAT ###
 

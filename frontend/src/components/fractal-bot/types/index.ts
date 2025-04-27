@@ -112,7 +112,23 @@ export type Mission = {
     updatedAt: string;
 }
 
+export type MissionProposal = {
+    title: string;
+    description: string;
+    goal: string;
+    inputs: string[];
+    outputs: string[];
+    success_criteria: string[];
+}
+
 // Chat message types
+export type DataFromLine = {
+    token: string | null;
+    status: string | null;
+    mission_proposal: MissionProposal | null;
+    error: string | null;
+}
+
 export type ChatMessage = {
     id: string;
     role: 'user' | 'assistant' | 'system';
@@ -163,6 +179,6 @@ export interface Tool {
 
 export interface ItemView {
     title: string;
-    type: 'tools' | 'assets' | 'none';
+    type: 'tools' | 'assets' | 'proposedMission' | 'proposedWorkflowDesign' | 'thinking' | 'progressUpdate' | 'text' | 'none';
     isOpen: boolean;
 } 

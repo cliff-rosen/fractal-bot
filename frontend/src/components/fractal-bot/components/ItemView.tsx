@@ -1,18 +1,18 @@
 import React from 'react';
-import { ItemView as ItemViewType, Tool } from '../types/index';
+import { ItemView as ItemViewType, MissionProposal, Tool } from '../types/index';
 import ToolItemView from './ToolItemView';
-
+import ProposedMissionItem from './workspace/ProposedMissionItem';
 interface ItemViewProps {
     itemView: ItemViewType;
     tools: Tool[];
-    selectedToolIds: string[];
+    missionProposal: MissionProposal | null;
     onClose: () => void;
 }
 
 const ItemView: React.FC<ItemViewProps> = ({
     itemView,
     tools,
-    selectedToolIds,
+    missionProposal,
     onClose
 }) => {
     if (!itemView.isOpen) return null;
@@ -34,6 +34,9 @@ const ItemView: React.FC<ItemViewProps> = ({
                 <div className="h-[calc(100vh-12rem)] overflow-y-auto">
                     {itemView.type === 'tools' && (
                         <ToolItemView tools={tools} />
+                    )}
+                    {itemView.type === 'proposedMission' && (
+                        <ProposedMissionItem proposal={missionProposal} />
                     )}
                 </div>
             </div>

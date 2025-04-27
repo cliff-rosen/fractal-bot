@@ -6,7 +6,7 @@ import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType } from './types/index';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, DataFromLine, MissionProposal } from './types/index';
 import { getDataFromLine } from './utils/utils'
 import { botApi } from '@/lib/api/botApi';
 import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from './types/type-defaults';
@@ -27,6 +27,7 @@ export default function FractalBot() {
     type: 'none',
     isOpen: false
   });
+  const [currentMissionProposal, setCurrentMissionProposal] = useState<MissionProposal>();
 
   const handleToolSelect = (toolId: string) => {
     setSelectedToolIds(prev =>
@@ -59,6 +60,25 @@ export default function FractalBot() {
     }));
   };
 
+  const processBotMessage = (data: DataFromLine) => {
+    if (data.token) {
+      setCurrentStreamingMessage(prev => prev + data.token);
+    }
+    if (data.status) {
+      const newStatusMessage = data.status;
+      const currentContent = currentWorkspace.content;
+      const newContent = { ...currentContent, text: newStatusMessage };
+      setCurrentWorkspace((prevWorkspace) => ({ ...prevWorkspace, status: "current", content: newContent }));
+    }
+    if (data.mission_proposal) {
+      // setCurrentMission(prevMission => ({ ...prevMission, ...data.mission_proposal }));
+      console.log(data.mission_proposal);
+      setCurrentItemView({ title: 'Proposed Mission', type: 'proposedMission', isOpen: true });
+      setCurrentMissionProposal(data.mission_proposal);
+    }
+    return data.token;
+  }
+
   const handleSendMessage = async (message: ChatMessage) => {
     setCurrentMessages((prevMessages) => [...prevMessages, message]);
 
@@ -80,17 +100,7 @@ export default function FractalBot() {
         const lines = update.data.split('\n');
         for (const line of lines) {
           const data = getDataFromLine(line);
-
-          if (data.token) {
-            setCurrentStreamingMessage(prev => prev + data.token);
-            finalContent += data.token;
-          }
-          if (data.status) {
-            const newStatusMessage = data.status;
-            const currentContent = currentWorkspace.content;
-            const newContent = { ...currentContent, text: newStatusMessage };
-            setCurrentWorkspace((prevWorkspace) => ({ ...prevWorkspace, status: "current", content: newContent }));
-          }
+          finalContent += processBotMessage(data);
         }
       }
 
@@ -130,10 +140,7 @@ export default function FractalBot() {
               <ItemView
                 itemView={currentItemView}
                 tools={currentTools}
-                selectedToolIds={selectedToolIds}
-                onToolSelect={handleToolSelect}
-                onSelectAll={handleSelectAll}
-                onClearAll={handleClearAll}
+                missionProposal={currentMissionProposal}
                 onClose={handleCloseItemView}
               />
             </div>

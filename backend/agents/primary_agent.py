@@ -23,8 +23,10 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import StreamWriter, Send
 
-from schemas.bot import Message, ChatResponse, MessageRole, Mission, Tool, Asset
+from schemas.bot import Message, ChatResponse, MessageRole, Mission, Tool, Asset, MissionProposal
 import os
+
+from agents.prompts.mission_definition import MissionDefinitionPrompt, MissionProposal
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
@@ -38,6 +40,7 @@ class State(TypedDict):
     """State for the RAVE workflow"""
     messages: List[Message]
     mission: Mission
+    mission_proposal: MissionProposal
     selectedTools: List[Tool]
     assets: List[Asset]
 
@@ -108,16 +111,92 @@ async def llm_call(state: State, writer: StreamWriter, config: Dict[str, Any]) -
         "messages": [response_message]
     }
 
+async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
+    """Generate a mission proposal based on user input"""
+    if writer:
+        writer({"status": "in_progress"})
+
+    llm = getModel("mission_proposal", config, writer)
+    
+    # Get the last user message
+    last_message = next((msg for msg in reversed(state["messages"]) if msg.role == MessageRole.USER), None)
+    if not last_message:
+        raise ValueError("No user message found in state")
+
+    print("Creating prompt...")
+    # Create and format the prompt
+    prompt = MissionDefinitionPrompt()
+    prompt_template = prompt.get_prompt_template()
+    
+    print("Formatting tools...")
+    # Format tools as a readable string
+    tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
+    
+    print("Formatting messages...")
+    formatted_prompt = prompt_template.format_messages(
+        user_input=last_message.content,
+        available_tools=tools_str,
+        format_instructions=prompt.format_instructions
+    )
+    print(f"Formatted prompt: {formatted_prompt}")
+
+    print("Getting parser...")
+    # Get the parser
+    parser = PydanticOutputParser(pydantic_object=MissionProposal)
+
+    try:
+        print("Generating response...")
+        # Generate the response
+        response = await llm.ainvoke(formatted_prompt)
+        print(f"Response: {response}")
+
+        print("Parsing response...")
+        # Parse the response
+        mission_proposal = parser.parse(response.content)
+        print(f"Parsed mission proposal: {mission_proposal}")
+        
+        # Create a response message
+        response_message = Message(
+            id=str(uuid.uuid4()),
+            role=MessageRole.ASSISTANT,
+            content=f"I've created a mission proposal for you:\n\nTitle: {mission_proposal.title}\nGoal: {mission_proposal.goal}\n\nInputs needed:\n" + 
+                   "\n".join(f"- {input}" for input in mission_proposal.inputs) +
+                   "\n\nExpected outputs:\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) +
+                   "\n\nSuccess criteria:\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria),
+            timestamp=datetime.now().isoformat()
+        )
+
+        if writer:
+            writer({
+                "status": "completed",
+                "mission_proposal": mission_proposal.dict()
+            })
+
+        return {
+            "messages": [response_message],
+            "mission_proposal": mission_proposal.dict()
+        }
+
+    except Exception as e:
+        if writer:
+            writer({
+                "status": "error",
+                "error": str(e)
+            })
+        raise
+
 ### Graph
 
 # Define the graph
 graph_builder = StateGraph(State)
 
 # Add nodes
-graph_builder.add_node("llm_call", llm_call)
+# graph_builder.add_node("llm_call", llm_call)
+graph_builder.add_node("mission_proposal_node", mission_proposal_node)
 
 # Add edges
-graph_builder.add_edge(START, "llm_call")
+# graph_builder.add_edge(START, "llm_call")
+graph_builder.add_edge(START, "mission_proposal_node")
 
 
 # Compile the graph with streaming support

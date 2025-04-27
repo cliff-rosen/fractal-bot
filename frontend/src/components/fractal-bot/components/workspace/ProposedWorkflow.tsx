@@ -1,5 +1,5 @@
 import React from 'react';
-import { Workflow } from '../types';
+import { Workflow } from '../../../types/index';
 
 interface ProposedWorkflowProps {
     workflow: Workflow;
