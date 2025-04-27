@@ -124,6 +124,8 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
     
     # Get the last user message
     last_message = state["messages"][-1]
+    tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
+
     if not last_message:
         raise ValueError("No user message found in state")
     print(f"Last message: {last_message}")
@@ -137,8 +139,6 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
     prompt = MissionDefinitionPrompt()
     prompt_template = prompt.get_prompt_template()
     
-    # Format tools as a readable string
-    tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
     
     formatted_prompt = prompt_template.format_messages(
         user_input=last_message.content,
@@ -153,21 +153,19 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
         print("Generating response...")
         # Generate the response
         response = await llm.ainvoke(formatted_prompt)
-        print(f"Response: {response}")
 
         print("Parsing response...")
         # Parse the response
         mission_proposal = parser.parse(response.content)
-        print(f"Parsed mission proposal: {mission_proposal}")
         
         # Create a response message
         response_message = Message(
             id=str(uuid.uuid4()),
-            role=MessageRole.HUMAN,
-            content=f"From MISSION_SPECIALIST: I've created a mission proposal for you:\n\nTitle: {mission_proposal.title}\nGoal: {mission_proposal.goal}\n\nInputs needed:\n" + 
+            role=MessageRole.ASSISTANT,
+            content=f"I've analyzed your request and created a mission proposal:\n\n**Title:** {mission_proposal.title}\n**Goal:** {mission_proposal.goal}\n\n**Inputs needed:**\n" + 
                    "\n".join(f"- {input}" for input in mission_proposal.inputs) +
-                   "\n\nExpected outputs:\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) +
-                   "\n\nSuccess criteria:\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria),
+                   "\n\n**Expected outputs:**\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) +
+                   "\n\n**Success criteria:**\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria),
             timestamp=datetime.now().isoformat()
         )
 
@@ -198,7 +196,7 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
     llm = getModel("supervisor", config, writer)
     
     # Get the last user message
-    last_message = next((msg for msg in reversed(state["messages"]) if msg.role == MessageRole.USER), None)
+    last_message = state["messages"][-1]
     if not last_message:
         raise ValueError("No user message found in state")
 
@@ -251,7 +249,7 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
                 "next_node": next_node
             })
 
-        return Command(goto=next_node, mission_proposal=state["mission_proposal"])
+        return Command(goto=next_node, update={"mission_proposal": state["mission_proposal"]})
 
 
     except Exception as e:
