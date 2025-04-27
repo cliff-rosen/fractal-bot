@@ -23,7 +23,7 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import StreamWriter, Send
 
-from schemas.bot import Message, ChatResponse, MessageRole
+from schemas.bot import Message, ChatResponse, MessageRole, Mission, Tool, Asset
 import os
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -37,8 +37,9 @@ You are a helpful assistant named Jack that can answer question.
 class State(TypedDict):
     """State for the RAVE workflow"""
     messages: List[Message]
-    primary_context: str
-
+    mission: Mission
+    selectedTools: List[Tool]
+    assets: List[Asset]
 
 def validate_state(state: State) -> bool:
     """Validate the state before processing"""

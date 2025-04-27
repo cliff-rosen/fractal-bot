@@ -3,6 +3,88 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 from enum import Enum
 
+### ASSETS ###
+class Asset(BaseModel):
+    id: str
+    name: str
+    description: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+### TOOLS ###
+
+class SchemaType(BaseModel):
+    type: str
+    is_array: bool
+    name: str
+    description: str
+
+class ToolStep(BaseModel):
+    name: str
+    description: str
+    tool_id: str
+    inputs: List[SchemaType]
+    outputs: List[SchemaType]
+
+class Tool(BaseModel):
+    id: str
+    name: str
+    description: str
+    category: str
+    inputs: List[SchemaType]
+    outputs: List[SchemaType]
+    steps: Optional[List[ToolStep]] = None
+
+### WORKFLOW ###
+
+class Step(BaseModel):
+    id: str
+    name: str
+    description: str
+    status: str
+    assets: Dict[str, List[str]]
+    tool: Optional[Dict[str, Any]] = None
+    substeps: Optional[List['Step']] = None
+    created_at: datetime
+    updated_at: datetime
+
+class Stage(BaseModel):
+    id: str
+    name: str
+    description: str
+    status: str
+    steps: List['Step']
+    assets: List[Asset]
+    created_at: datetime
+    updated_at: datetime
+
+class Workflow(BaseModel):
+    id: str
+    name: str
+    description: str
+    status: str
+    stages: List[Stage]
+    assets: List[Asset]
+    created_at: datetime
+    updated_at: datetime
+
+class Mission(BaseModel):
+    id: str
+    title: str
+    description: str
+    goal: str
+    status: str
+    workflow: Workflow
+    assets: List[Asset]
+    inputs: List[str]
+    outputs: List[str]
+    created_at: datetime
+    updated_at: datetime
+
+### BOT REQUEST ###
+### CHAT ###
+
 class MessageRole(str, Enum):
     USER = "user"
     ASSISTANT = "assistant"
@@ -33,29 +115,14 @@ class ChatResponse(BaseModel):
         description="Optional side effects from the bot's response"
     ) 
 
-class MessageHistory(BaseModel):
+class BaseMessage(BaseModel):
     role: str
     content: str
     timestamp: datetime
 
-class Workflow(BaseModel):
-    id: str
-    name: str
-    description: str
-    status: str
-    created_at: datetime
-    updated_at: datetime
-
-class Mission(BaseModel):
-    id: str
-    name: str
-    description: str
-    status: str
-    workflow: Workflow
-    created_at: datetime
-    updated_at: datetime
 
 class BotRequest(BaseModel):
     message: str
-    history: List[MessageHistory] = []
+    history: List[BaseMessage]
     mission: Mission
+    selectedTools: List[Tool]

@@ -16,10 +16,13 @@ from .bot import (
     Message,
     MessageRole,
     ChatResponse,
-    Mission,
-    Workflow,
+    Asset,
     Step,
-    Stage
+    Stage,
+    Workflow,
+    Mission,
+    BotRequest,
+    Tool
 )
 
 from .file import (
@@ -158,5 +161,8 @@ __all__ = [
     'Mission',
     'Workflow',
     'Step',
-    'Stage'
+    'Stage',
+    'Asset',
+    'BotRequest',
+    'Tool'
 ]  

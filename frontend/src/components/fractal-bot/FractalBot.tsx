@@ -73,7 +73,10 @@ export default function App() {
         timestamp: new Date(msg.timestamp)
       }));
 
-      for await (const update of botApi.streamMessage(message.content, messages, currentMission)) {
+      // Get the full tool objects for selected tool IDs
+      const selectedToolObjects = currentTools.filter(tool => selectedToolIds.includes(tool.id));
+
+      for await (const update of botApi.streamMessage(message.content, messages, currentMission, selectedToolObjects)) {
         const lines = update.data.split('\n');
         for (const line of lines) {
           const data = getDataFromLine(line);

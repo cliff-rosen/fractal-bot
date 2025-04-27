@@ -9,7 +9,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from database import get_db
 from services.bot_service import BotService
-from schemas import Message, ChatResponse, MessageRole, Asset, BotRequest, Mission
+from schemas import Message, ChatResponse, MessageRole, Asset, BotRequest, Mission, Tool
 # from agents.simple_agent import graph, State
 from agents.primary_agent import graph, State
 import uuid
@@ -46,8 +46,15 @@ async def bot_stream(request: Request, bot_request: BotRequest):
             )
             messages.append(current_message)
             
+            state = State(
+                messages=messages,
+                mission=bot_request.mission,
+                selectedTools=bot_request.selectedTools,
+                assets=bot_request.assets
+            )
+            
             # Stream responses from the graph
-            async for chunk in graph.astream({"messages": messages}, stream_mode="custom"):
+            async for chunk in graph.astream(state, stream_mode="custom"):
                 yield {
                     "event": "message",
                     "data": json.dumps(chunk)
@@ -63,29 +70,3 @@ async def bot_stream(request: Request, bot_request: BotRequest):
     return EventSourceResponse(event_generator())
 
 
-@router.post("/run", response_model=ChatResponse)
-async def run_bot(
-    request: BotRequest,
-    db: Session = Depends(get_db)
-):
-    """Process a message and return the bot's response"""
-    try:
-        # Initialize bot service
-        bot_service = BotService(db)
-        
-        # Convert history to dict format
-        history = [
-            {
-                "role": msg.role,
-                "content": msg.content,
-                "timestamp": msg.timestamp
-            }
-            for msg in request.history
-        ]
-        
-        # Process message and get response
-        response = await bot_service.process_message(request.message, history, request.assets)
-        return response
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
