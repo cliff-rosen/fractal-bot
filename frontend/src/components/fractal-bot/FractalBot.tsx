@@ -61,21 +61,25 @@ export default function FractalBot() {
   };
 
   const processBotMessage = (data: DataFromLine) => {
+
     if (data.token) {
       setCurrentStreamingMessage(prev => prev + data.token);
     }
+
     if (data.status) {
       const newStatusMessage = data.status;
       const currentContent = currentWorkspace.content;
       const newContent = { ...currentContent, text: newStatusMessage };
       setCurrentWorkspace((prevWorkspace) => ({ ...prevWorkspace, status: "current", content: newContent }));
     }
+
     if (data.mission_proposal) {
       // setCurrentMission(prevMission => ({ ...prevMission, ...data.mission_proposal }));
       console.log(data.mission_proposal);
       setCurrentItemView({ title: 'Proposed Mission', type: 'proposedMission', isOpen: true });
       setCurrentMissionProposal(data.mission_proposal);
     }
+    
     return data.token || "";
   }
 

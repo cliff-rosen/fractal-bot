@@ -27,6 +27,7 @@ from schemas.bot import Message, ChatResponse, MessageRole, Mission, Tool, Asset
 import os
 
 from agents.prompts.mission_definition import MissionDefinitionPrompt, MissionProposal
+from agents.prompts.supervisor_prompt import SupervisorPrompt, SupervisorResponse
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
@@ -43,6 +44,8 @@ class State(TypedDict):
     mission_proposal: MissionProposal
     selectedTools: List[Tool]
     assets: List[Asset]
+    supervisor_response: SupervisorResponse
+    next_node: str
 
 def validate_state(state: State) -> bool:
     """Validate the state before processing"""
@@ -114,7 +117,7 @@ async def llm_call(state: State, writer: StreamWriter, config: Dict[str, Any]) -
 async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Generate a mission proposal based on user input"""
     if writer:
-        writer({"status": "in_progress"})
+        writer({"status": "mission_proposal_in_progress"})
 
     llm = getModel("mission_proposal", config, writer)
     
@@ -123,24 +126,19 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
     if not last_message:
         raise ValueError("No user message found in state")
 
-    print("Creating prompt...")
     # Create and format the prompt
     prompt = MissionDefinitionPrompt()
     prompt_template = prompt.get_prompt_template()
     
-    print("Formatting tools...")
     # Format tools as a readable string
     tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
     
-    print("Formatting messages...")
     formatted_prompt = prompt_template.format_messages(
         user_input=last_message.content,
         available_tools=tools_str,
         format_instructions=prompt.format_instructions
     )
-    print(f"Formatted prompt: {formatted_prompt}")
 
-    print("Getting parser...")
     # Get the parser
     parser = PydanticOutputParser(pydantic_object=MissionProposal)
 
@@ -168,7 +166,7 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
 
         if writer:
             writer({
-                "status": "completed",
+                "status": "mission_proposal_completed",
                 "mission_proposal": mission_proposal.dict()
             })
 
@@ -185,19 +183,104 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
             })
         raise
 
+async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
+    """Supervisor node that either answers directly or routes to specialists"""
+    if writer:
+        writer({"status": "supervisor_starting"})
+
+    llm = getModel("supervisor", config, writer)
+    
+    # Get the last user message
+    last_message = next((msg for msg in reversed(state["messages"]) if msg.role == MessageRole.USER), None)
+    if not last_message:
+        raise ValueError("No user message found in state")
+
+    # Create and format the prompt
+    prompt = SupervisorPrompt()
+    prompt_template = prompt.get_prompt_template()
+    
+    formatted_prompt = prompt_template.format_messages(
+        user_input=last_message.content,
+        format_instructions=prompt.format_instructions
+    )
+
+    # Get the parser
+    parser = PydanticOutputParser(pydantic_object=SupervisorResponse)
+
+    try:
+        # Generate the response
+        response = await llm.ainvoke(formatted_prompt)
+        
+        # Parse the response
+        supervisor_response = parser.parse(response.content)
+        
+        # Create a response message
+        response_message = Message(
+            id=str(uuid.uuid4()),
+            role=MessageRole.ASSISTANT,
+            content=supervisor_response.response_content,
+            timestamp=datetime.now().isoformat()
+        )
+
+        # Based on response type, determine next node
+        next_node = None
+        if supervisor_response.response_type == "MISSION_SPECIALIST":
+            next_node = "mission_proposal_node"
+        elif supervisor_response.response_type == "WORKFLOW_SPECIALIST":
+            next_node = "workflow_node"  # You'll need to implement this node
+        else:
+            next_node = END
+
+        # if final answer send token
+        if supervisor_response.response_type == "FINAL_ANSWER":
+            writer({
+                 "token": response_message.content
+            })
+
+        if writer:
+            writer({
+                "status": "supervisor_completed: " + supervisor_response.response_type,
+                "supervisor_response": supervisor_response.dict(),
+                "next_node": next_node
+            })
+
+        return {
+            "messages": [response_message],
+            "supervisor_response": supervisor_response.dict(),
+            "next_node": next_node
+        }
+
+    except Exception as e:
+        if writer:
+            writer({
+                "status": "error",
+                "error": str(e)
+            })
+        raise
+
 ### Graph
 
 # Define the graph
 graph_builder = StateGraph(State)
 
 # Add nodes
-# graph_builder.add_node("llm_call", llm_call)
+graph_builder.add_node("supervisor_node", supervisor_node)
 graph_builder.add_node("mission_proposal_node", mission_proposal_node)
 
 # Add edges
-# graph_builder.add_edge(START, "llm_call")
-graph_builder.add_edge(START, "mission_proposal_node")
+graph_builder.add_edge(START, "supervisor_node")
 
+# Fix conditional edges
+def route_supervisor(state: Dict[str, Any]) -> str:
+    next_node = state.get("next_node")
+    if next_node == "mission_proposal_node":
+        return "mission_proposal_node"
+    return END
+
+graph_builder.add_conditional_edges(
+    "supervisor_node",
+    route_supervisor
+)
 
 # Compile the graph with streaming support
 compiled = graph_builder.compile()

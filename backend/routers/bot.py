@@ -49,6 +49,9 @@ async def bot_stream(request: Request, bot_request: BotRequest):
             state = State(
                 messages=messages,
                 mission=bot_request.mission,
+                mission_proposal=None,
+                supervisor_response=None,
+                next_node=None,
                 selectedTools=bot_request.selectedTools,
                 assets=[]
             )
