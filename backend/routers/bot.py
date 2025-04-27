@@ -9,7 +9,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from database import get_db
 from services.bot_service import BotService
-from schemas import Message, ChatResponse, MessageRole, Asset, BotRequest
+from schemas import Message, ChatResponse, MessageRole, Asset, BotRequest, Mission
 # from agents.simple_agent import graph, State
 from agents.primary_agent import graph, State
 import uuid

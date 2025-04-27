@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 from enum import Enum
-from schemas.asset import Asset
 
 class MessageRole(str, Enum):
     USER = "user"
@@ -39,7 +38,24 @@ class MessageHistory(BaseModel):
     content: str
     timestamp: datetime
 
+class Workflow(BaseModel):
+    id: str
+    name: str
+    description: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+class Mission(BaseModel):
+    id: str
+    name: str
+    description: str
+    status: str
+    workflow: Workflow
+    created_at: datetime
+    updated_at: datetime
+
 class BotRequest(BaseModel):
     message: str
     history: List[MessageHistory] = []
-    assets: List[Asset] = []
+    mission: Mission

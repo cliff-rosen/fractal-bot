@@ -1,4 +1,5 @@
 import { Message, ChatResponse, Asset } from '../../components/fractal-bot/types/state';
+import { Mission } from '../../components/fractal-bot/types';
 import { api, handleApiError } from './index';
 import { makeStreamRequest, StreamUpdate } from './streamUtils';
 import settings from '../../config/settings';
@@ -12,15 +13,14 @@ export interface MessageHistory {
 export interface SendMessageRequest {
     message: string;
     history: MessageHistory[];
-    assets: Asset[];
+    mission: Mission;
 }
 
 export interface SendMessageResponse extends ChatResponse { }
 
 export const botApi = {
 
-
-    streamMessage: async function* (message: string, history: Message[]): AsyncGenerator<StreamUpdate> {
+    streamMessage: async function* (message: string, history: Message[], mission: Mission): AsyncGenerator<StreamUpdate> {
         // Convert Message[] to MessageHistory[]
         const messageHistory: MessageHistory[] = history.map(msg => ({
             role: msg.role,
@@ -31,15 +31,13 @@ export const botApi = {
         const requestBody = {
             message,
             history: messageHistory,
-            assets: [] // We can add assets support later if needed
+            mission
         };
 
         yield* makeStreamRequest('/api/bot/stream', requestBody, 'POST');
     },
 
-
-
-    sendMessage: async (message: string, history: Message[], assets: Asset[]): Promise<SendMessageResponse> => {
+    sendMessage: async (message: string, history: Message[], mission: Mission): Promise<SendMessageResponse> => {
         try {
             // Convert Message[] to MessageHistory[]
             const messageHistory: MessageHistory[] = history.map(msg => ({
@@ -51,7 +49,7 @@ export const botApi = {
             const response = await api.post<SendMessageResponse>('/api/bot/run', {
                 message,
                 history: messageHistory,
-                assets
+                mission
             });
             return response.data;
         } catch (error) {

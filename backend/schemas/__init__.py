@@ -3,15 +3,7 @@ Schemas package for Fractal Bot API
 """
 
 from .search import SearchResult, URLContent, FetchURLsRequest
-from .email import (
-    EmailLabel,
-    EmailMessage,
-    EmailAttachment,
-    DateRange,
-    EmailSearchParams,
-    EmailAgentResponse
-)
-
+from .asset import Asset
 from .auth import (
     UserBase,
     UserCreate,
@@ -23,7 +15,11 @@ from .auth import (
 from .bot import (
     Message,
     MessageRole,
-    ChatResponse
+    ChatResponse,
+    Mission,
+    Workflow,
+    Step,
+    Stage
 )
 
 from .file import (
@@ -157,4 +153,10 @@ __all__ = [
     'ActionButton',
     'Asset',
     'Agent'
+
+    #Bot schemas
+    'Mission',
+    'Workflow',
+    'Step',
+    'Stage'
 ]  

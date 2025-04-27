@@ -73,7 +73,7 @@ export default function App() {
         timestamp: new Date(msg.timestamp)
       }));
 
-      for await (const update of botApi.streamMessage(message.content, messages)) {
+      for await (const update of botApi.streamMessage(message.content, messages, currentMission)) {
         const lines = update.data.split('\n');
         for (const line of lines) {
           const data = getDataFromLine(line);
