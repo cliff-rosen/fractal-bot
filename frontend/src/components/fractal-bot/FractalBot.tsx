@@ -76,7 +76,7 @@ export default function FractalBot() {
       setCurrentItemView({ title: 'Proposed Mission', type: 'proposedMission', isOpen: true });
       setCurrentMissionProposal(data.mission_proposal);
     }
-    return data.token;
+    return data.token || "";
   }
 
   const handleSendMessage = async (message: ChatMessage) => {
@@ -102,6 +102,10 @@ export default function FractalBot() {
           const data = getDataFromLine(line);
           finalContent += processBotMessage(data);
         }
+      }
+
+      if (finalContent.length === 0) {
+        finalContent = "No direct response from the bot. Check item view for more information.";
       }
 
       // Update the final message with the complete content
