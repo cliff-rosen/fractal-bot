@@ -13,14 +13,14 @@ import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTempla
 import { Message, MessageRole } from '@/types/message';
 
 export default function App() {
-  const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>(workspaceTemplate);
-  const [currentMission, setCurrentMission] = useState<MissionType>(missionTemplate);
-  const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowType>(workflowTemplate);
-  const [currentAssets, setCurrentAssets] = useState<Asset[]>(assetsTemplate);
   const [currentWorkspaceState, setCurrentWorkspaceState] = useState<WorkspaceState>(workspaceStateTemplate);
   const [currentMessages, setCurrentMessages] = useState<ChatMessage[]>([]);
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState<string>('');
+  const [currentMission, setCurrentMission] = useState<MissionType>(missionTemplate);
+  const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowType>(workflowTemplate);
+  const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>(workspaceTemplate);
   const [currentTools, setCurrentTools] = useState<Tool[]>(toolsTemplate);
+  const [currentAssets, setCurrentAssets] = useState<Asset[]>(assetsTemplate);
   const [selectedToolIds, setSelectedToolIds] = useState<string[]>([]);
   const [currentItemView, setCurrentItemView] = useState<ItemViewType>({
     title: '',

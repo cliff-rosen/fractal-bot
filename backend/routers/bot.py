@@ -9,21 +9,14 @@ from sse_starlette.sse import EventSourceResponse
 
 from database import get_db
 from services.bot_service import BotService
-from schemas import Message, ChatResponse, MessageRole, Asset
-from agents.simple_agent import graph, State
+from schemas import Message, ChatResponse, MessageRole, Asset, BotRequest
+# from agents.simple_agent import graph, State
+from agents.primary_agent import graph, State
 import uuid
+import os
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 router = APIRouter(prefix="/api/bot", tags=["bot"])
-
-class MessageHistory(BaseModel):
-    role: str
-    content: str
-    timestamp: datetime
-
-class BotRequest(BaseModel):
-    message: str
-    history: List[MessageHistory] = []
-    assets: List[Asset] = []
 
 
 @router.post("/stream")
@@ -68,8 +61,6 @@ async def bot_stream(request: Request, bot_request: BotRequest):
             }
     
     return EventSourceResponse(event_generator())
-
-
 
 
 @router.post("/run", response_model=ChatResponse)

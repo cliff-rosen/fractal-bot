@@ -34,7 +34,7 @@ from ..config.settings import (
     SERPAPI_API_KEY
 )
 
-from .utils.prompts import (
+from .prompts.prompts import (
     create_evaluator_prompt,
     create_gap_analyzer_prompt,
     create_query_generator_prompt,

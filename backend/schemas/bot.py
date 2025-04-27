@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 from enum import Enum
+from schemas.asset import Asset
 
 class MessageRole(str, Enum):
     USER = "user"
@@ -32,3 +33,13 @@ class ChatResponse(BaseModel):
         default_factory=dict,
         description="Optional side effects from the bot's response"
     ) 
+
+class MessageHistory(BaseModel):
+    role: str
+    content: str
+    timestamp: datetime
+
+class BotRequest(BaseModel):
+    message: str
+    history: List[MessageHistory] = []
+    assets: List[Asset] = []

@@ -135,14 +135,20 @@ export const toolsTemplate: Tool[] = [
                 is_array: false,
                 name: 'Knowledge Item',
                 description: 'The information to add to the knowledge base'
-            }
+            },
+            {
+                type: 'object',
+                is_array: false,
+                name: 'Knowledge KB',
+                description: 'The knowledge base to add the information to'
+            }            
         ],
         outputs: [
             {
-                type: 'string',
+                type: 'object',
                 is_array: false,
-                name: 'Knowledge ID',
-                description: 'Unique identifier for the added knowledge'
+                name: 'Knowledge KB',
+                description: 'The updated knowledge base'
             }
         ]
     },
