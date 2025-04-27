@@ -5,6 +5,7 @@ interface DataFromLine {
     status: string | null;
     mission_proposal: MissionProposal | null;
     error: string | null;
+    message: string | null;
 }
 
 export function getDataFromLine(line: string): DataFromLine {
@@ -31,6 +32,12 @@ export function getDataFromLine(line: string): DataFromLine {
         }
         if (data.mission_proposal) {
             res.mission_proposal = data.mission_proposal;
+        }
+        if (data.message) {
+            res.message = data.message;
+        }
+        if (data.error) {
+            res.error = data.error;
         }
     } catch (e) {
         res.error = e instanceof Error ? e.message : String(e);

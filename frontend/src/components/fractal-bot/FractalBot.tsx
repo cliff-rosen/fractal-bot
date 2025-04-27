@@ -6,6 +6,7 @@ import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
+import StatusHistory from './components/StatusHistory';
 import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, DataFromLine, MissionProposal } from './types/index';
 import { getDataFromLine } from './utils/utils'
 import { botApi } from '@/lib/api/botApi';
@@ -28,6 +29,8 @@ export default function FractalBot() {
     isOpen: false
   });
   const [currentMissionProposal, setCurrentMissionProposal] = useState<MissionProposal>();
+  const [activeView, setActiveView] = useState<'workspace' | 'history'>('workspace');
+  const [statusHistory, setStatusHistory] = useState<string[]>([]);
 
   const handleToolSelect = (toolId: string) => {
     setSelectedToolIds(prev =>
@@ -71,6 +74,17 @@ export default function FractalBot() {
       const currentContent = currentWorkspace.content;
       const newContent = { ...currentContent, text: newStatusMessage };
       setCurrentWorkspace((prevWorkspace) => ({ ...prevWorkspace, status: "current", content: newContent }));
+      var message = ""
+      var error = ""
+      if (data.message) {
+        message = data.message;
+      }
+      if (data.error) {
+        error = data.error;
+      }
+      const messageToAdd = newStatusMessage + " " + message + " " + error;
+      console.log(data)
+      setStatusHistory(prev => [...prev, messageToAdd]);
     }
 
     if (data.mission_proposal) {
@@ -79,7 +93,7 @@ export default function FractalBot() {
       setCurrentItemView({ title: 'Proposed Mission', type: 'proposedMission', isOpen: true });
       setCurrentMissionProposal(data.mission_proposal);
     }
-    
+
     return data.token || "";
   }
 
@@ -169,9 +183,39 @@ export default function FractalBot() {
                   />
                 </div>
 
-                {/* Workspace Canvas */}
+                {/* View Toggle */}
+                <div className="flex justify-end mb-4">
+                  <div className="inline-flex rounded-md shadow-sm" role="group">
+                    <button
+                      type="button"
+                      onClick={() => setActiveView('workspace')}
+                      className={`px-4 py-2 text-sm font-medium rounded-l-lg ${activeView === 'workspace'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                        }`}
+                    >
+                      Workspace
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveView('history')}
+                      className={`px-4 py-2 text-sm font-medium rounded-r-lg ${activeView === 'history'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                        }`}
+                    >
+                      Status History
+                    </button>
+                  </div>
+                </div>
+
+                {/* Workspace Canvas or Status History */}
                 <div className="flex-1 overflow-y-auto">
-                  <Workspace workspace={currentWorkspace} />
+                  {activeView === 'workspace' ? (
+                    <Workspace workspace={currentWorkspace} />
+                  ) : (
+                    <StatusHistory messages={statusHistory} />
+                  )}
                 </div>
               </div>
 

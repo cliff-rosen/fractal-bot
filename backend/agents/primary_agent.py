@@ -21,8 +21,8 @@ from langchain_community.document_loaders import WebBaseLoader
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.types import StreamWriter, Send
-from langgraph.graph.message import Command
+from langgraph.types import StreamWriter, Send, Command
+
 
 from schemas.bot import Message, ChatResponse, MessageRole, Mission, Tool, Asset, MissionProposal
 import os
@@ -163,8 +163,8 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
         # Create a response message
         response_message = Message(
             id=str(uuid.uuid4()),
-            role=MessageRole.ASSISTANT,
-            content=f"I've created a mission proposal for you:\n\nTitle: {mission_proposal.title}\nGoal: {mission_proposal.goal}\n\nInputs needed:\n" + 
+            role=MessageRole.HUMAN,
+            content=f"From MISSION_SPECIALIST: I've created a mission proposal for you:\n\nTitle: {mission_proposal.title}\nGoal: {mission_proposal.goal}\n\nInputs needed:\n" + 
                    "\n".join(f"- {input}" for input in mission_proposal.inputs) +
                    "\n\nExpected outputs:\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) +
                    "\n\nSuccess criteria:\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria),

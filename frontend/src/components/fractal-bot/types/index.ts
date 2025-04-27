@@ -127,6 +127,7 @@ export type DataFromLine = {
     status: string | null;
     mission_proposal: MissionProposal | null;
     error: string | null;
+    message: string | null;
 }
 
 export type ChatMessage = {
