@@ -122,9 +122,15 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
     llm = getModel("mission_proposal", config, writer)
     
     # Get the last user message
-    last_message = next((msg for msg in reversed(state["messages"]) if msg.role == MessageRole.USER), None)
+    last_message = state["messages"][-1]
     if not last_message:
         raise ValueError("No user message found in state")
+    print(f"Last message: {last_message}")
+
+    if writer:
+        writer({
+            "status": "mission_proposal_request: " + last_message.content
+        })
 
     # Create and format the prompt
     prompt = MissionDefinitionPrompt()
