@@ -35,18 +35,18 @@ export default function Mission({ className = '', mission }: MissionProps) {
 
     return (
         <div className={`dark:bg-[#1e2330] ${className}`}>
-            <div className="flex items-start justify-between p-6">
-                <div>
-                    <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Mission</h2>
-                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-200 mt-1">{mission.title}</h1>
-                    <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {mission.description}
-                    </p>
-                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">Goal:</span> {mission.goal}
-                    </p>
-                </div>
-                <div className="flex items-center">
+            <div className="p-6">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Mission</h2>
+                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-200 mt-1">{mission.title}</h1>
+                        <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
+                            {mission.description}
+                        </p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-medium">Goal:</span> {mission.goal}
+                        </p>
+                    </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
                         {getStatusText(mission.status)}
                     </span>

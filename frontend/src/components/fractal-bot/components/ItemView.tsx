@@ -5,12 +5,14 @@ import ToolItemView from './ToolItemView';
 interface ItemViewProps {
     itemView: ItemViewType;
     tools: Tool[];
+    selectedToolIds: string[];
     onClose: () => void;
 }
 
 const ItemView: React.FC<ItemViewProps> = ({
     itemView,
     tools,
+    selectedToolIds,
     onClose
 }) => {
     if (!itemView.isOpen) return null;
