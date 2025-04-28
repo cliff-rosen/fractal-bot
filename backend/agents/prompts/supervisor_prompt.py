@@ -1,19 +1,18 @@
-from typing import List, Dict, Any
+from typing import Dict, Any
 from pydantic import BaseModel, Field
-from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from .base_prompt import BasePrompt
 
 class SupervisorResponse(BaseModel):
     """Structure for supervisor's response"""
     response_type: str = Field(description="Type of response: FINAL_ANSWER, MISSION_SPECIALIST, or WORKFLOW_SPECIALIST")
     response_content: str = Field(description="Content of the response - either direct answer or specialist request summary")
 
-class SupervisorPrompt:
+class SupervisorPrompt(BasePrompt):
     """Prompt template for supervisor"""
     
     def __init__(self):
-        self.parser = PydanticOutputParser(pydantic_object=SupervisorResponse)
-        self.format_instructions = self.parser.get_format_instructions()
+        super().__init__(SupervisorResponse)
         
         self.system_message = """You are the supervisor of FractalBot, an AI system designed to answer complex questions through structured mission planning and disciplined workflow execution.
 

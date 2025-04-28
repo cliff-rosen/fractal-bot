@@ -135,37 +135,29 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
             "status": "mission_proposal_request: " + last_message.content
         })
 
-    # Create and format the prompt
-    prompt = MissionDefinitionPrompt()
-    prompt_template = prompt.get_prompt_template()
-    
-    
-    formatted_prompt = prompt_template.format_messages(
-        user_input=last_message.content,
-        available_tools=tools_str,
-        format_instructions=prompt.format_instructions
-    )
-
-    # Get the parser
-    parser = PydanticOutputParser(pydantic_object=MissionProposal)
-
     try:
+        # Create and format the prompt
+        prompt = MissionDefinitionPrompt()
+        formatted_prompt = prompt.get_formatted_prompt(
+            user_input=last_message.content,
+            available_tools=tools_str
+        )
+
         print("Generating response...")
-        # Generate the response
+        # Generate and parse the response
         response = await llm.ainvoke(formatted_prompt)
 
         print("Parsing response...")
-        # Parse the response
-        mission_proposal = parser.parse(response.content)
+
+        mission_proposal = prompt.parse_response(response.content)
         
+        mission_proposal_str = f"**Title:** {mission_proposal.title}\n**Goal:** {mission_proposal.goal}\n\n**Inputs needed:**\n" + "\n".join(f"- {input}" for input in mission_proposal.inputs) + "\n\n**Expected outputs:**\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) + "\n\n**Success criteria:**\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria)
+
         # Create a response message
         response_message = Message(
             id=str(uuid.uuid4()),
             role=MessageRole.ASSISTANT,
-            content=f"I've analyzed your request and created a mission proposal:\n\n**Title:** {mission_proposal.title}\n**Goal:** {mission_proposal.goal}\n\n**Inputs needed:**\n" + 
-                   "\n".join(f"- {input}" for input in mission_proposal.inputs) +
-                   "\n\n**Expected outputs:**\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) +
-                   "\n\n**Success criteria:**\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria),
+            content=mission_proposal_str,
             timestamp=datetime.now().isoformat()
         )
 
@@ -191,7 +183,7 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
 async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Supervisor node that either answers directly or routes to specialists"""
     if writer:
-        writer({"status": "supervisor_starting"})
+        writer({"status": "supervisor_starting x"})
 
     llm = getModel("supervisor", config, writer)
     
@@ -200,24 +192,49 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
     if not last_message:
         raise ValueError("No user message found in state")
 
-    # Create and format the prompt
-    prompt = SupervisorPrompt()
-    prompt_template = prompt.get_prompt_template()
-    
-    formatted_prompt = prompt_template.format_messages(
-        user_input=last_message.content,
-        format_instructions=prompt.format_instructions
-    )
+    # Check if we already have a mission proposal in the conversation
+    mission_proposal = state.get("mission_proposal")
+    if mission_proposal:
+        # If we have a mission proposal, provide a final answer explaining it
+        response_message = Message(
+            id=str(uuid.uuid4()),
+            role=MessageRole.ASSISTANT,
+            content=f"I've created a mission to help you with your request. Here's what we'll do:\n\n"
+                   f"**Mission Title:** {mission_proposal['title']}\n"
+                   f"**Goal:** {mission_proposal['goal']}\n\n"
+                   f"We'll need the following inputs:\n" + 
+                   "\n".join(f"- {input}" for input in mission_proposal['inputs']) +
+                   f"\n\nAnd we'll deliver:\n" + 
+                   "\n".join(f"- {output}" for output in mission_proposal['outputs']) +
+                   f"\n\nWe'll know we've succeeded when:\n" + 
+                   "\n".join(f"- {criteria}" for criteria in mission_proposal['success_criteria']) +
+                   "\n\nWould you like to proceed with this mission?",
+            timestamp=datetime.now().isoformat()
+        )
 
-    # Get the parser
-    parser = PydanticOutputParser(pydantic_object=SupervisorResponse)
+        if writer:
+            writer({
+                "status": "supervisor_completed: FINAL_ANSWER",
+                "supervisor_response": {
+                    "response_type": "FINAL_ANSWER",
+                    "response_content": response_message.content
+                },
+                "token": response_message.content,
+                "next_node": END
+            })
+
+        return Command(goto=END, update={"messages": [response_message]})
 
     try:
-        # Generate the response
+        # Create and format the prompt
+        prompt = SupervisorPrompt()
+        formatted_prompt = prompt.get_formatted_prompt(
+            user_input=last_message.content
+        )
+
+        # Generate and parse the response
         response = await llm.ainvoke(formatted_prompt)
-        
-        # Parse the response
-        supervisor_response = parser.parse(response.content)
+        supervisor_response = prompt.parse_response(response.content)
         
         # Create a response message
         response_message = Message(
@@ -235,22 +252,20 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
             next_node = "workflow_node"  # You'll need to implement this node
         else:
             next_node = END
+            print("No next node found")
 
-        # if final answer send token
-        if supervisor_response.response_type == "FINAL_ANSWER":
-            writer({
-                 "token": response_message.content
-            })
+        print("Supervisor response:")
+        print(supervisor_response)
 
         if writer:
             writer({
-                "status": "supervisor_completed: " + supervisor_response.response_type,
+                "token": "DELEGATED: " + supervisor_response.response_content,
+                "status": "supervisor_completed x: " + supervisor_response.response_type,
                 "supervisor_response": supervisor_response.dict(),
                 "next_node": next_node
             })
 
-        return Command(goto=next_node, update={"mission_proposal": state["mission_proposal"]})
-
+        return Command(goto=next_node, update={"messages": [response_message]})
 
     except Exception as e:
         if writer:

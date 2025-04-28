@@ -1,22 +1,21 @@
-from typing import List, Dict, Any
+from typing import Dict, Any
 from pydantic import BaseModel, Field
-from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from .base_prompt import BasePrompt
 
 class MissionProposal(BaseModel):
-    """Essential structure for a mission proposal"""
-    title: str = Field(description="Clear, concise title of the mission")
-    goal: str = Field(description="Specific, measurable objective")
-    inputs: List[str] = Field(description="Required input materials or data")
-    outputs: List[str] = Field(description="Expected deliverables")
-    success_criteria: List[str] = Field(description="Key metrics for mission success")
+    """Structure for mission proposal"""
+    title: str = Field(description="Title of the mission")
+    goal: str = Field(description="Clear goal statement")
+    inputs: list[str] = Field(description="List of required inputs")
+    outputs: list[str] = Field(description="List of expected outputs")
+    success_criteria: list[str] = Field(description="List of success criteria")
 
-class MissionDefinitionPrompt:
+class MissionDefinitionPrompt(BasePrompt):
     """Prompt template for mission definition"""
     
     def __init__(self):
-        self.parser = PydanticOutputParser(pydantic_object=MissionProposal)
-        self.format_instructions = self.parser.get_format_instructions()
+        super().__init__(MissionProposal)
         
         self.system_message = """You are an AI assistant that helps users define clear, focused missions. 
 Your role is to extract the essential elements of what the user wants to accomplish and structure it into a mission proposal.
