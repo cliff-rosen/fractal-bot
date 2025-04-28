@@ -14,10 +14,11 @@ import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTempla
 import { Message, MessageRole } from '@/types/message';
 
 export default function FractalBot() {
+  const [currentMission, setCurrentMission] = useState<MissionType>(missionTemplate);
+  const [currentMissionProposal, setCurrentMissionProposal] = useState<MissionProposal>();
   const [currentWorkspaceState, setCurrentWorkspaceState] = useState<WorkspaceState>(workspaceStateTemplate);
   const [currentMessages, setCurrentMessages] = useState<ChatMessage[]>([]);
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState<string>('');
-  const [currentMission, setCurrentMission] = useState<MissionType>(missionTemplate);
   const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowType>(workflowTemplate);
   const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>(workspaceTemplate);
   const [currentTools, setCurrentTools] = useState<Tool[]>(toolsTemplate);
@@ -28,7 +29,6 @@ export default function FractalBot() {
     type: 'none',
     isOpen: false
   });
-  const [currentMissionProposal, setCurrentMissionProposal] = useState<MissionProposal>();
   const [activeView, setActiveView] = useState<'workspace' | 'history'>('history');
   const [statusHistory, setStatusHistory] = useState<string[]>([]);
 

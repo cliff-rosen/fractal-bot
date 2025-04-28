@@ -6,6 +6,7 @@ interface DataFromLine {
     mission_proposal: MissionProposal | null;
     error: string | null;
     message: string | null;
+    steps_generator: StepsGenerator | null;
 }
 
 export function getDataFromLine(line: string): DataFromLine {
@@ -13,7 +14,9 @@ export function getDataFromLine(line: string): DataFromLine {
         token: null,
         status: null,
         mission_proposal: null,
-        error: null
+        error: null,
+        message: null,
+        steps_generator: null
     };
 
     if (!line.startsWith('data: ')) {
@@ -38,6 +41,9 @@ export function getDataFromLine(line: string): DataFromLine {
         }
         if (data.error) {
             res.error = data.error;
+        }
+        if (data.steps_generator) {
+            res.steps_generator = data.steps_generator;
         }
     } catch (e) {
         res.error = e instanceof Error ? e.message : String(e);
@@ -64,7 +70,7 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
     return {
         id: crypto.randomUUID(),
         title: proposal.title,
-        description: proposal.description,
+        description: proposal.goal,
         goal: proposal.goal,
         status: 'pending' as Status,
         workflow: emptyWorkflow,

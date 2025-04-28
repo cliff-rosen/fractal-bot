@@ -2,6 +2,7 @@ import React from 'react';
 import type { Mission as MissionType, Tool } from '../types/index';
 import { botApi } from '@/lib/api/botApi';
 import { ChatMessage } from '../types/index';
+import { getDataFromLine } from '../utils/utils';
 
 interface MissionProps {
     className?: string;
@@ -20,6 +21,7 @@ export default function Mission({
     onWorkflowGenerated,
     onTokenUpdate
 }: MissionProps) {
+
     const getStatusColor = (status: MissionType['status']) => {
         switch (status) {
             case 'completed':
@@ -54,21 +56,25 @@ export default function Mission({
                 mission,
                 selectedTools
             )) {
-                const data = JSON.parse(update.data);
+                const lines = update.data.split('\n');
+                for (const line of lines) {
+                    const data = getDataFromLine(line);
 
-                // Handle status updates
-                if (data.status) {
-                    onStatusUpdate(data.status);
-                }
+                    // Handle status updates
+                    if (data.status) {
+                        onStatusUpdate(data.status);
+                    }
 
-                // Handle the final workflow
-                if (data.steps_generator) {
-                    onWorkflowGenerated(data.steps_generator);
-                }
+                    // Handle the final workflow
+                    if (data.steps_generator) {
+                        console.log("data.steps_generator", data.steps_generator);
+                        onWorkflowGenerated(data.steps_generator);
+                    }
 
-                // Handle the token
-                if (data.token) {
-                    onTokenUpdate(data.token);
+                    // Handle the token
+                    if (data.token) {
+                        onTokenUpdate(data.token);
+                    }
                 }
             }
         } catch (error) {
@@ -97,7 +103,7 @@ export default function Mission({
                         </span>
                         <button
                             onClick={handleGenerateWorkflow}
-                            className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                            className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors"
                         >
                             Generate Workflow
                         </button>
