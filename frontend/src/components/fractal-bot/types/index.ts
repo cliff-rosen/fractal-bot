@@ -108,6 +108,7 @@ export type Mission = {
     assets: Asset[];
     inputs: string[]; // Asset IDs
     outputs: string[]; // Asset IDs
+    success_criteria: string[];
     createdAt: string;
     updatedAt: string;
 }

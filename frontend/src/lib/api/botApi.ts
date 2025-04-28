@@ -2,7 +2,6 @@ import { Message, ChatResponse, Asset } from '../../components/fractal-bot/types
 import { Mission, Tool } from '../../components/fractal-bot/types';
 import { api, handleApiError } from './index';
 import { makeStreamRequest, StreamUpdate } from './streamUtils';
-import settings from '../../config/settings';
 
 export interface MessageHistory {
     role: string;

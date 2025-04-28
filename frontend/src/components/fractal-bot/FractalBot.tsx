@@ -8,7 +8,7 @@ import Tools from './components/Tools';
 import ItemView from './components/ItemView';
 import StatusHistory from './components/StatusHistory';
 import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, DataFromLine, MissionProposal } from './types/index';
-import { getDataFromLine } from './utils/utils'
+import { createMissionFromProposal, getDataFromLine } from './utils/utils'
 import { botApi } from '@/lib/api/botApi';
 import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from './types/type-defaults';
 import { Message, MessageRole } from '@/types/message';
@@ -29,7 +29,7 @@ export default function FractalBot() {
     isOpen: false
   });
   const [currentMissionProposal, setCurrentMissionProposal] = useState<MissionProposal>();
-  const [activeView, setActiveView] = useState<'workspace' | 'history'>('workspace');
+  const [activeView, setActiveView] = useState<'workspace' | 'history'>('history');
   const [statusHistory, setStatusHistory] = useState<string[]>([]);
 
   const handleToolSelect = (toolId: string) => {
@@ -83,14 +83,15 @@ export default function FractalBot() {
         error = data.error;
       }
       const messageToAdd = newStatusMessage + " " + message + " " + error;
-      console.log(data)
       setStatusHistory(prev => [...prev, messageToAdd]);
     }
 
     if (data.mission_proposal) {
       // setCurrentMission(prevMission => ({ ...prevMission, ...data.mission_proposal }));
-      console.log(data.mission_proposal);
-      setCurrentItemView({ title: 'Proposed Mission', type: 'proposedMission', isOpen: true });
+      console.log("mission_proposal", data.mission_proposal);
+      //setCurrentItemView({ title: 'Proposed Mission', type: 'proposedMission', isOpen: true });
+      const new_mission = createMissionFromProposal(data.mission_proposal);
+      setCurrentMission(new_mission);
       setCurrentMissionProposal(data.mission_proposal);
     }
 
@@ -185,13 +186,13 @@ export default function FractalBot() {
 
                 {/* View Toggle */}
                 <div className="flex justify-end mb-4">
-                  <div className="inline-flex rounded-md shadow-sm" role="group">
+                  <div className="inline-flex rounded-lg shadow-sm" role="group">
                     <button
                       type="button"
                       onClick={() => setActiveView('workspace')}
-                      className={`px-4 py-2 text-sm font-medium rounded-l-lg ${activeView === 'workspace'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                      className={`px-3 py-1.5 text-sm font-medium rounded-l-lg transition-colors ${activeView === 'workspace'
+                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
+                        : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
                     >
                       Workspace
@@ -199,9 +200,9 @@ export default function FractalBot() {
                     <button
                       type="button"
                       onClick={() => setActiveView('history')}
-                      className={`px-4 py-2 text-sm font-medium rounded-r-lg ${activeView === 'history'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                      className={`px-3 py-1.5 text-sm font-medium rounded-r-lg transition-colors ${activeView === 'history'
+                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
+                        : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
                     >
                       Status History

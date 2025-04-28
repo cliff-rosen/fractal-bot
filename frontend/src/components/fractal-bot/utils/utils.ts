@@ -1,4 +1,4 @@
-import { MissionProposal } from "../types";
+import { MissionProposal, Mission, Workflow, Status } from "../types";
 
 interface DataFromLine {
     token: string | null;
@@ -44,4 +44,35 @@ export function getDataFromLine(line: string): DataFromLine {
     }
 
     return res;
+}
+
+export function createMissionFromProposal(proposal: MissionProposal): Mission {
+    const now = new Date().toISOString();
+
+    // Create an empty workflow with initial state
+    const emptyWorkflow: Workflow = {
+        id: crypto.randomUUID(),
+        name: `${proposal.title} Workflow`,
+        description: `Workflow for ${proposal.title}`,
+        status: 'pending' as Status,
+        stages: [],
+        assets: [],
+        createdAt: now,
+        updatedAt: now
+    };
+
+    return {
+        id: crypto.randomUUID(),
+        title: proposal.title,
+        description: proposal.description,
+        goal: proposal.goal,
+        status: 'pending' as Status,
+        workflow: emptyWorkflow,
+        assets: [],
+        inputs: proposal.inputs,
+        outputs: proposal.outputs,
+        success_criteria: proposal.success_criteria,
+        createdAt: now,
+        updatedAt: now
+    };
 } 
