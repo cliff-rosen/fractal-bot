@@ -46,6 +46,8 @@ class Step(BaseModel):
     description: str
     status: str
     assets: Dict[str, List[str]]
+    inputs: List[str]
+    outputs: List[str]
     tool: Optional[Dict[str, Any]] = None
     substeps: Optional[List['Step']] = None
     createdAt: str
@@ -58,6 +60,8 @@ class Stage(BaseModel):
     status: str
     steps: List[Step]
     assets: Dict[str, List[str]]
+    inputs: List[str]
+    outputs: List[str]
     createdAt: str
     updatedAt: str
 

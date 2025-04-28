@@ -97,16 +97,20 @@ export default function FractalBot() {
                 configuration: {}
               } : undefined,
               assets: {
-                inputs: step.inputs,
-                outputs: step.outputs
+                inputs: [],
+                outputs: []
               },
+              inputs: step.inputs || [],
+              outputs: step.outputs || [],
               createdAt: now,
               updatedAt: now
             }],
             assets: {
-              inputs: step.inputs,
-              outputs: step.outputs
+              inputs: [],
+              outputs: []
             },
+            inputs: step.inputs || [],
+            outputs: step.outputs || [],
             createdAt: now,
             updatedAt: now
           })),

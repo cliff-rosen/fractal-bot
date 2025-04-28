@@ -52,15 +52,17 @@ export type Asset = {
 }
 
 // Step types
-export type Step = {
+export interface Step {
     id: string;
     name: string;
     description: string;
-    status: Status;
+    status: string;
     assets: {
-        inputs: string[]; // Asset IDs
-        outputs: string[]; // Asset IDs
+        inputs: string[];
+        outputs: string[];
     };
+    inputs: string[];
+    outputs: string[];
     tool?: {
         name: string;
         configuration: Record<string, any>;
@@ -71,26 +73,28 @@ export type Step = {
 }
 
 // Stage types
-export type Stage = {
+export interface Stage {
     id: string;
     name: string;
     description: string;
-    status: Status;
+    status: string;
     steps: Step[];
     assets: {
-        inputs: string[]; // Asset IDs
-        outputs: string[]; // Asset IDs
+        inputs: string[];
+        outputs: string[];
     };
+    inputs: string[];
+    outputs: string[];
     createdAt: string;
     updatedAt: string;
 }
 
 // Workflow types
-export type Workflow = {
+export interface Workflow {
     id: string;
     name: string;
     description: string;
-    status: Status;
+    status: string;
     stages: Stage[];
     assets: Asset[];
     createdAt: string;
@@ -98,17 +102,16 @@ export type Workflow = {
 }
 
 // Mission types
-export type Mission = {
+export interface Mission {
     id: string;
     title: string;
     description: string;
     goal: string;
-    status: Status;
+    status: string;
     workflow: Workflow;
     assets: Asset[];
-    inputs: string[]; // Asset IDs
-    outputs: string[]; // Asset IDs
-    success_criteria: string[];
+    inputs: string[];
+    outputs: string[];
     createdAt: string;
     updatedAt: string;
 }

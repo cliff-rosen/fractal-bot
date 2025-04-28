@@ -29,31 +29,31 @@ export default function StepDetails({ step }: StepDetailsProps) {
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-200">Input Assets</h3>
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-200">Inputs</h3>
                     <div className="mt-2 space-y-1">
-                        {step.assets.inputs.length > 0 ? (
-                            step.assets.inputs.map((assetId) => (
-                                <div key={assetId} className="text-sm text-gray-600 dark:text-gray-300">
-                                    {assetId}
+                        {step.inputs.length > 0 ? (
+                            step.inputs.map((input) => (
+                                <div key={input} className="text-sm text-gray-600 dark:text-gray-300">
+                                    {input}
                                 </div>
                             ))
                         ) : (
-                            <div className="text-sm text-gray-400 dark:text-gray-500">No input assets</div>
+                            <div className="text-sm text-gray-400 dark:text-gray-500">No inputs</div>
                         )}
                     </div>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-200">Output Assets</h3>
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-200">Outputs</h3>
                     <div className="mt-2 space-y-1">
-                        {step.assets.outputs.length > 0 ? (
-                            step.assets.outputs.map((assetId) => (
-                                <div key={assetId} className="text-sm text-gray-600 dark:text-gray-300">
-                                    {assetId}
+                        {step.outputs.length > 0 ? (
+                            step.outputs.map((output) => (
+                                <div key={output} className="text-sm text-gray-600 dark:text-gray-300">
+                                    {output}
                                 </div>
                             ))
                         ) : (
-                            <div className="text-sm text-gray-400 dark:text-gray-500">No output assets</div>
+                            <div className="text-sm text-gray-400 dark:text-gray-500">No outputs</div>
                         )}
                     </div>
                 </div>
