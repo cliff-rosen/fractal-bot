@@ -68,6 +68,8 @@ export default function FractalBot() {
   };
 
   const handleWorkflowGenerated = (workflow: any) => {
+    const now = new Date().toISOString();
+
     // Update the workspace to show the proposed workflow
     setCurrentWorkspace(prev => ({
       ...prev,
@@ -82,7 +84,7 @@ export default function FractalBot() {
           description: workflow.explanation,
           stages: workflow.steps.map((step: any, index: number) => ({
             id: `stage-${index}`,
-            name: `Step ${index + 1}`,
+            name: step.description,
             description: step.description,
             status: 'pending',
             steps: [{
@@ -97,9 +99,19 @@ export default function FractalBot() {
               assets: {
                 inputs: step.inputs,
                 outputs: step.outputs
-              }
-            }]
-          }))
+              },
+              createdAt: now,
+              updatedAt: now
+            }],
+            assets: {
+              inputs: step.inputs,
+              outputs: step.outputs
+            },
+            createdAt: now,
+            updatedAt: now
+          })),
+          createdAt: now,
+          updatedAt: now
         }
       }
     }));
