@@ -32,6 +32,7 @@ export default function FractalBot() {
   const [activeView, setActiveView] = useState<'workspace' | 'history'>('history');
   const [statusHistory, setStatusHistory] = useState<string[]>([]);
 
+  // Tool support
   const handleToolSelect = (toolId: string) => {
     setSelectedToolIds(prev =>
       prev.includes(toolId)
@@ -56,6 +57,7 @@ export default function FractalBot() {
     });
   };
 
+  // Workspace support
   const handleCloseItemView = () => {
     setCurrentItemView(prev => ({
       ...prev,
@@ -124,6 +126,8 @@ export default function FractalBot() {
     setActiveView('workspace');
   };
 
+
+  // Bot message processing
   const processBotMessage = (data: DataFromLine) => {
 
     if (data.token) {
@@ -215,6 +219,7 @@ export default function FractalBot() {
     setCurrentMessages((prevMessages) => [...prevMessages, newMessage]);
   }
 
+  // Reset
   const handleReset = () => {
     setCurrentMission(missionTemplate);
     setCurrentMissionProposal(undefined);

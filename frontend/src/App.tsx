@@ -108,12 +108,13 @@ function App() {
         <TopBar />
         <div className="flex-1 overflow-auto">
           <Routes>
-            <Route path="/" element={<Navigate to="/workflows" />} />
+            {/* <Route path="/" element={<Navigate to="/workflows" />} /> */}
+            <Route path="/" element={<Navigate to="/fractal-bot" />} />
 
             {/* Fractal Bot routes */}
             <Route path="/fractal-bot" element={<FractalBotPage />} />
 
-            {/* Workflow routes */}
+            {/* Workflow routes
             <Route path="/workflows" element={<WorkflowsManager />} />
             <Route path="/workflows/:id" element={<Workflow />} />
             <Route path="/workflow/:id" element={<Workflow />} />
@@ -128,9 +129,9 @@ function App() {
             <Route path="/files" element={<FilesManager />} />
 
             {/* Job routes */}
-            <Route path="/jobs" element={<JobsManager />} />
+            {/* <Route path="/jobs" element={<JobsManager />} />
             <Route path="/jobs/:id" element={<Job />} />
-            <Route path="/job/:id" element={<Job />} />
+            <Route path="/job/:id" element={<Job />} /> */}
 
             {/* Test routes */}
             <Route path="/agent-workflow" element={<AgentWorkflowPage />} />
