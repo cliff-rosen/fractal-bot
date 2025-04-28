@@ -183,7 +183,7 @@ async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict
 async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Supervisor node that either answers directly or routes to specialists"""
     if writer:
-        writer({"status": "supervisor_starting x"})
+        writer({"status": "supervisor_starting"})
 
     llm = getModel("supervisor", config, writer)
     
@@ -259,8 +259,8 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
 
         if writer:
             writer({
-                "token": "DELEGATED: " + supervisor_response.response_content,
-                "status": "supervisor_completed x: " + supervisor_response.response_type,
+                "token": supervisor_response.response_content,
+                "status": "supervisor_completed: " + supervisor_response.response_type,
                 "supervisor_response": supervisor_response.dict(),
                 "next_node": next_node
             })
