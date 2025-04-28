@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Mission as MissionType, Tool } from '../types/index';
+import type { Tool } from '../types/index';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface MissionProps {
@@ -7,14 +7,18 @@ interface MissionProps {
 }
 
 export default function Mission({
-    className = '',
+    className = ''
 }: MissionProps) {
     const [isGenerating, setIsGenerating] = useState(false);
-    const { state, dispatch, generateWorkflow, resetState } = useFractalBot();
+    const {
+        state,
+        generateWorkflow,
+        resetState
+    } = useFractalBot();
 
     const mission = state.currentMission;
 
-    const getStatusColor = (status: MissionType['status']) => {
+    const getStatusColor = (status: string) => {
         switch (status) {
             case 'completed':
                 return 'text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30';
@@ -27,7 +31,7 @@ export default function Mission({
         }
     };
 
-    const getStatusText = (status: MissionType['status']) => {
+    const getStatusText = (status: string) => {
         switch (status) {
             case 'completed':
                 return 'Completed';

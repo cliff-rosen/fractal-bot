@@ -63,10 +63,32 @@ const initialState: FractalBotState = {
 // Create context
 const FractalBotContext = createContext<{
     state: FractalBotState;
-    dispatch: React.Dispatch<FractalBotAction>;
+    // State update functions
+    setMission: (mission: MissionType) => void;
+    setMissionProposal: (proposal: MissionProposal | undefined) => void;
+    setWorkspaceState: (state: WorkspaceState) => void;
+    setMessages: (messages: ChatMessage[]) => void;
+    setStreamingMessage: (message: string) => void;
+    setWorkflow: (workflow: WorkflowType) => void;
+    setWorkspace: (workspace: WorkspaceType) => void;
+    setTools: (tools: Tool[]) => void;
+    setAssets: (assets: Asset[]) => void;
+    setSelectedToolIds: (ids: string[]) => void;
+    setItemView: (view: ItemViewType) => void;
+    setActiveView: (view: 'workspace' | 'history') => void;
+    setStatusHistory: (history: string[]) => void;
+    // Business logic functions
     sendMessage: (message: ChatMessage) => Promise<void>;
-    generateWorkflow: () => void;
+    generateWorkflow: () => Promise<void>;
+    setWorkspaceWithWorkflow: (workflow: any) => void;
     resetState: () => void;
+    // Common operations
+    toggleToolSelection: (toolId: string) => void;
+    selectAllTools: () => void;
+    clearAllTools: () => void;
+    openToolsManager: () => void;
+    closeItemView: () => void;
+    addStatusUpdate: (status: string) => void;
 } | undefined>(undefined);
 
 // Reducer function
@@ -109,12 +131,105 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
 export function FractalBotProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(fractalBotReducer, initialState);
 
+    // State update functions
+    const setMission = useCallback((mission: MissionType) => {
+        dispatch({ type: 'SET_MISSION', payload: mission });
+    }, []);
+
+    const setMissionProposal = useCallback((proposal: MissionProposal | undefined) => {
+        dispatch({ type: 'SET_MISSION_PROPOSAL', payload: proposal });
+    }, []);
+
+    const setWorkspaceState = useCallback((workspaceState: WorkspaceState) => {
+        dispatch({ type: 'SET_WORKSPACE_STATE', payload: workspaceState });
+    }, []);
+
+    const setMessages = useCallback((messages: ChatMessage[]) => {
+        dispatch({ type: 'SET_MESSAGES', payload: messages });
+    }, []);
+
+    const setStreamingMessage = useCallback((message: string) => {
+        dispatch({ type: 'SET_STREAMING_MESSAGE', payload: message });
+    }, []);
+
+    const setWorkflow = useCallback((workflow: WorkflowType) => {
+        dispatch({ type: 'SET_WORKFLOW', payload: workflow });
+    }, []);
+
+    const setWorkspace = useCallback((workspace: WorkspaceType) => {
+        dispatch({ type: 'SET_WORKSPACE', payload: workspace });
+    }, []);
+
+    const setTools = useCallback((tools: Tool[]) => {
+        dispatch({ type: 'SET_TOOLS', payload: tools });
+    }, []);
+
+    const setAssets = useCallback((assets: Asset[]) => {
+        dispatch({ type: 'SET_ASSETS', payload: assets });
+    }, []);
+
+    const setSelectedToolIds = useCallback((ids: string[]) => {
+        dispatch({ type: 'SET_SELECTED_TOOL_IDS', payload: ids });
+    }, []);
+
+    const setItemView = useCallback((view: ItemViewType) => {
+        dispatch({ type: 'SET_ITEM_VIEW', payload: view });
+    }, []);
+
+    const setActiveView = useCallback((view: 'workspace' | 'history') => {
+        dispatch({ type: 'SET_ACTIVE_VIEW', payload: view });
+    }, []);
+
+    const setStatusHistory = useCallback((history: string[]) => {
+        dispatch({ type: 'SET_STATUS_HISTORY', payload: history });
+    }, []);
+
+    // Common operations
+    const toggleToolSelection = useCallback((toolId: string) => {
+        setSelectedToolIds(
+            state.selectedToolIds.includes(toolId)
+                ? state.selectedToolIds.filter(id => id !== toolId)
+                : [...state.selectedToolIds, toolId]
+        );
+    }, [state.selectedToolIds, setSelectedToolIds]);
+
+    const selectAllTools = useCallback(() => {
+        setSelectedToolIds(state.currentTools.map(tool => tool.id));
+    }, [state.currentTools, setSelectedToolIds]);
+
+    const clearAllTools = useCallback(() => {
+        setSelectedToolIds([]);
+    }, [setSelectedToolIds]);
+
+    const openToolsManager = useCallback(() => {
+        setItemView({
+            title: 'Tools Manager',
+            type: 'tools',
+            isOpen: true
+        });
+    }, [setItemView]);
+
+    const closeItemView = useCallback(() => {
+        setItemView({
+            ...state.currentItemView,
+            isOpen: false
+        });
+    }, [state.currentItemView, setItemView]);
+
+    const addStatusUpdate = useCallback((status: string) => {
+        setStatusHistory([...state.statusHistory, status]);
+    }, [state.statusHistory, setStatusHistory]);
+
+    // Business logic functions
     const processBotMessage = useCallback((data: DataFromLine) => {
         if (data.token) {
-            dispatch({
-                type: 'SET_STREAMING_MESSAGE',
-                payload: state.currentStreamingMessage + data.token
-            });
+            const newMessage: ChatMessage = {
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content: data.token,
+                timestamp: new Date().toISOString()
+            };
+            setMessages([...state.currentMessages, newMessage]);
         }
 
         if (data.status) {
@@ -122,13 +237,10 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             const currentContent = state.currentWorkspace.content;
             const newContent = { ...currentContent, text: newStatusMessage };
 
-            dispatch({
-                type: 'SET_WORKSPACE',
-                payload: {
-                    ...state.currentWorkspace,
-                    status: "current",
-                    content: newContent
-                }
+            setWorkspace({
+                ...state.currentWorkspace,
+                status: "current",
+                content: newContent
             });
 
             let message = "";
@@ -141,32 +253,20 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             }
             const messageToAdd = newStatusMessage + " " + message + " " + error;
 
-            dispatch({
-                type: 'SET_STATUS_HISTORY',
-                payload: [...state.statusHistory, messageToAdd]
-            });
+            setStatusHistory([...state.statusHistory, messageToAdd]);
         }
 
         if (data.mission_proposal) {
             const new_mission = createMissionFromProposal(data.mission_proposal);
-            dispatch({
-                type: 'SET_MISSION',
-                payload: new_mission
-            });
-            dispatch({
-                type: 'SET_MISSION_PROPOSAL',
-                payload: data.mission_proposal
-            });
+            setMission(new_mission);
+            setMissionProposal(data.mission_proposal);
         }
 
         return data.token || "";
-    }, [state]);
+    }, [state, setMessages, setWorkspace, setStatusHistory, setMission, setMissionProposal]);
 
     const sendMessage = useCallback(async (message: ChatMessage) => {
-        dispatch({
-            type: 'SET_MESSAGES',
-            payload: [...state.currentMessages, message]
-        });
+        setMessages([...state.currentMessages, message]);
 
         let finalContent = '';
 
@@ -202,69 +302,47 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 timestamp: new Date().toISOString()
             };
 
-            dispatch({
-                type: 'SET_MESSAGES',
-                payload: [...state.currentMessages, finalMessage]
-            });
-
-            dispatch({
-                type: 'SET_WORKSPACE',
-                payload: {
-                    ...state.currentWorkspace,
-                    status: 'completed'
-                }
+            setMessages([...state.currentMessages, finalMessage]);
+            setWorkspace({
+                ...state.currentWorkspace,
+                status: 'completed'
             });
 
         } catch (error) {
             console.error('Error streaming message:', error);
         } finally {
-            dispatch({
-                type: 'SET_STREAMING_MESSAGE',
-                payload: ''
-            });
+            setStreamingMessage('');
         }
-    }, [state, processBotMessage]);
+    }, [state, processBotMessage, setMessages, setWorkspace, setStreamingMessage]);
 
-    const setWorkspaceToProposedWorkflow = useCallback((workflow: any) => {
+    const setWorkspaceWithWorkflow = useCallback((workflow: any) => {
         const now = new Date().toISOString();
 
-        // Update the workspace to show the proposed workflow
-        dispatch({
-            type: 'SET_WORKSPACE',
-            payload: {
-                ...state.currentWorkspace,
-                type: 'proposedWorkflowDesign',
-                title: 'Proposed Workflow',
-                status: 'current',
-                content: {
-                    ...state.currentWorkspace.content,
-                    workflow: {
-                        ...workflowTemplate,
-                        name: 'Proposed Workflow',
-                        description: workflow.explanation,
-                        stages: workflow.steps.map((step: any, index: number) => ({
-                            id: `stage-${index}`,
+        setWorkspace({
+            ...state.currentWorkspace,
+            type: 'proposedWorkflowDesign',
+            title: 'Proposed Workflow',
+            status: 'current',
+            content: {
+                ...state.currentWorkspace.content,
+                workflow: {
+                    ...workflowTemplate,
+                    name: 'Proposed Workflow',
+                    description: workflow.explanation,
+                    stages: workflow.steps.map((step: any, index: number) => ({
+                        id: `stage-${index}`,
+                        name: step.description,
+                        description: step.description,
+                        status: 'pending',
+                        steps: [{
+                            id: `step-${index}`,
                             name: step.description,
                             description: step.description,
                             status: 'pending',
-                            steps: [{
-                                id: `step-${index}`,
-                                name: step.description,
-                                description: step.description,
-                                status: 'pending',
-                                tool: step.tool_id !== 'deferred' ? {
-                                    name: step.tool_id,
-                                    configuration: {}
-                                } : undefined,
-                                assets: {
-                                    inputs: [],
-                                    outputs: []
-                                },
-                                inputs: step.inputs || [],
-                                outputs: step.outputs || [],
-                                createdAt: now,
-                                updatedAt: now
-                            }],
+                            tool: step.tool_id !== 'deferred' ? {
+                                name: step.tool_id,
+                                configuration: {}
+                            } : undefined,
                             assets: {
                                 inputs: [],
                                 outputs: []
@@ -273,20 +351,24 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             outputs: step.outputs || [],
                             createdAt: now,
                             updatedAt: now
-                        })),
+                        }],
+                        assets: {
+                            inputs: [],
+                            outputs: []
+                        },
+                        inputs: step.inputs || [],
+                        outputs: step.outputs || [],
                         createdAt: now,
                         updatedAt: now
-                    }
+                    })),
+                    createdAt: now,
+                    updatedAt: now
                 }
             }
         });
 
-        // Switch to workspace view
-        dispatch({
-            type: 'SET_ACTIVE_VIEW',
-            payload: 'workspace'
-        });
-    }, [state]);
+        setActiveView('workspace');
+    }, [state.currentWorkspace, setWorkspace, setActiveView]);
 
     const generateWorkflow = useCallback(async () => {
         try {
@@ -301,15 +383,12 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
                     // Handle status updates
                     if (data.status) {
-                        dispatch({
-                            type: 'SET_STATUS_HISTORY',
-                            payload: [...state.statusHistory, data.status]
-                        });
+                        setStatusHistory([...state.statusHistory, data.status]);
                     }
 
                     // Handle the final workflow
                     if (data.steps_generator) {
-                        setWorkspaceToProposedWorkflow(data.steps_generator);
+                        setWorkspaceWithWorkflow(data.steps_generator);
                     }
 
                     // Handle the token
@@ -320,28 +399,50 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             content: data.token,
                             timestamp: new Date().toISOString()
                         };
-                        dispatch({
-                            type: 'SET_MESSAGES',
-                            payload: [...state.currentMessages, newMessage]
-                        });
+                        setMessages([...state.currentMessages, newMessage]);
                     }
                 }
             }
         } catch (error) {
             console.error('Error generating workflow:', error);
-            dispatch({
-                type: 'SET_STATUS_HISTORY',
-                payload: [...state.statusHistory, `Error: ${error}`]
-            });
+            setStatusHistory([...state.statusHistory, `Error: ${error}`]);
         }
-    }, [state, setWorkspaceToProposedWorkflow]);
+    }, [state, setStatusHistory, setWorkspaceWithWorkflow, setMessages]);
 
     const resetState = useCallback(() => {
         dispatch({ type: 'RESET_STATE' });
-    }, [dispatch]);
+    }, []);
 
     return (
-        <FractalBotContext.Provider value={{ state, dispatch, sendMessage, generateWorkflow, resetState }}>
+        <FractalBotContext.Provider value={{
+            state,
+            // State update functions
+            setMission,
+            setMissionProposal,
+            setWorkspaceState,
+            setMessages,
+            setStreamingMessage,
+            setWorkflow,
+            setWorkspace,
+            setTools,
+            setAssets,
+            setSelectedToolIds,
+            setItemView,
+            setActiveView,
+            setStatusHistory,
+            // Business logic functions
+            sendMessage,
+            generateWorkflow,
+            setWorkspaceWithWorkflow,
+            resetState,
+            // Common operations
+            toggleToolSelection,
+            selectAllTools,
+            clearAllTools,
+            openToolsManager,
+            closeItemView,
+            addStatusUpdate
+        }}>
             {children}
         </FractalBotContext.Provider>
     );

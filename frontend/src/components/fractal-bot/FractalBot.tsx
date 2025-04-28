@@ -7,15 +7,20 @@ import Assets from './components/Assets';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
 import StatusHistory from './components/StatusHistory';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, DataFromLine, MissionProposal } from './types/index';
-import { createMissionFromProposal, getDataFromLine } from './utils/utils'
-import { botApi } from '@/lib/api/botApi';
-import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from './types/type-defaults';
-import { Message, MessageRole } from '@/types/message';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 export default function FractalBot() {
-  const { state, dispatch, sendMessage, resetState } = useFractalBot();
+  const {
+    state,
+    toggleToolSelection,
+    selectAllTools,
+    clearAllTools,
+    openToolsManager,
+    closeItemView,
+    setActiveView,
+    sendMessage
+  } = useFractalBot();
+
   const {
     currentMission,
     currentMissionProposal,
@@ -31,140 +36,6 @@ export default function FractalBot() {
     activeView,
     statusHistory
   } = state;
-
-  // Tool support
-  const handleToolSelect = (toolId: string) => {
-    dispatch({
-      type: 'SET_SELECTED_TOOL_IDS',
-      payload: selectedToolIds.includes(toolId)
-        ? selectedToolIds.filter(id => id !== toolId)
-        : [...selectedToolIds, toolId]
-    });
-  };
-
-  const handleSelectAll = () => {
-    dispatch({
-      type: 'SET_SELECTED_TOOL_IDS',
-      payload: currentTools.map(tool => tool.id)
-    });
-  };
-
-  const handleClearAll = () => {
-    dispatch({
-      type: 'SET_SELECTED_TOOL_IDS',
-      payload: []
-    });
-  };
-
-  const handleOpenToolsManager = () => {
-    dispatch({
-      type: 'SET_ITEM_VIEW',
-      payload: {
-        title: 'Tools Manager',
-        type: 'tools',
-        isOpen: true
-      }
-    });
-  };
-
-  // Workspace support
-  const handleCloseItemView = () => {
-    dispatch({
-      type: 'SET_ITEM_VIEW',
-      payload: {
-        ...currentItemView,
-        isOpen: false
-      }
-    });
-  };
-
-  const handleStatusUpdate = (status: string) => {
-    dispatch({
-      type: 'SET_STATUS_HISTORY',
-      payload: [...statusHistory, status]
-    });
-  };
-
-  const handleWorkflowGenerated = (workflow: any) => {
-    const now = new Date().toISOString();
-
-    // Update the workspace to show the proposed workflow
-    dispatch({
-      type: 'SET_WORKSPACE',
-      payload: {
-        ...currentWorkspace,
-        type: 'proposedWorkflowDesign',
-        title: 'Proposed Workflow',
-        status: 'current',
-        content: {
-          ...currentWorkspace.content,
-          workflow: {
-            ...workflowTemplate,
-            name: 'Proposed Workflow',
-            description: workflow.explanation,
-            stages: workflow.steps.map((step: any, index: number) => ({
-              id: `stage-${index}`,
-              name: step.description,
-              description: step.description,
-              status: 'pending',
-              steps: [{
-                id: `step-${index}`,
-                name: step.description,
-                description: step.description,
-                status: 'pending',
-                tool: step.tool_id !== 'deferred' ? {
-                  name: step.tool_id,
-                  configuration: {}
-                } : undefined,
-                assets: {
-                  inputs: [],
-                  outputs: []
-                },
-                inputs: step.inputs || [],
-                outputs: step.outputs || [],
-                createdAt: now,
-                updatedAt: now
-              }],
-              assets: {
-                inputs: [],
-                outputs: []
-              },
-              inputs: step.inputs || [],
-              outputs: step.outputs || [],
-              createdAt: now,
-              updatedAt: now
-            })),
-            createdAt: now,
-            updatedAt: now
-          }
-        }
-      }
-    });
-
-    // Switch to workspace view
-    dispatch({
-      type: 'SET_ACTIVE_VIEW',
-      payload: 'workspace'
-    });
-  };
-
-  const handleTokenUpdate = (token: string) => {
-    const newMessage: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: token,
-      timestamp: new Date().toISOString()
-    };
-    dispatch({
-      type: 'SET_MESSAGES',
-      payload: [...currentMessages, newMessage]
-    });
-  };
-
-  // Reset
-  const handleReset = () => {
-    dispatch({ type: 'RESET_STATE' });
-  };
 
   return (
     <div className="h-screen flex flex-col">
@@ -186,7 +57,7 @@ export default function FractalBot() {
                 itemView={currentItemView}
                 tools={currentTools}
                 missionProposal={currentMissionProposal || null}
-                onClose={handleCloseItemView}
+                onClose={closeItemView}
               />
             </div>
           ) : (
@@ -195,14 +66,7 @@ export default function FractalBot() {
               <div key="main-content" className="col-span-5 h-full flex flex-col">
                 {/* Mission Header */}
                 <div className="mb-6 pt-4">
-                  <Mission
-                    mission={currentMission}
-                    selectedTools={currentTools.filter(tool => selectedToolIds.includes(tool.id))}
-                    onStatusUpdate={handleStatusUpdate}
-                    onWorkflowGenerated={handleWorkflowGenerated}
-                    onTokenUpdate={handleTokenUpdate}
-                    onReset={resetState}
-                  />
+                  <Mission />
                 </div>
 
                 {/* Stage Tracker */}
@@ -218,7 +82,7 @@ export default function FractalBot() {
                   <div className="inline-flex rounded-lg shadow-sm" role="group">
                     <button
                       type="button"
-                      onClick={() => dispatch({ type: 'SET_ACTIVE_VIEW', payload: 'workspace' })}
+                      onClick={() => setActiveView('workspace')}
                       className={`px-3 py-1.5 text-sm font-medium rounded-l-lg transition-colors ${activeView === 'workspace'
                         ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
                         : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
@@ -228,7 +92,7 @@ export default function FractalBot() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => dispatch({ type: 'SET_ACTIVE_VIEW', payload: 'history' })}
+                      onClick={() => setActiveView('history')}
                       className={`px-3 py-1.5 text-sm font-medium rounded-r-lg transition-colors ${activeView === 'history'
                         ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
                         : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
@@ -255,10 +119,10 @@ export default function FractalBot() {
                   <Tools
                     tools={currentTools}
                     selectedToolIds={selectedToolIds}
-                    onToolSelect={handleToolSelect}
-                    onSelectAll={handleSelectAll}
-                    onClearAll={handleClearAll}
-                    onToggleItemView={handleOpenToolsManager}
+                    onToolSelect={toggleToolSelection}
+                    onSelectAll={selectAllTools}
+                    onClearAll={clearAllTools}
+                    onToggleItemView={openToolsManager}
                     isItemViewMode={currentItemView.isOpen}
                   />
                 </div>
