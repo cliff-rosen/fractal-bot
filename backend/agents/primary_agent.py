@@ -115,71 +115,6 @@ async def llm_call(state: State, writer: StreamWriter, config: Dict[str, Any]) -
         "messages": [response_message]
     }
 
-async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
-    """Generate a mission proposal based on user input"""
-    if writer:
-        writer({"status": "mission_proposal_in_progress"})
-
-    llm = getModel("mission_proposal", config, writer)
-    
-    # Get the last user message
-    last_message = state["messages"][-1]
-    tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
-
-    if not last_message:
-        raise ValueError("No user message found in state")
-    print(f"Last message: {last_message}")
-
-    if writer:
-        writer({
-            "status": "mission_proposal_request: " + last_message.content
-        })
-
-    try:
-        # Create and format the prompt
-        prompt = MissionDefinitionPrompt()
-        formatted_prompt = prompt.get_formatted_prompt(
-            user_input=last_message.content,
-            available_tools=tools_str
-        )
-
-        print("Generating response...")
-        # Generate and parse the response
-        response = await llm.ainvoke(formatted_prompt)
-
-        print("Parsing response...")
-
-        mission_proposal = prompt.parse_response(response.content)
-        
-        mission_proposal_str = f"**Title:** {mission_proposal.title}\n**Goal:** {mission_proposal.goal}\n\n**Inputs needed:**\n" + "\n".join(f"- {input}" for input in mission_proposal.inputs) + "\n\n**Expected outputs:**\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) + "\n\n**Success criteria:**\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria)
-
-        # Create a response message
-        response_message = Message(
-            id=str(uuid.uuid4()),
-            role=MessageRole.ASSISTANT,
-            content=mission_proposal_str,
-            timestamp=datetime.now().isoformat()
-        )
-
-        if writer:
-            writer({
-                "status": "mission_proposal_completed",
-                "mission_proposal": mission_proposal.dict()
-            })
-
-        return {
-            "messages": [response_message],
-            "mission_proposal": mission_proposal.dict()
-        }
-
-    except Exception as e:
-        if writer:
-            writer({
-                "status": "error",
-                "error": str(e)
-            })
-        raise
-
 async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Supervisor node that either answers directly or routes to specialists"""
     if writer:
@@ -275,6 +210,87 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
             })
         raise
 
+async def mission_proposal_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
+    """Generate a mission proposal based on user input"""
+    if writer:
+        writer({"status": "mission_proposal_in_progress"})
+
+    llm = getModel("mission_proposal", config, writer)
+    
+    # Get the last user message
+    last_message = state["messages"][-1]
+    tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
+
+    if not last_message:
+        raise ValueError("No user message found in state")
+    print(f"Last message: {last_message}")
+
+    if writer:
+        writer({
+            "status": "mission_proposal_request: " + last_message.content
+        })
+
+    try:
+        # Create and format the prompt
+        prompt = MissionDefinitionPrompt()
+        formatted_prompt = prompt.get_formatted_prompt(
+            user_input=last_message.content,
+            available_tools=tools_str
+        )
+
+        print("Generating response...")
+        # Generate and parse the response
+        response = await llm.ainvoke(formatted_prompt)
+
+        print("Parsing response...")
+
+        mission_proposal = prompt.parse_response(response.content)
+        
+        mission_proposal_str = f"**Title:** {mission_proposal.title}\n**Goal:** {mission_proposal.goal}\n\n**Inputs needed:**\n" + "\n".join(f"- {input}" for input in mission_proposal.inputs) + "\n\n**Expected outputs:**\n" + "\n".join(f"- {output}" for output in mission_proposal.outputs) + "\n\n**Success criteria:**\n" + "\n".join(f"- {criteria}" for criteria in mission_proposal.success_criteria)
+
+        # Create a response message
+        response_message = Message(
+            id=str(uuid.uuid4()),
+            role=MessageRole.ASSISTANT,
+            content=mission_proposal_str,
+            timestamp=datetime.now().isoformat()
+        )
+
+        if writer:
+            writer({
+                "status": "mission_proposal_completed",
+                "mission_proposal": mission_proposal.dict()
+            })
+
+        return {
+            "messages": [response_message],
+            "mission_proposal": mission_proposal.dict()
+        }
+
+    except Exception as e:
+        if writer:
+            writer({
+                "status": "error",
+                "error": str(e)
+            })
+        raise
+
+async def workflow_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
+    """Workflow node that generates a workflow based on a mission proposal"""
+    if writer:
+        writer({"status": "workflow_in_progress"})
+
+    if writer:
+        writer({
+            "status": "workflow_completed: workflow node is busy right now",
+            "token": "workflow node is busy right now",
+            "next_node": END
+        })
+
+    return Command(goto=END, update={})
+
+
+
 ### Graph
 
 # Define the graph
@@ -283,11 +299,9 @@ graph_builder = StateGraph(State)
 # Add nodes
 graph_builder.add_node("supervisor_node", supervisor_node)
 graph_builder.add_node("mission_proposal_node", mission_proposal_node)
-
+graph_builder.add_node("workflow_node", workflow_node)
 # Add edges
 graph_builder.add_edge(START, "supervisor_node")
-graph_builder.add_edge("mission_proposal_node", "supervisor_node")
-
 
 # Compile the graph with streaming support
 compiled = graph_builder.compile()
