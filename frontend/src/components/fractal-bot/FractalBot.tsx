@@ -211,6 +211,26 @@ export default function FractalBot() {
     setCurrentMessages((prevMessages) => [...prevMessages, newMessage]);
   }
 
+  const handleReset = () => {
+    setCurrentMission(missionTemplate);
+    setCurrentMissionProposal(undefined);
+    setCurrentWorkspaceState(workspaceStateTemplate);
+    setCurrentMessages([]);
+    setCurrentStreamingMessage('');
+    setCurrentWorkflow(workflowTemplate);
+    setCurrentWorkspace(workspaceTemplate);
+    setCurrentTools(toolsTemplate);
+    setCurrentAssets(assetsTemplate);
+    setSelectedToolIds([]);
+    setCurrentItemView({
+      title: '',
+      type: 'none',
+      isOpen: false
+    });
+    setActiveView('history');
+    setStatusHistory([]);
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <div className="flex-1 min-h-0">
@@ -246,6 +266,7 @@ export default function FractalBot() {
                     onStatusUpdate={handleStatusUpdate}
                     onWorkflowGenerated={handleWorkflowGenerated}
                     onTokenUpdate={handleTokenUpdate}
+                    onReset={handleReset}
                   />
                 </div>
 

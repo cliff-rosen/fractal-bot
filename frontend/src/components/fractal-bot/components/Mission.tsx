@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Mission as MissionType, Tool } from '../types/index';
 import { botApi } from '@/lib/api/botApi';
-import { ChatMessage } from '../types/index';
 import { getDataFromLine } from '../utils/utils';
 
 interface MissionProps {
@@ -11,6 +10,7 @@ interface MissionProps {
     onStatusUpdate: (status: string) => void;
     onWorkflowGenerated: (workflow: any) => void;
     onTokenUpdate: (token: string) => void;
+    onReset: () => void;
 }
 
 export default function Mission({
@@ -19,8 +19,10 @@ export default function Mission({
     selectedTools,
     onStatusUpdate,
     onWorkflowGenerated,
-    onTokenUpdate
+    onTokenUpdate,
+    onReset
 }: MissionProps) {
+    const [isGenerating, setIsGenerating] = useState(false);
 
     const getStatusColor = (status: MissionType['status']) => {
         switch (status) {
@@ -49,8 +51,8 @@ export default function Mission({
     };
 
     const handleGenerateWorkflow = async () => {
+        setIsGenerating(true);
         try {
-
             // Stream the workflow generation
             for await (const update of botApi.streamWorkflow(
                 mission,
@@ -80,6 +82,8 @@ export default function Mission({
         } catch (error) {
             console.error('Error generating workflow:', error);
             onStatusUpdate(`Error: ${error}`);
+        } finally {
+            setIsGenerating(false);
         }
     };
 
@@ -101,12 +105,34 @@ export default function Mission({
                         <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
                             {getStatusText(mission.status)}
                         </span>
-                        <button
-                            onClick={handleGenerateWorkflow}
-                            className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                        >
-                            Generate Workflow
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleGenerateWorkflow}
+                                disabled={isGenerating}
+                                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isGenerating
+                                    ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                                    : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                                    }`}
+                            >
+                                {isGenerating ? (
+                                    <span className="flex items-center gap-2">
+                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Generating...
+                                    </span>
+                                ) : (
+                                    'Generate Workflow'
+                                )}
+                            </button>
+                            <button
+                                onClick={onReset}
+                                className="px-3 py-1.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                            >
+                                Reset All
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
