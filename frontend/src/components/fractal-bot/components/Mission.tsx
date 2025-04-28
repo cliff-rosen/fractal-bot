@@ -1,28 +1,18 @@
 import React, { useState } from 'react';
 import type { Mission as MissionType, Tool } from '../types/index';
-import { botApi } from '@/lib/api/botApi';
-import { getDataFromLine } from '../utils/utils';
+import { useFractalBot } from '@/context/FractalBotContext';
 
 interface MissionProps {
     className?: string;
-    mission: MissionType;
-    selectedTools: Tool[];
-    onStatusUpdate: (status: string) => void;
-    onWorkflowGenerated: (workflow: any) => void;
-    onTokenUpdate: (token: string) => void;
-    onReset: () => void;
 }
 
 export default function Mission({
     className = '',
-    mission,
-    selectedTools,
-    onStatusUpdate,
-    onWorkflowGenerated,
-    onTokenUpdate,
-    onReset
 }: MissionProps) {
     const [isGenerating, setIsGenerating] = useState(false);
+    const { state, dispatch, generateWorkflow, resetState } = useFractalBot();
+
+    const mission = state.currentMission;
 
     const getStatusColor = (status: MissionType['status']) => {
         switch (status) {
@@ -50,38 +40,10 @@ export default function Mission({
         }
     };
 
-    const handleGenerateWorkflow = async () => {
+    const handleGenerateWorkflowClick = async () => {
         setIsGenerating(true);
         try {
-            // Stream the workflow generation
-            for await (const update of botApi.streamWorkflow(
-                mission,
-                selectedTools
-            )) {
-                const lines = update.data.split('\n');
-                for (const line of lines) {
-                    const data = getDataFromLine(line);
-
-                    // Handle status updates
-                    if (data.status) {
-                        onStatusUpdate(data.status);
-                    }
-
-                    // Handle the final workflow
-                    if (data.steps_generator) {
-                        console.log("data.steps_generator", data.steps_generator);
-                        onWorkflowGenerated(data.steps_generator);
-                    }
-
-                    // Handle the token
-                    if (data.token) {
-                        onTokenUpdate(data.token);
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error generating workflow:', error);
-            onStatusUpdate(`Error: ${error}`);
+            await generateWorkflow();
         } finally {
             setIsGenerating(false);
         }
@@ -107,7 +69,7 @@ export default function Mission({
                         </span>
                         <div className="flex gap-2">
                             <button
-                                onClick={handleGenerateWorkflow}
+                                onClick={handleGenerateWorkflowClick}
                                 disabled={isGenerating}
                                 className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isGenerating
                                     ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
@@ -127,7 +89,7 @@ export default function Mission({
                                 )}
                             </button>
                             <button
-                                onClick={onReset}
+                                onClick={resetState}
                                 className="px-3 py-1.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                             >
                                 Reset All
