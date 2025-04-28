@@ -60,25 +60,26 @@ async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[
 
     llm = getModel("steps_generator", config, writer)
     
-    # Get the last user message
-    last_message = state["messages"][-1]
     tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
-
-    if not last_message:
-        raise ValueError("No user message found in state")
-    print(f"Last message: {last_message}")
 
     if writer:
         writer({
-            "status": "steps_generator_request: " + last_message.content
+            "status": "steps_generator_request: " + state["mission"].goal
         })
 
     try:
+        # Extract mission details
+        mission = state["mission"]
+        inputs_str = "\n".join(f"- {input}" for input in mission.inputs)
+        outputs_str = "\n".join(f"- {output}" for output in mission.outputs)
+
         # Create and format the prompt
         prompt = StepsGeneratorPrompt()
         formatted_prompt = prompt.get_formatted_prompt(
-            user_input=last_message.content,
-            available_tools=tools_str
+            goal=mission.goal,
+            inputs=inputs_str,
+            outputs=outputs_str,
+            tools=tools_str
         )
 
         print("Generating response...")
@@ -88,14 +89,28 @@ async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[
         print("Parsing response...")
 
         steps_generator = prompt.parse_response(response.content)
+        
+        # Format the response message
+        steps_str = "\n".join([
+            f"Step {i+1}: {step.description}\n"
+            f"  Tool: {step.tool_id}\n"
+            f"  Inputs: {', '.join(step.inputs)}\n"
+            f"  Outputs: {', '.join(step.outputs)}\n"
+            for i, step in enumerate(steps_generator.steps)
+        ])
 
-        steps_generator_str = f"**Steps:** {steps_generator.steps}\n**Inputs needed:**\n" + "\n".join(f"- {input}" for input in steps_generator.inputs) + "\n\n**Expected outputs:**\n" + "\n".join(f"- {output}" for output in steps_generator.outputs) + "\n\n**Success criteria:**\n" + "\n".join(f"- {criteria}" for criteria in steps_generator.success_criteria)
+        response_content = f"""**Analysis:** {steps_generator.explanation}
+
+**Steps:**
+{steps_str}
+
+**Is Single Tool Solution:** {steps_generator.is_single_tool_solution}"""
 
         # Create a response message
         response_message = Message(
             id=str(uuid.uuid4()),
             role=MessageRole.ASSISTANT,
-            content=steps_generator_str,
+            content=response_content,
             timestamp=datetime.now().isoformat()
         )
 
@@ -107,7 +122,8 @@ async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[
 
         return {
             "messages": [response_message],
-            "steps_generator": steps_generator.dict()
+            "steps_generator": steps_generator.dict(),
+            "token": response_content
         }
 
     except Exception as e:

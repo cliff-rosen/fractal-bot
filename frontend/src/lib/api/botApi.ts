@@ -60,4 +60,16 @@ export const botApi = {
         }
     },
 
+    streamWorkflow: async function* (mission: Mission, selectedTools: Tool[]): AsyncGenerator<StreamUpdate> {
+
+        const requestBody = {
+            message: mission.goal,
+            history: [],
+            mission,
+            selectedTools
+        };
+
+        yield* makeStreamRequest('/api/bot/workflow/stream', requestBody, 'POST');
+    },
+
 }; 

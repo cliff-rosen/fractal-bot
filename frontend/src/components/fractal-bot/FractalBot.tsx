@@ -63,6 +63,51 @@ export default function FractalBot() {
     }));
   };
 
+  const handleStatusUpdate = (status: string) => {
+    setStatusHistory(prev => [...prev, status]);
+  };
+
+  const handleWorkflowGenerated = (workflow: any) => {
+    // Update the workspace to show the proposed workflow
+    setCurrentWorkspace(prev => ({
+      ...prev,
+      type: 'proposedWorkflowDesign',
+      title: 'Proposed Workflow',
+      status: 'current',
+      content: {
+        ...prev.content,
+        workflow: {
+          ...workflowTemplate,
+          name: 'Proposed Workflow',
+          description: workflow.explanation,
+          stages: workflow.steps.map((step: any, index: number) => ({
+            id: `stage-${index}`,
+            name: `Step ${index + 1}`,
+            description: step.description,
+            status: 'pending',
+            steps: [{
+              id: `step-${index}`,
+              name: step.description,
+              description: step.description,
+              status: 'pending',
+              tool: step.tool_id !== 'deferred' ? {
+                name: step.tool_id,
+                configuration: {}
+              } : undefined,
+              assets: {
+                inputs: step.inputs,
+                outputs: step.outputs
+              }
+            }]
+          }))
+        }
+      }
+    }));
+
+    // Switch to workspace view
+    setActiveView('workspace');
+  };
+
   const processBotMessage = (data: DataFromLine) => {
 
     if (data.token) {
@@ -144,6 +189,16 @@ export default function FractalBot() {
     };
   }
 
+  const handleTokenUpdate = (token: string) => {
+    const newMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: token,
+      timestamp: new Date().toISOString()
+    };
+    setCurrentMessages((prevMessages) => [...prevMessages, newMessage]);
+  }
+
   return (
     <div className="h-screen flex flex-col">
       <div className="flex-1 min-h-0">
@@ -173,7 +228,13 @@ export default function FractalBot() {
               <div key="main-content" className="col-span-5 h-full flex flex-col">
                 {/* Mission Header */}
                 <div className="mb-6 pt-4">
-                  <Mission mission={currentMission} />
+                  <Mission
+                    mission={currentMission}
+                    selectedTools={currentTools.filter(tool => selectedToolIds.includes(tool.id))}
+                    onStatusUpdate={handleStatusUpdate}
+                    onWorkflowGenerated={handleWorkflowGenerated}
+                    onTokenUpdate={handleTokenUpdate}
+                  />
                 </div>
 
                 {/* Stage Tracker */}

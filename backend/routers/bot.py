@@ -12,6 +12,7 @@ from services.bot_service import BotService
 from schemas import Message, ChatResponse, MessageRole, Asset, BotRequest, Mission, Tool
 # from agents.simple_agent import graph, State
 from agents.primary_agent import graph, State
+from agents.workflow_agent import graph as workflow_graph
 import uuid
 import os
 
@@ -58,6 +59,42 @@ async def bot_stream(request: Request, bot_request: BotRequest):
             
             # Stream responses from the graph
             async for chunk in graph.astream(state, stream_mode="custom"):
+                yield {
+                    "event": "message",
+                    "data": json.dumps(chunk)
+                }
+                
+        except Exception as e:
+            # Handle errors
+            print(f"Error: {e}")
+            yield {
+                "event": "error",
+                "data": json.dumps({"status": "error", "message": str(e)})
+            }
+    
+    return EventSourceResponse(event_generator())
+
+
+@router.post("/workflow/stream")
+async def workflow_stream(request: Request, bot_request: BotRequest):
+    """Endpoint that streams workflow generation responses"""
+    
+    async def event_generator():
+        """Generate SSE events from workflow graph outputs"""
+        try:
+            
+            state = State(
+                messages=[],
+                mission=bot_request.mission,
+                mission_proposal=None,
+                supervisor_response=None,
+                next_node=None,
+                selectedTools=bot_request.selectedTools,
+                assets=[]
+            )
+            
+            # Stream responses from the workflow graph
+            async for chunk in workflow_graph.astream(state, stream_mode="custom"):
                 yield {
                     "event": "message",
                     "data": json.dumps(chunk)

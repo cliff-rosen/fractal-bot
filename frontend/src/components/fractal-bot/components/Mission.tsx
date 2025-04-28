@@ -1,12 +1,25 @@
 import React from 'react';
-import type { Mission as MissionType } from '../types/index';
+import type { Mission as MissionType, Tool } from '../types/index';
+import { botApi } from '@/lib/api/botApi';
+import { ChatMessage } from '../types/index';
 
 interface MissionProps {
     className?: string;
     mission: MissionType;
+    selectedTools: Tool[];
+    onStatusUpdate: (status: string) => void;
+    onWorkflowGenerated: (workflow: any) => void;
+    onTokenUpdate: (token: string) => void;
 }
 
-export default function Mission({ className = '', mission }: MissionProps) {
+export default function Mission({
+    className = '',
+    mission,
+    selectedTools,
+    onStatusUpdate,
+    onWorkflowGenerated,
+    onTokenUpdate
+}: MissionProps) {
     const getStatusColor = (status: MissionType['status']) => {
         switch (status) {
             case 'completed':
@@ -33,6 +46,37 @@ export default function Mission({ className = '', mission }: MissionProps) {
         }
     };
 
+    const handleGenerateWorkflow = async () => {
+        try {
+
+            // Stream the workflow generation
+            for await (const update of botApi.streamWorkflow(
+                mission,
+                selectedTools
+            )) {
+                const data = JSON.parse(update.data);
+
+                // Handle status updates
+                if (data.status) {
+                    onStatusUpdate(data.status);
+                }
+
+                // Handle the final workflow
+                if (data.steps_generator) {
+                    onWorkflowGenerated(data.steps_generator);
+                }
+
+                // Handle the token
+                if (data.token) {
+                    onTokenUpdate(data.token);
+                }
+            }
+        } catch (error) {
+            console.error('Error generating workflow:', error);
+            onStatusUpdate(`Error: ${error}`);
+        }
+    };
+
     return (
         <div className={`dark:bg-[#1e2330] ${className}`}>
             <div className="p-6">
@@ -47,9 +91,17 @@ export default function Mission({ className = '', mission }: MissionProps) {
                             <span className="font-medium">Goal:</span> {mission.goal}
                         </p>
                     </div>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
-                        {getStatusText(mission.status)}
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
+                            {getStatusText(mission.status)}
+                        </span>
+                        <button
+                            onClick={handleGenerateWorkflow}
+                            className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                        >
+                            Generate Workflow
+                        </button>
+                    </div>
                 </div>
             </div>
 
