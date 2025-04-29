@@ -85,6 +85,7 @@ export interface Stage {
     };
     inputs: string[];
     outputs: string[];
+    success_criteria: string[];  // Measurable conditions that verify stage completion
     createdAt: string;
     updatedAt: string;
 }

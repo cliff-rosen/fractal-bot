@@ -62,6 +62,7 @@ class Stage(BaseModel):
     assets: Dict[str, List[str]]
     inputs: List[str]
     outputs: List[str]
+    success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
     createdAt: str
     updatedAt: str
 

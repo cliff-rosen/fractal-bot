@@ -15,118 +15,300 @@ const sections = [
         id: 'overview',
         title: 'Overview',
         content: (
-            <div className="prose dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300">
-                    Orchestrator is a tool that helps you automate research and analysis tasks by combining different tools into reusable workflows. For example, you can:
-                </p>
-                <ul className="list-disc pl-6 mt-2 space-y-2 text-gray-700 dark:text-gray-300">
-                    <li>Search medical literature and automatically summarize key findings</li>
-                    <li>Process and analyze documents using AI language models</li>
-                    <li>Create templates for consistent AI interactions across multiple documents</li>
-                    <li>Save your workflows and reuse them with different inputs</li>
-                </ul>
-                <p className="mt-4 text-gray-700 dark:text-gray-300">
-                    Instead of manually performing these tasks one by one, Orchestrator lets you design a workflow once and run it automatically whenever you need it.
-                </p>
-            </div>
-        )
-    },
-    {
-        id: 'key-concepts',
-        title: 'Key Concepts',
-        content: (
-            <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Workflows</h4>
-                    <p className="text-gray-700 dark:text-gray-300">
-                        Workflows are series of steps that involve taking actions through tools. You can design and author workflows
-                        to define how different tools work together to accomplish your goals.
+            <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">What is FractalBot?</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        FractalBot is a new kind of AI assistant that combines the flexibility of natural language interaction with the rigor of structured workflows. Unlike traditional tools, it:
                     </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><strong>Architects Before Executing:</strong> Unlike regular chatbots that jump straight to answers, FractalBot first designs a structured workflow to achieve your goal</li>
+                        <li><strong>Recursively Refines:</strong> Unlike static workflow tools, FractalBot dynamically creates and executes steps as needed, adapting to the task's requirements</li>
+                        <li><strong>Maintains Context:</strong> While executing workflows, FractalBot preserves the big picture, ensuring each step contributes to the overall mission</li>
+                        <li><strong>Verifies Progress:</strong> At each stage, FractalBot checks success criteria, ensuring the work meets quality standards before proceeding</li>
+                    </ul>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Prompt Templates</h4>
-                    <p className="text-gray-700 dark:text-gray-300">
-                        When using Language Models (LLMs) as tools, prompt templates let you customize how these models behave.
-                        Create and manage templates to ensure consistent and effective interactions with LLMs.
-                    </p>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">How is it Different?</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h5 className="font-medium text-gray-900 dark:text-white mb-2">Compared to Chatbots:</h5>
+                            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li>Doesn't just answer questions - creates structured solutions</li>
+                                <li>Maintains clear success criteria and verification</li>
+                                <li>Organizes work into stages with clear dependencies</li>
+                                <li>Manages data flow and asset tracking</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 className="font-medium text-gray-900 dark:text-white mb-2">Compared to Workflow Tools:</h5>
+                            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                <li>Designs workflows dynamically based on the task</li>
+                                <li>Creates steps recursively during execution</li>
+                                <li>Uses natural language for interaction</li>
+                                <li>Adapts to changing requirements</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Files</h4>
-                    <p className="text-gray-700 dark:text-gray-300">
-                        The app manages files that can be used to populate prompt templates and provide data for your workflows.
-                        Files serve as reusable resources across your workflow steps.
-                    </p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Jobs</h4>
-                    <p className="text-gray-700 dark:text-gray-300">
-                        Jobs are where you put workflows into action. Select a workflow, configure input sources and output destinations,
-                        and let the job automatically process all inputs through your workflow. Jobs help you operationalize your
-                        workflow designs at scale.
-                    </p>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Key Benefits</h4>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><strong>Structured Yet Flexible:</strong> Combines the rigor of workflows with the adaptability of AI</li>
+                        <li><strong>Clear Progress Tracking:</strong> Each stage and step has defined success criteria</li>
+                        <li><strong>Data Management:</strong> Systematic handling of inputs, outputs, and intermediate results</li>
+                        <li><strong>Quality Assurance:</strong> Built-in verification at multiple levels</li>
+                        <li><strong>Natural Interaction:</strong> Conversational interface while maintaining structure</li>
+                    </ul>
                 </div>
             </div>
         )
     },
     {
-        id: 'getting-started',
-        title: 'Getting Started',
+        id: 'core-concepts',
+        title: 'Core Concepts',
         content: (
-            <div>
-                <p className="text-gray-700 dark:text-gray-300 mb-4 text-base">
-                    Orchestrator helps you create, manage, and execute workflows. Here's how to get started:
-                </p>
-                <ol className="list-decimal pl-6 space-y-3 text-gray-700 dark:text-gray-300">
-                    <li><strong>Design Your Workflow:</strong>
-                        <ul className="list-disc pl-6 mt-2 space-y-2">
-                            <li>Create a new workflow in the Workflows section</li>
-                            <li>Add and configure steps using available tools</li>
-                            <li>Set up connections between steps</li>
-                            <li>Save your workflow design</li>
-                        </ul>
-                    </li>
-                    <li><strong>Run Your Workflow:</strong>
-                        <ul className="list-disc pl-6 mt-2 space-y-2">
-                            <li>Go to the Jobs section</li>
-                            <li>Select your workflow</li>
-                            <li>Configure input sources and output destinations</li>
-                            <li>Start the job and monitor its progress</li>
-                        </ul>
-                    </li>
-                </ol>
+            <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">1. Basics of Workflows</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        Workflows are the fundamental structure for organizing and executing tasks in FractalBot:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><strong>Stages:</strong> Major phases that define the workflow's architecture, created during workflow initiation</li>
+                        <li><strong>Steps:</strong> Individual tasks created during the recursive execution phase within each stage</li>
+                        <li><strong>Flow:</strong> Sequential progression through stages, with clear dependencies and data requirements</li>
+                        <li><strong>Data Flow:</strong> Systematic movement of assets between stages and steps, following defined inputs and outputs</li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">2. FractalBot Schema</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        The hierarchical structure that defines how FractalBot operates:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><strong>Mission:</strong> Top-level container
+                            <ul className="list-disc pl-6 mt-2">
+                                <li>Goal: Specific objective to achieve</li>
+                                <li>Inputs: Required data objects to start</li>
+                                <li>Outputs: Deliverables to be produced</li>
+                                <li>Success Criteria: Measurable conditions for completion</li>
+                            </ul>
+                        </li>
+                        <li><strong>Workflow:</strong> Collection of stages
+                            <ul className="list-disc pl-6 mt-2">
+                                <li>Stages: Major phases of execution</li>
+                                <li>Assets: Data objects used throughout</li>
+                            </ul>
+                        </li>
+                        <li><strong>Stage:</strong> Major phase
+                            <ul className="list-disc pl-6 mt-2">
+                                <li>Inputs: Required data from previous stages</li>
+                                <li>Outputs: Data produced for next stages</li>
+                                <li>Success Criteria: Conditions for stage completion</li>
+                                <li>Steps: Individual tasks within the stage</li>
+                            </ul>
+                        </li>
+                        <li><strong>Step:</strong> Individual task
+                            <ul className="list-disc pl-6 mt-2">
+                                <li>Tool: Specialized function assigned during execution</li>
+                                <li>Inputs: Required data for the tool</li>
+                                <li>Outputs: Data produced by the tool</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">3. Resources and Assets</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        The data and capabilities that enable workflow execution:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><strong>Assets:</strong> Data objects that flow through the workflow
+                            <ul className="list-disc pl-6 mt-2">
+                                <li>Types: Various data formats and structures</li>
+                                <li>Status: Tracks state (pending, ready, archived)</li>
+                                <li>Versioning: Maintains history of changes</li>
+                                <li>Usage: Tracks where and how assets are used</li>
+                            </ul>
+                        </li>
+                        <li><strong>Tools:</strong> Specialized functions for processing data
+                            <ul className="list-disc pl-6 mt-2">
+                                <li>Input Schema: Defines required input structure</li>
+                                <li>Output Schema: Defines produced output structure</li>
+                                <li>Configuration: Settings for tool operation</li>
+                            </ul>
+                        </li>
+                        <li><strong>Resources:</strong> General capabilities needed
+                            <ul className="list-disc pl-6 mt-2">
+                                <li>System Access: Required permissions and connections</li>
+                                <li>External Services: APIs and third-party integrations</li>
+                                <li>Processing Power: Computational requirements</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">4. Mission Lifecycle</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        The complete process from mission creation to completion:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li><strong>Mission Definition:</strong> Setting mission goals, inputs, outputs, and success criteria</li>
+                        <li><strong>Workflow Architecture:</strong> Designing stages and their relationships</li>
+                        <li><strong>Stage Execution:</strong> Recursive creation and execution of steps</li>
+                        <li><strong>Verification:</strong> Validation of success criteria at each stage</li>
+                        <li><strong>Completion:</strong> Final delivery and archival of mission outputs</li>
+                    </ul>
+                </div>
             </div>
         )
     },
     {
-        id: 'available-tools',
-        title: 'Available Tools',
+        id: 'lifecycle',
+        title: 'Mission Lifecycle',
         content: (
-            <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">PubMed Search</h4>
-                    <p className="text-gray-700 dark:text-gray-300">
-                        Search medical literature using PubMed. Enter your search query and get relevant research papers.
+            <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">1. Mission Proposal</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        The journey begins with a mission proposal:
                     </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Describe your task in natural language</li>
+                        <li>FractalBot analyzes requirements</li>
+                        <li>Proposes a structured mission plan</li>
+                        <li>Identifies needed inputs and resources</li>
+                    </ul>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">LLM Integration</h4>
-                    <p className="text-gray-700 dark:text-gray-300">
-                        Use language models with custom prompts to process and analyze text.
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">2. Workflow Architecture</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        The mission is structured into stages:
                     </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Defines major phases of the mission</li>
+                        <li>Establishes stage dependencies and flow</li>
+                        <li>Identifies stage inputs and outputs</li>
+                        <li>Sets up stage-level success criteria</li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">3. Stage Execution</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        Each stage is executed through steps:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Breaks down stage into specific steps</li>
+                        <li>Assigns appropriate tools to steps</li>
+                        <li>Manages step-level assets and data</li>
+                        <li>Provides real-time step status updates</li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">4. Completion</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        The mission concludes with:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Verification of success criteria</li>
+                        <li>Delivery of final outputs</li>
+                        <li>Archiving of completed assets</li>
+                        <li>Summary of mission results</li>
+                    </ul>
                 </div>
             </div>
         )
     },
     {
-        id: 'tips',
-        title: 'Tips & Tricks',
+        id: 'interface',
+        title: 'Interface Guide',
         content: (
-            <ul className="list-disc pl-6 space-y-3 text-gray-700 dark:text-gray-300">
-                <li>Use clear names and descriptions for your workflows and steps</li>
-                <li>Test your workflow with sample data before running it with real data</li>
-                <li>Check the execution results to debug any issues</li>
-                <li>Save your workflows regularly while editing</li>
-            </ul>
+            <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Chat Interface</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        Your main interaction point with FractalBot:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Describe tasks in natural language</li>
+                        <li>Review mission proposals</li>
+                        <li>Monitor progress updates</li>
+                        <li>Provide feedback and guidance</li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Workspace</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        The central area for mission management:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>View current mission details</li>
+                        <li>Track workflow progress</li>
+                        <li>Monitor asset status</li>
+                        <li>Access tool interfaces</li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Tools & Assets Panel</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-3">
+                        Manage your mission resources:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Access available tools</li>
+                        <li>View and manage assets</li>
+                        <li>Configure tool settings</li>
+                        <li>Monitor resource usage</li>
+                    </ul>
+                </div>
+            </div>
+        )
+    },
+    {
+        id: 'best-practices',
+        title: 'Best Practices',
+        content: (
+            <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Mission Planning</h4>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Be specific about your goals and requirements</li>
+                        <li>Clearly define success criteria</li>
+                        <li>Identify all necessary inputs upfront</li>
+                        <li>Consider resource availability</li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Workflow Management</h4>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Review each stage before proceeding</li>
+                        <li>Monitor asset status regularly</li>
+                        <li>Keep track of tool outputs</li>
+                        <li>Document any issues or changes</li>
+                    </ul>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Communication</h4>
+                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>Provide clear feedback to FractalBot</li>
+                        <li>Ask for clarification when needed</li>
+                        <li>Report issues promptly</li>
+                        <li>Share relevant context</li>
+                    </ul>
+                </div>
+            </div>
         )
     }
 ];
@@ -150,7 +332,7 @@ export const HelpGuide: React.FC = () => {
                     <HelpCircle className="h-4 w-4" />
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl max-h-[80vh] overflow-hidden bg-white dark:bg-gray-800 shadow-xl border dark:border-gray-700">
+            <DialogContent className="max-w-6xl h-[80vh] flex flex-col">
                 <DialogClose asChild>
                     <Button
                         variant="ghost"
@@ -167,12 +349,12 @@ export const HelpGuide: React.FC = () => {
                     </Button>
                 </DialogClose>
                 <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">How to Use Orchestrator</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">FractalBot Help Guide</DialogTitle>
                 </DialogHeader>
 
-                <div className="flex h-[calc(80vh-100px)]">
-                    {/* Left Navigation */}
-                    <div className="w-64 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Navigation - Narrow TOC */}
+                    <div className="w-48 border-r border-gray-200 dark:border-gray-700 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
                         <nav className="p-4 space-y-1">
                             {sections.map(section => (
                                 <button
@@ -190,13 +372,15 @@ export const HelpGuide: React.FC = () => {
                         </nav>
                     </div>
 
-                    {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-6">
-                        <div className="max-w-3xl mx-auto">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                    {/* Content Area - Wider */}
+                    <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-800">
+                        <div className="max-w-4xl mx-auto p-8">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                                 {sections.find(s => s.id === activeSection)?.title}
                             </h2>
-                            {sections.find(s => s.id === activeSection)?.content}
+                            <div className="prose dark:prose-invert max-w-none">
+                                {sections.find(s => s.id === activeSection)?.content}
+                            </div>
                         </div>
                     </div>
                 </div>
