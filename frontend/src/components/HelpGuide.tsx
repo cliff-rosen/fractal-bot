@@ -120,7 +120,7 @@ const sections: Section[] = [
                         <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                             <li><strong>Simple Tasks:</strong> A single step using one tool</li>
                             <li><strong>Complex Tasks:</strong> Multiple steps with different tools</li>
-                            <li><strong>Missions:</strong> Multiple workflows with stages and steps</li>
+                            <li><strong>Missions:</strong> Multilevel workflows steps organized into stages</li>
                         </ul>
                         <p className="text-gray-700 dark:text-gray-300 mt-4">
                             FractalBot provides a structured way to implement this pattern through its schema, which you'll learn about in the next section. This schema helps organize and track the work as it progresses from inputs to outputs.
@@ -134,7 +134,7 @@ const sections: Section[] = [
                 content: (
                     <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
                         <p className="text-gray-700 dark:text-gray-300 mb-3">
-                            The FractalBot schema provides the structure for implementing the input-to-output pattern:
+                            The FractalBot schema provides the structure for implementing a robust workflow system comprised of several interrelated components:
                         </p>
                         <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                             <li><strong>Mission:</strong> The top-level container that defines the overall goal
@@ -190,20 +190,36 @@ const sections: Section[] = [
                                     <li>Configuration: Settings for tool operation</li>
                                 </ul>
                             </li>
-                            <li><strong>Asset:</strong> A data object that flows through the workflow
+                            <li><strong>Asset:</strong> A piece of information that flows through the workflow
+                                <p className="text-gray-700 dark:text-gray-300 mt-2 pl-6">
+                                    Assets are the fundamental units of data that flow through the workflow. Each tool operation consumes some assets as inputs and produces new assets as outputs. The workflow's job is to ensure that all required assets are available when needed, and that the final assets meet the success criteria.
+                                </p>
                                 <ul className="list-disc pl-6 mt-2">
-                                    <li>Types: Various data formats and structures</li>
-                                    <li>Status: Tracks state (pending, ready, archived)</li>
-                                    <li>Versioning: Maintains history of changes</li>
-                                    <li>Usage: Tracks where and how assets are used</li>
+                                    <li><strong>Types of Assets:</strong>
+                                        <ul className="list-disc pl-6 mt-2">
+                                            <li><strong>Pure Input Assets:</strong> Supplied by the user to start the workflow</li>
+                                            <li><strong>Pure Output Assets:</strong> Final deliverables of the workflow</li>
+                                            <li><strong>Work in Progress Assets:</strong> Intermediate results created by one step and used by another</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Status:</strong> Tracks the state of the asset (pending, ready, archived)</li>
+                                    <li><strong>Versioning:</strong> Maintains history of changes as the asset evolves</li>
                                 </ul>
                             </li>
-                            <li><strong>Resource:</strong> A general capability needed for the mission
+                            <li><strong>Resource:</strong> An external system that the workflow may need to access
                                 <ul className="list-disc pl-6 mt-2">
-                                    <li>System Access: Required permissions and connections</li>
-                                    <li>External Services: APIs and third-party integrations</li>
-                                    <li>Processing Power: Computational requirements</li>
+                                    <li><strong>Access via Tools:</strong> Resources are accessed through tools assigned to steps</li>
+                                    <li><strong>Types of Resources:</strong>
+                                        <ul className="list-disc pl-6 mt-2">
+                                            <li><strong>External Services:</strong> APIs, databases, or other systems</li>
+                                            <li><strong>System Access:</strong> Required permissions or connections</li>
+                                            <li><strong>Processing Capabilities:</strong> Computational resources or specialized hardware</li>
+                                        </ul>
+                                    </li>
                                 </ul>
+                                <p className="text-gray-700 dark:text-gray-300 mt-2 pl-6">
+                                    Resources are not data objects themselves, but rather systems that can be used to process or generate data. For example, a database is a resource that can be accessed via a database query tool to retrieve or store assets.
+                                </p>
                             </li>
                         </ul>
                     </div>
