@@ -36,7 +36,7 @@ type FractalBotAction =
     | { type: 'SET_SELECTED_TOOL_IDS'; payload: string[] }
     | { type: 'SET_ITEM_VIEW'; payload: ItemViewType }
     | { type: 'SET_ACTIVE_VIEW'; payload: 'workspace' | 'history' }
-    | { type: 'SET_STATUS_HISTORY'; payload: string[] }
+    | { type: 'SET_STATUS_HISTORY'; payload: string[] | ((prevState: FractalBotState) => string[]) }
     | { type: 'RESET_STATE' };
 
 // Initial state
@@ -76,7 +76,7 @@ const FractalBotContext = createContext<{
     setSelectedToolIds: (ids: string[]) => void;
     setItemView: (view: ItemViewType) => void;
     setActiveView: (view: 'workspace' | 'history') => void;
-    setStatusHistory: (history: string[]) => void;
+    addStatusRecord: (status: string) => void;
     // Business logic functions
     sendMessage: (message: ChatMessage) => Promise<void>;
     generateWorkflow: () => Promise<void>;
@@ -88,7 +88,6 @@ const FractalBotContext = createContext<{
     clearAllTools: () => void;
     openToolsManager: () => void;
     closeItemView: () => void;
-    addStatusUpdate: (status: string) => void;
 } | undefined>(undefined);
 
 // Reducer function
@@ -119,7 +118,12 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
         case 'SET_ACTIVE_VIEW':
             return { ...state, activeView: action.payload };
         case 'SET_STATUS_HISTORY':
-            return { ...state, statusHistory: action.payload };
+            return {
+                ...state,
+                statusHistory: typeof action.payload === 'function'
+                    ? action.payload(state)
+                    : action.payload
+            };
         case 'RESET_STATE':
             return initialState;
         default:
@@ -180,8 +184,12 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'SET_ACTIVE_VIEW', payload: view });
     }, []);
 
-    const setStatusHistory = useCallback((history: string[]) => {
-        dispatch({ type: 'SET_STATUS_HISTORY', payload: history });
+    const addStatusRecord = useCallback((status: string) => {
+        console.log(status);
+        dispatch({
+            type: 'SET_STATUS_HISTORY',
+            payload: (prevState: FractalBotState) => [...prevState.statusHistory, status]
+        });
     }, []);
 
     // Common operations
@@ -216,10 +224,6 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         });
     }, [state.currentItemView, setItemView]);
 
-    const addStatusUpdate = useCallback((status: string) => {
-        setStatusHistory([...state.statusHistory, status]);
-    }, [state.statusHistory, setStatusHistory]);
-
     // Business logic functions
     const processBotMessage = useCallback((data: DataFromLine) => {
         if (data.token) {
@@ -252,8 +256,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 error = data.error;
             }
             const messageToAdd = newStatusMessage + " " + message + " " + error;
-
-            setStatusHistory([...state.statusHistory, messageToAdd]);
+            console.log(messageToAdd);
+            addStatusRecord(messageToAdd);
         }
 
         if (data.mission_proposal) {
@@ -263,7 +267,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         }
 
         return data.token || "";
-    }, [state, setMessages, setWorkspace, setStatusHistory, setMission, setMissionProposal]);
+    }, [state, setMessages, setWorkspace, addStatusRecord, setMission, setMissionProposal]);
 
     const sendMessage = useCallback(async (message: ChatMessage) => {
         setMessages([...state.currentMessages, message]);
@@ -383,7 +387,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
                     // Handle status updates
                     if (data.status) {
-                        setStatusHistory([...state.statusHistory, data.status]);
+                        addStatusRecord(data.status);
                     }
 
                     // Handle the final workflow
@@ -405,9 +409,9 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             }
         } catch (error) {
             console.error('Error generating workflow:', error);
-            setStatusHistory([...state.statusHistory, `Error: ${error}`]);
+            addStatusRecord(`Error: ${error}`);
         }
-    }, [state, setStatusHistory, setWorkspaceWithWorkflow, setMessages]);
+    }, [state, addStatusRecord, setWorkspaceWithWorkflow, setMessages]);
 
     const resetState = useCallback(() => {
         dispatch({ type: 'RESET_STATE' });
@@ -429,7 +433,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             setSelectedToolIds,
             setItemView,
             setActiveView,
-            setStatusHistory,
+            addStatusRecord,
             // Business logic functions
             sendMessage,
             generateWorkflow,
@@ -440,8 +444,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             selectAllTools,
             clearAllTools,
             openToolsManager,
-            closeItemView,
-            addStatusUpdate
+            closeItemView
         }}>
             {children}
         </FractalBotContext.Provider>
