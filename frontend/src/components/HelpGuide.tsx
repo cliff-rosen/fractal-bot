@@ -10,7 +10,20 @@ import {
 import { Button } from './ui/button';
 import { HelpCircle, X } from 'lucide-react';
 
-const sections = [
+interface Subsection {
+    id: string;
+    title: string;
+    content: React.ReactNode;
+}
+
+interface Section {
+    id: string;
+    title: string;
+    content?: React.ReactNode;
+    subsections?: Subsection[];
+}
+
+const sections: Section[] = [
     {
         id: 'overview',
         title: 'Overview',
@@ -69,105 +82,155 @@ const sections = [
     {
         id: 'core-concepts',
         title: 'Core Concepts',
-        content: (
-            <div className="space-y-6">
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">1. Basics of Workflows</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        Workflows are the fundamental structure for organizing and executing tasks in FractalBot:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Stages:</strong> Major phases that define the workflow's architecture, created during workflow initiation</li>
-                        <li><strong>Steps:</strong> Individual tasks created during the recursive execution phase within each stage</li>
-                        <li><strong>Flow:</strong> Sequential progression through stages, with clear dependencies and data requirements</li>
-                        <li><strong>Data Flow:</strong> Systematic movement of assets between stages and steps, following defined inputs and outputs</li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">2. FractalBot Schema</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        The hierarchical structure that defines how FractalBot operates:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Mission:</strong> Top-level container
-                            <ul className="list-disc pl-6 mt-2">
-                                <li>Goal: Specific objective to achieve</li>
-                                <li>Inputs: Required data objects to start</li>
-                                <li>Outputs: Deliverables to be produced</li>
-                                <li>Success Criteria: Measurable conditions for completion</li>
-                            </ul>
-                        </li>
-                        <li><strong>Workflow:</strong> Collection of stages
-                            <ul className="list-disc pl-6 mt-2">
-                                <li>Stages: Major phases of execution</li>
-                                <li>Assets: Data objects used throughout</li>
-                            </ul>
-                        </li>
-                        <li><strong>Stage:</strong> Major phase
-                            <ul className="list-disc pl-6 mt-2">
-                                <li>Inputs: Required data from previous stages</li>
-                                <li>Outputs: Data produced for next stages</li>
-                                <li>Success Criteria: Conditions for stage completion</li>
-                                <li>Steps: Individual tasks within the stage</li>
-                            </ul>
-                        </li>
-                        <li><strong>Step:</strong> Individual task
-                            <ul className="list-disc pl-6 mt-2">
-                                <li>Tool: Specialized function assigned during execution</li>
-                                <li>Inputs: Required data for the tool</li>
-                                <li>Outputs: Data produced by the tool</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">3. Resources and Assets</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        The data and capabilities that enable workflow execution:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Assets:</strong> Data objects that flow through the workflow
-                            <ul className="list-disc pl-6 mt-2">
-                                <li>Types: Various data formats and structures</li>
-                                <li>Status: Tracks state (pending, ready, archived)</li>
-                                <li>Versioning: Maintains history of changes</li>
-                                <li>Usage: Tracks where and how assets are used</li>
-                            </ul>
-                        </li>
-                        <li><strong>Tools:</strong> Specialized functions for processing data
-                            <ul className="list-disc pl-6 mt-2">
-                                <li>Input Schema: Defines required input structure</li>
-                                <li>Output Schema: Defines produced output structure</li>
-                                <li>Configuration: Settings for tool operation</li>
-                            </ul>
-                        </li>
-                        <li><strong>Resources:</strong> General capabilities needed
-                            <ul className="list-disc pl-6 mt-2">
-                                <li>System Access: Required permissions and connections</li>
-                                <li>External Services: APIs and third-party integrations</li>
-                                <li>Processing Power: Computational requirements</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">4. Mission Lifecycle</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        The complete process from mission creation to completion:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li><strong>Mission Definition:</strong> Setting mission goals, inputs, outputs, and success criteria</li>
-                        <li><strong>Workflow Architecture:</strong> Designing stages and their relationships</li>
-                        <li><strong>Stage Execution:</strong> Recursive creation and execution of steps</li>
-                        <li><strong>Verification:</strong> Validation of success criteria at each stage</li>
-                        <li><strong>Completion:</strong> Final delivery and archival of mission outputs</li>
-                    </ul>
-                </div>
-            </div>
-        )
+        subsections: [
+            {
+                id: 'workflow-basics',
+                title: '1. Workflow Basics',
+                content: (
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                        <p className="text-gray-700 dark:text-gray-300 mb-3">
+                            All work in FractalBot follows a simple, powerful pattern:
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Define Outputs:</strong> Start by clearly specifying what you want to achieve
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>What are the final deliverables?</li>
+                                    <li>What form should they take?</li>
+                                    <li>How will you know they're complete?</li>
+                                </ul>
+                            </li>
+                            <li><strong>Define Inputs:</strong> Identify what you have to work with
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>What data or resources do you have?</li>
+                                    <li>What constraints or requirements exist?</li>
+                                    <li>What additional information might be needed?</li>
+                                </ul>
+                            </li>
+                            <li><strong>Connect Inputs to Outputs:</strong> Use available tools to bridge the gap
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>What tools can transform your inputs?</li>
+                                    <li>What intermediate steps are needed?</li>
+                                    <li>How do the tools chain together?</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <p className="text-gray-700 dark:text-gray-300 mt-4">
+                            This pattern scales from simple tasks to complex missions:
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Simple Tasks:</strong> A single step using one tool</li>
+                            <li><strong>Complex Tasks:</strong> Multiple steps with different tools</li>
+                            <li><strong>Missions:</strong> Multiple workflows with stages and steps</li>
+                        </ul>
+                        <p className="text-gray-700 dark:text-gray-300 mt-4">
+                            FractalBot provides a structured way to implement this pattern through its schema, which you'll learn about in the next section. This schema helps organize and track the work as it progresses from inputs to outputs.
+                        </p>
+                    </div>
+                )
+            },
+            {
+                id: 'schema',
+                title: '2. Schema',
+                content: (
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                        <p className="text-gray-700 dark:text-gray-300 mb-3">
+                            The FractalBot schema provides the structure for implementing the input-to-output pattern:
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Mission:</strong> The top-level container that defines the overall goal
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Goal: Specific objective to achieve</li>
+                                    <li>Inputs: Required data objects to start</li>
+                                    <li>Outputs: Deliverables to be produced</li>
+                                    <li>Success Criteria: Measurable conditions for completion</li>
+                                    <li>Workflows: Structured plans to achieve the mission</li>
+                                </ul>
+                            </li>
+                            <li><strong>Workflow:</strong> A collection of stages that achieve a specific part of the mission
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Stages: Major phases of execution</li>
+                                    <li>Assets: Data objects used throughout</li>
+                                </ul>
+                            </li>
+                            <li><strong>Stage:</strong> A major phase with defined boundaries
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Inputs: Required data from previous stages</li>
+                                    <li>Outputs: Data produced for next stages</li>
+                                    <li>Success Criteria: Conditions for stage completion</li>
+                                    <li>Steps: Individual tasks within the stage</li>
+                                </ul>
+                            </li>
+                            <li><strong>Step:</strong> An individual task with specific operations
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Tool: Specialized function assigned during execution</li>
+                                    <li>Inputs: Required data for the tool</li>
+                                    <li>Outputs: Data produced by the tool</li>
+                                </ul>
+                            </li>
+                            <li><strong>Tool:</strong> A specialized function for processing data
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Input Schema: Defines required input structure</li>
+                                    <li>Output Schema: Defines produced output structure</li>
+                                    <li>Configuration: Settings for tool operation</li>
+                                </ul>
+                            </li>
+                            <li><strong>Asset:</strong> A data object that flows through the workflow
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Types: Various data formats and structures</li>
+                                    <li>Status: Tracks state (pending, ready, archived)</li>
+                                    <li>Versioning: Maintains history of changes</li>
+                                    <li>Usage: Tracks where and how assets are used</li>
+                                </ul>
+                            </li>
+                            <li><strong>Resource:</strong> A general capability needed for the mission
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>System Access: Required permissions and connections</li>
+                                    <li>External Services: APIs and third-party integrations</li>
+                                    <li>Processing Power: Computational requirements</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                )
+            },
+            {
+                id: 'realtime-evolution',
+                title: '3. Real-time Schema Evolution',
+                content: (
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                        <p className="text-gray-700 dark:text-gray-300 mb-3">
+                            How the schema evolves during mission execution:
+                        </p>
+                        <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li><strong>Mission Definition:</strong> Initial creation of mission goals and success criteria</li>
+                            <li><strong>Workflow Architecture:</strong> Design of stages and their relationships
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Stages are created with defined inputs, outputs, and success criteria</li>
+                                    <li>Stage dependencies and data flow are established</li>
+                                    <li>No tools are assigned at this stage</li>
+                                </ul>
+                            </li>
+                            <li><strong>Stage Execution:</strong> Dynamic creation and execution of steps
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Steps are created recursively as needed</li>
+                                    <li>Tools are assigned to steps during execution</li>
+                                    <li>Assets are created and modified by tool operations</li>
+                                    <li>Success criteria are verified before stage completion</li>
+                                </ul>
+                            </li>
+                            <li><strong>Schema Evolution:</strong> How the structure changes during execution
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>New assets are created as tools process data</li>
+                                    <li>Step structure emerges based on execution needs</li>
+                                    <li>Tool assignments happen dynamically</li>
+                                    <li>Success criteria verification drives progression</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                )
+            }
+        ]
     },
     {
         id: 'lifecycle',
@@ -314,7 +377,64 @@ const sections = [
 ];
 
 export const HelpGuide: React.FC = () => {
-    const [activeSection, setActiveSection] = useState('overview');
+    const [activeSection, setActiveSection] = useState<string>('overview');
+    const [activeSubsection, setActiveSubsection] = useState<string | null>(null);
+
+    const renderNavigation = () => {
+        return (
+            <nav className="p-4 space-y-1">
+                {sections.map(section => (
+                    <div key={section.id}>
+                        <button
+                            onClick={() => {
+                                setActiveSection(section.id);
+                                setActiveSubsection(null);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors
+                                      ${activeSection === section.id && !activeSubsection
+                                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700/50'
+                                }`}
+                        >
+                            {section.title}
+                        </button>
+                        {section.id === 'core-concepts' && section.subsections && (
+                            <div className="pl-4 mt-1 space-y-1">
+                                {section.subsections.map(subsection => (
+                                    <button
+                                        key={subsection.id}
+                                        onClick={() => {
+                                            setActiveSection(section.id);
+                                            setActiveSubsection(subsection.id);
+                                        }}
+                                        className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors
+                                                  ${activeSubsection === subsection.id
+                                                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700/50'
+                                            }`}
+                                    >
+                                        {subsection.title}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </nav>
+        );
+    };
+
+    const renderContent = () => {
+        const section = sections.find(s => s.id === activeSection);
+        if (!section) return null;
+
+        if (section.id === 'core-concepts' && activeSubsection) {
+            const subsection = section.subsections?.find(s => s.id === activeSubsection);
+            return subsection?.content;
+        }
+
+        return section.content;
+    };
 
     return (
         <Dialog>
@@ -353,33 +473,21 @@ export const HelpGuide: React.FC = () => {
                 </DialogHeader>
 
                 <div className="flex-1 flex overflow-hidden">
-                    {/* Left Navigation - Narrow TOC */}
+                    {/* Left Navigation */}
                     <div className="w-48 border-r border-gray-200 dark:border-gray-700 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
-                        <nav className="p-4 space-y-1">
-                            {sections.map(section => (
-                                <button
-                                    key={section.id}
-                                    onClick={() => setActiveSection(section.id)}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors
-                                              ${activeSection === section.id
-                                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
-                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700/50'
-                                        }`}
-                                >
-                                    {section.title}
-                                </button>
-                            ))}
-                        </nav>
+                        {renderNavigation()}
                     </div>
 
-                    {/* Content Area - Wider */}
+                    {/* Content Area */}
                     <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-800">
                         <div className="max-w-4xl mx-auto p-8">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                                {sections.find(s => s.id === activeSection)?.title}
+                                {activeSubsection
+                                    ? sections.find(s => s.id === activeSection)?.subsections?.find(s => s.id === activeSubsection)?.title
+                                    : sections.find(s => s.id === activeSection)?.title}
                             </h2>
                             <div className="prose dark:prose-invert max-w-none">
-                                {sections.find(s => s.id === activeSection)?.content}
+                                {renderContent()}
                             </div>
                         </div>
                     </div>
