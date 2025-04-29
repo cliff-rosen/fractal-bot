@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Chat from './components/Chat';
 import Mission from './components/Mission';
 import Workflow from './components/Workflow';
@@ -10,6 +10,7 @@ import StatusHistory from './components/StatusHistory';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 export default function FractalBot() {
+  const [isRightColumnCollapsed, setIsRightColumnCollapsed] = useState(false);
   const {
     state,
     toggleToolSelection,
@@ -63,7 +64,7 @@ export default function FractalBot() {
           ) : (
             <>
               {/* Main Content Area (cols 5-10) */}
-              <div key="main-content" className="col-span-5 h-full flex flex-col">
+              <div key="main-content" className={`h-full flex flex-col ${isRightColumnCollapsed ? 'col-span-8' : 'col-span-5'}`}>
                 {/* Mission Header */}
                 <div className="mb-6 pt-4">
                   <Mission />
@@ -114,7 +115,11 @@ export default function FractalBot() {
               </div>
 
               {/* Right Rail (cols 11-12) */}
-              <div key="right-rail" className="col-span-3 h-full overflow-hidden flex flex-col">
+              <div
+                key="right-rail"
+                className={`h-full overflow-hidden flex flex-col transition-all duration-300 ease-in-out ${isRightColumnCollapsed ? 'w-0' : 'col-span-3'
+                  }`}
+              >
                 <div className="h-1/2 overflow-y-auto">
                   <Tools
                     tools={currentTools}
@@ -129,6 +134,22 @@ export default function FractalBot() {
                 <div className="h-1/2 overflow-y-auto border-t dark:border-gray-700 mt-2">
                   <Assets assets={currentAssets} />
                 </div>
+
+                {/* Collapse Button */}
+                <button
+                  onClick={() => setIsRightColumnCollapsed(!isRightColumnCollapsed)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-50 p-2 bg-gray-100 dark:bg-gray-800 rounded-l-lg shadow-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+                >
+                  {isRightColumnCollapsed ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </>
           )}
