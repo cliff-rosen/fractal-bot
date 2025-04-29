@@ -131,19 +131,27 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
     mission_proposal = state.get("mission_proposal")
     if mission_proposal:
         # If we have a mission proposal, provide a final answer explaining it
+        response_content = f"I've created a mission to help you with your request. Here's what we'll do:\n\n" \
+                         f"**Mission Title:** {mission_proposal['title']}\n" \
+                         f"**Goal:** {mission_proposal['goal']}\n\n" \
+                         f"We'll need the following inputs:\n" + \
+                         "\n".join(f"- {input}" for input in mission_proposal['inputs']) + \
+                         f"\n\nAnd we'll deliver:\n" + \
+                         "\n".join(f"- {output}" for output in mission_proposal['outputs']) + \
+                         f"\n\nWe'll know we've succeeded when:\n" + \
+                         "\n".join(f"- {criteria}" for criteria in mission_proposal['success_criteria'])
+
+        # Add validation information if mission is incomplete
+        if not mission_proposal.get('has_sufficient_info', True):
+            response_content += f"\n\n**Additional Information Needed:**\n{mission_proposal['missing_info_explanation']}\n\n" \
+                              "Would you like to provide the missing information so we can proceed with this mission?"
+        else:
+            response_content += "\n\nWould you like to proceed with this mission?"
+
         response_message = Message(
             id=str(uuid.uuid4()),
             role=MessageRole.ASSISTANT,
-            content=f"I've created a mission to help you with your request. Here's what we'll do:\n\n"
-                   f"**Mission Title:** {mission_proposal['title']}\n"
-                   f"**Goal:** {mission_proposal['goal']}\n\n"
-                   f"We'll need the following inputs:\n" + 
-                   "\n".join(f"- {input}" for input in mission_proposal['inputs']) +
-                   f"\n\nAnd we'll deliver:\n" + 
-                   "\n".join(f"- {output}" for output in mission_proposal['outputs']) +
-                   f"\n\nWe'll know we've succeeded when:\n" + 
-                   "\n".join(f"- {criteria}" for criteria in mission_proposal['success_criteria']) +
-                   "\n\nWould you like to proceed with this mission?",
+            content=response_content,
             timestamp=datetime.now().isoformat()
         )
 

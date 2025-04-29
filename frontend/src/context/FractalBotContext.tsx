@@ -27,7 +27,7 @@ type FractalBotAction =
     | { type: 'SET_MISSION'; payload: MissionType }
     | { type: 'SET_MISSION_PROPOSAL'; payload: MissionProposal | undefined }
     | { type: 'SET_WORKSPACE_STATE'; payload: WorkspaceState }
-    | { type: 'SET_MESSAGES'; payload: ChatMessage[] }
+    | { type: 'SET_MESSAGES'; payload: ChatMessage[] | ((prevState: FractalBotState) => ChatMessage[]) }
     | { type: 'SET_STREAMING_MESSAGE'; payload: string }
     | { type: 'SET_WORKFLOW'; payload: WorkflowType }
     | { type: 'SET_WORKSPACE'; payload: WorkspaceType }
@@ -67,7 +67,7 @@ const FractalBotContext = createContext<{
     setMission: (mission: MissionType) => void;
     setMissionProposal: (proposal: MissionProposal | undefined) => void;
     setWorkspaceState: (state: WorkspaceState) => void;
-    setMessages: (messages: ChatMessage[]) => void;
+    addMessage: (message: ChatMessage) => void;
     setStreamingMessage: (message: string) => void;
     setWorkflow: (workflow: WorkflowType) => void;
     setWorkspace: (workspace: WorkspaceType) => void;
@@ -100,7 +100,12 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
         case 'SET_WORKSPACE_STATE':
             return { ...state, currentWorkspaceState: action.payload };
         case 'SET_MESSAGES':
-            return { ...state, currentMessages: action.payload };
+            return {
+                ...state,
+                currentMessages: typeof action.payload === 'function'
+                    ? action.payload(state)
+                    : action.payload
+            };
         case 'SET_STREAMING_MESSAGE':
             return { ...state, currentStreamingMessage: action.payload };
         case 'SET_WORKFLOW':
@@ -148,8 +153,11 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'SET_WORKSPACE_STATE', payload: workspaceState });
     }, []);
 
-    const setMessages = useCallback((messages: ChatMessage[]) => {
-        dispatch({ type: 'SET_MESSAGES', payload: messages });
+    const addMessage = useCallback((message: ChatMessage) => {
+        dispatch({
+            type: 'SET_MESSAGES',
+            payload: (prevState: FractalBotState) => [...prevState.currentMessages, message]
+        });
     }, []);
 
     const setStreamingMessage = useCallback((message: string) => {
@@ -233,7 +241,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 content: data.token,
                 timestamp: new Date().toISOString()
             };
-            setMessages([...state.currentMessages, newMessage]);
+            addMessage(newMessage);
         }
 
         if (data.status) {
@@ -256,7 +264,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 error = data.error;
             }
             const messageToAdd = newStatusMessage + " " + message + " " + error;
-            console.log(messageToAdd);
+
             addStatusRecord(messageToAdd);
         }
 
@@ -267,10 +275,10 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         }
 
         return data.token || "";
-    }, [state, setMessages, setWorkspace, addStatusRecord, setMission, setMissionProposal]);
+    }, [state, setWorkspace, addStatusRecord, setMission, setMissionProposal, addMessage]);
 
     const sendMessage = useCallback(async (message: ChatMessage) => {
-        setMessages([...state.currentMessages, message]);
+        addMessage(message);
 
         let finalContent = '';
 
@@ -306,7 +314,9 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                 timestamp: new Date().toISOString()
             };
 
-            setMessages([...state.currentMessages, finalMessage]);
+            // addMessage(finalMessage);
+            // update the current messages with the final message
+
             setWorkspace({
                 ...state.currentWorkspace,
                 status: 'completed'
@@ -317,7 +327,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         } finally {
             setStreamingMessage('');
         }
-    }, [state, processBotMessage, setMessages, setWorkspace, setStreamingMessage]);
+    }, [state, processBotMessage, setWorkspace, setStreamingMessage, addMessage]);
 
     const setWorkspaceWithWorkflow = useCallback((workflow: any) => {
         const now = new Date().toISOString();
@@ -403,7 +413,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                             content: data.token,
                             timestamp: new Date().toISOString()
                         };
-                        setMessages([...state.currentMessages, newMessage]);
+                        addMessage(newMessage);
                     }
                 }
             }
@@ -411,7 +421,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             console.error('Error generating workflow:', error);
             addStatusRecord(`Error: ${error}`);
         }
-    }, [state, addStatusRecord, setWorkspaceWithWorkflow, setMessages]);
+    }, [state, addStatusRecord, setWorkspaceWithWorkflow, addMessage]);
 
     const resetState = useCallback(() => {
         dispatch({ type: 'RESET_STATE' });
@@ -424,7 +434,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             setMission,
             setMissionProposal,
             setWorkspaceState,
-            setMessages,
+            addMessage,
             setStreamingMessage,
             setWorkflow,
             setWorkspace,

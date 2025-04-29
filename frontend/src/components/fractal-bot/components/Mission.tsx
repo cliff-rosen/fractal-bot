@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import type { Tool } from '../types/index';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface MissionProps {
