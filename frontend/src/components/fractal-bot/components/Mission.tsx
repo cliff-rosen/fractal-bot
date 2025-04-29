@@ -102,9 +102,10 @@ export default function Mission({
                 </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-6 p-6 border-t border-gray-100 dark:border-gray-700">
+            <div className="mt-6 grid grid-cols-3 gap-6 p-6 border-t border-gray-100 dark:border-gray-700">
                 <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
                     <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Inputs</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Specific data objects required to start the mission</p>
                     <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
                         {mission.inputs.map((input: string) => (
                             <li key={input} className="flex items-center">
@@ -115,7 +116,20 @@ export default function Mission({
                     </ul>
                 </div>
                 <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Resources</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Sources of additional information that may be required</p>
+                    <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                        {mission.resources.map((resource: string) => (
+                            <li key={resource} className="flex items-center">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                {resource}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
                     <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Specific deliverables that will be produced</p>
                     <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
                         {mission.outputs.map((output: string) => (
                             <li key={output} className="flex items-center">
@@ -125,6 +139,19 @@ export default function Mission({
                         ))}
                     </ul>
                 </div>
+            </div>
+
+            <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
+                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Success Criteria</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Measurable conditions that verify mission completion</p>
+                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                    {mission.success_criteria.map((criterion: string) => (
+                        <li key={criterion} className="flex items-center">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                            {criterion}
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );

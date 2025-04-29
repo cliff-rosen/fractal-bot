@@ -42,7 +42,9 @@ export const missionTemplate: Mission = {
     workflow: workflowTemplate,
     assets: [],
     inputs: [],
+    resources: [],  // General resources needed but not specific data objects
     outputs: [],
+    success_criteria: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 }
@@ -141,7 +143,7 @@ export const toolsTemplate: Tool[] = [
                 is_array: false,
                 name: 'Knowledge KB',
                 description: 'The knowledge base to add the information to'
-            }            
+            }
         ],
         outputs: [
             {

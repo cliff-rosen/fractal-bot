@@ -110,19 +110,22 @@ export interface Mission {
     status: string;
     workflow: Workflow;
     assets: Asset[];
-    inputs: string[];
-    outputs: string[];
+    inputs: string[];  // Specific data objects required to start the mission
+    resources: string[];  // General resources needed but not specific data objects (e.g. access to email, databases)
+    outputs: string[];  // Specific deliverables that will be produced
+    success_criteria: string[];  // Measurable conditions that verify mission completion
     createdAt: string;
     updatedAt: string;
 }
 
 export type MissionProposal = {
-    title: string;
-    description: string;
-    goal: string;
-    inputs: string[];
-    outputs: string[];
-    success_criteria: string[];
+    title: string;  // Clear, concise title describing the mission
+    description: string;  // Detailed explanation of what the mission entails
+    goal: string;  // Specific, measurable objective to be achieved
+    inputs: string[];  // Specific data objects that must be provided to start the mission
+    resources: string[];  // General resources needed but not specific data objects
+    outputs: string[];  // Specific deliverables that will be produced
+    success_criteria: string[];  // Measurable conditions that verify mission completion
 }
 
 // Chat message types
