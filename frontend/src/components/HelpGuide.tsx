@@ -139,11 +139,26 @@ const sections: Section[] = [
                         <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
                             <li><strong>Mission:</strong> The top-level container that defines the overall goal
                                 <ul className="list-disc pl-6 mt-2">
-                                    <li>Goal: Specific objective to achieve</li>
-                                    <li>Inputs: Required data objects to start</li>
-                                    <li>Outputs: Deliverables to be produced</li>
-                                    <li>Success Criteria: Measurable conditions for completion</li>
-                                    <li>Workflows: Structured plans to achieve the mission</li>
+                                    <li><strong>Goal:</strong> The fundamental reason for the mission - what you ultimately want to achieve</li>
+                                    <li><strong>Outputs:</strong> The specific deliverables you believe will achieve the goal - what you need to produce</li>
+                                    <li><strong>Success Criteria:</strong> The measurable conditions that verify the outputs actually achieve the goal - how you'll know you succeeded</li>
+                                    <li><strong>Inputs:</strong> Required data objects to start the mission</li>
+                                    <li><strong>Workflows:</strong> Structured plans to produce the outputs from the inputs</li>
+                                    <li><strong>Chain of Responsibility:</strong> The critical relationship between these elements
+                                        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mt-2">
+                                            <p className="text-gray-700 dark:text-gray-300 mb-2">
+                                                The chain of responsibility ensures that outputs truly achieve the goal:
+                                            </p>
+                                            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                                <li><strong>Success Criteria Define Success:</strong> They must be carefully crafted to truly represent what's needed to achieve the goal</li>
+                                                <li><strong>Outputs Must Meet Criteria:</strong> The outputs must demonstrably satisfy all success criteria</li>
+                                                <li><strong>Goal Achievement Follows:</strong> If the success criteria truly define success, and the outputs meet all criteria, then the goal must be achieved</li>
+                                            </ul>
+                                            <p className="text-gray-700 dark:text-gray-300 mt-4">
+                                                For example, if your goal is to "improve customer satisfaction", your success criteria might include "reduce average response time to under 2 hours" and "achieve 90% positive feedback on support interactions". These criteria must be carefully chosen to truly represent improved satisfaction. Your outputs (like a new support process and training materials) must demonstrably achieve these criteria before being released from the workflow. Only then can you be confident that the goal has been achieved.
+                                            </p>
+                                        </div>
+                                    </li>
                                 </ul>
                             </li>
                             <li><strong>Workflow:</strong> A collection of stages that achieve a specific part of the mission
