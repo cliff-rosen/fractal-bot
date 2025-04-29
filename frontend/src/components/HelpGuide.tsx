@@ -144,22 +144,23 @@ const sections: Section[] = [
                                     <li><strong>Success Criteria:</strong> The measurable conditions that verify the outputs actually achieve the goal - how you'll know you succeeded</li>
                                     <li><strong>Inputs:</strong> Required data objects to start the mission</li>
                                     <li><strong>Workflows:</strong> Structured plans to produce the outputs from the inputs</li>
-                                    <li><strong>Chain of Responsibility:</strong> The critical relationship between these elements
-                                        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mt-2">
-                                            <p className="text-gray-700 dark:text-gray-300 mb-2">
-                                                The chain of responsibility ensures that outputs truly achieve the goal:
-                                            </p>
-                                            <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                                                <li><strong>Success Criteria Define Success:</strong> They must be carefully crafted to truly represent what's needed to achieve the goal</li>
-                                                <li><strong>Outputs Must Meet Criteria:</strong> The outputs must demonstrably satisfy all success criteria</li>
-                                                <li><strong>Goal Achievement Follows:</strong> If the success criteria truly define success, and the outputs meet all criteria, then the goal must be achieved</li>
-                                            </ul>
-                                            <p className="text-gray-700 dark:text-gray-300 mt-4">
-                                                For example, if your goal is to "improve customer satisfaction", your success criteria might include "reduce average response time to under 2 hours" and "achieve 90% positive feedback on support interactions". These criteria must be carefully chosen to truly represent improved satisfaction. Your outputs (like a new support process and training materials) must demonstrably achieve these criteria before being released from the workflow. Only then can you be confident that the goal has been achieved.
-                                            </p>
-                                        </div>
-                                    </li>
                                 </ul>
+                                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mt-4 ml-6">
+                                    <p className="text-gray-700 dark:text-gray-300 mb-2">
+                                        <strong>How These Elements Work Together:</strong> The relationship between goal, outputs, and success criteria forms a critical chain of responsibility that ensures outputs truly achieve the goal:
+                                    </p>
+                                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
+                                        <li><strong>Success Criteria Define Success:</strong> They must be carefully crafted to truly represent what's needed to achieve the goal</li>
+                                        <li><strong>Outputs Must Meet Criteria:</strong> The outputs must demonstrably satisfy all success criteria</li>
+                                        <li><strong>Goal Achievement Follows:</strong> If the success criteria truly define success, and the outputs meet all criteria, then the goal must be achieved</li>
+                                    </ul>
+                                    <p className="text-gray-700 dark:text-gray-300 mt-4">
+                                        For example, if your goal is to "improve customer satisfaction", your success criteria might include "reduce average response time to under 2 hours" and "achieve 90% positive feedback on support interactions". These criteria must be carefully chosen to truly represent improved satisfaction. Your outputs (like a new support process and training materials) must demonstrably achieve these criteria before being released from the workflow. Only then can you be confident that the goal has been achieved.
+                                    </p>
+                                    <p className="text-gray-700 dark:text-gray-300 mt-4">
+                                        <strong>The Workflow's Role:</strong> The workflow's job is to ensure that a sequence of steps can be identified and executed that follow the data flow rule: inputs can be transformed into outputs through a series of steps, where each step's inputs can come from any previous step's outputs or the mission's initial inputs. This ensures that the mission's inputs can be systematically transformed into the required outputs that meet the success criteria.
+                                    </p>
+                                </div>
                             </li>
                             <li><strong>Workflow:</strong> A collection of stages that achieve a specific part of the mission
                                 <ul className="list-disc pl-6 mt-2">
