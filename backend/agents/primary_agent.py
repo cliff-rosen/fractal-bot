@@ -127,8 +127,25 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
     if not last_message:
         raise ValueError("No user message found in state")
 
-    # Check if we already have a mission proposal in the conversation
+    # Get current state information
     mission_proposal = state.get("mission_proposal")
+    mission = state.get("mission")
+    workflow = mission.get("workflow") if mission else None
+
+    # Determine state values for the prompt
+    has_mission_proposal = bool(mission_proposal)
+    has_mission = bool(mission)
+    has_workflow = bool(workflow)
+
+    # Get status information
+    mission_proposal_status = "none"
+    if mission_proposal:
+        mission_proposal_status = "pending" if not mission_proposal.get("has_sufficient_info", True) else "ready"
+
+    mission_status = mission.get("status", "none") if mission else "none"
+    workflow_status = workflow.get("status", "none") if workflow else "none"
+
+    # Check if we already have a mission proposal in the conversation
     if mission_proposal:
         # If we have a mission proposal, provide a final answer explaining it
         response_content = f"I've created a mission to help you with your request. Here's what we'll do:\n\n" \
@@ -172,7 +189,13 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
         # Create and format the prompt
         prompt = SupervisorPrompt()
         formatted_prompt = prompt.get_formatted_prompt(
-            user_input=last_message.content
+            user_input=last_message.content,
+            has_mission_proposal=has_mission_proposal,
+            mission_proposal_status=mission_proposal_status,
+            has_mission=has_mission,
+            mission_status=mission_status,
+            has_workflow=has_workflow,
+            workflow_status=workflow_status
         )
 
         # Generate and parse the response

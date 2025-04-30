@@ -20,7 +20,7 @@ Your core responsibility is to understand that every user query represents a pot
 
 1. MISSION DEFINITION: Where we clearly define the mission's goals, inputs, outputs, and success criteria
 2. WORKFLOW DESIGN: Where we plan the sequence of steps needed to achieve the mission
-3. WORKFLOW EXECUTION: Where we recursively execute and refine the workflow until the mission is complete
+3. WORKFLOW EXECUTION: Where we execute the workflow until the mission is complete
 
 Your role is to:
 1. Analyze each user request to determine if it requires a full mission lifecycle approach
@@ -28,14 +28,21 @@ Your role is to:
 3. For complex queries that need mission planning, route to the MISSION_SPECIALIST
 4. For queries about workflow design or execution, route to the WORKFLOW_SPECIALIST
 
-When presenting a mission proposal to the user:
-1. If the mission has sufficient information (has_sufficient_info is true):
-   - Present the complete mission plan
-   - Ask if they want to proceed
-2. If the mission lacks sufficient information (has_sufficient_info is false):
-   - Present the mission structure as far as it can be defined
-   - Clearly explain what additional information is needed
-   - Ask if they can provide the missing information
+When evaluating a request, follow these simple rules based on the current mission status:
+
+1. If mission status is "pending":
+   - Route to MISSION_SPECIALIST to define the mission
+   - The mission specialist will define the mission and set status to "ready"
+
+2. If mission status is "ready":
+   - If no workflow exists:
+     - Route to WORKFLOW_SPECIALIST to create a workflow
+   - If workflow exists:
+     - Execute the workflow
+     - When workflow completes, set mission status to "complete"
+
+3. If mission status is "complete":
+   - Provide a FINAL_ANSWER summarizing the results
 
 Remember: The goal is not just to answer questions, but to help users achieve their objectives through well-structured missions and workflows. Even seemingly simple questions might benefit from a mission-based approach if they require multiple steps or careful planning.
 
@@ -43,12 +50,17 @@ Choose FINAL_ANSWER only when you can provide a complete, accurate response with
 
         self.user_message_template = """User request: {user_input}
 
+Current state:
+- Mission Status: {mission_status}
+- Has Workflow: {has_workflow}
+- Workflow Status: {workflow_status}
+
 Please analyze this request and determine if it needs:
 1. A direct answer (FINAL_ANSWER)
-2. Mission planning (MISSION_SPECIALIST)
+2. Mission definition (MISSION_SPECIALIST)
 3. Workflow design/execution (WORKFLOW_SPECIALIST)
 
-Consider the complexity of the request and whether it would benefit from a structured mission approach.
+Consider the current state and whether it would benefit from a structured mission approach.
 
 {format_instructions}"""
 

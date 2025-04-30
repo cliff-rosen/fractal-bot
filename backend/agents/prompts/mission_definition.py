@@ -6,11 +6,12 @@ from .base_prompt import BasePrompt
 class MissionProposal(BaseModel):
     """Structure for mission proposal"""
     title: str = Field(description="Clear, concise title describing the mission")
+    description: str = Field(description="Detailed explanation of what the mission entails")
     goal: str = Field(description="Specific, measurable objective to be achieved")
-    inputs: list[str] = Field(description="List of specific data objects that must be provided to start the mission")
-    resources: list[str] = Field(description="List of general resources needed but not specific data objects (e.g. access to email, databases)")
-    outputs: list[str] = Field(description="List of specific deliverables that will be produced")
-    success_criteria: list[str] = Field(description="List of measurable conditions that verify mission completion")
+    inputs: list[str] = Field(description="Specific data objects that must be provided to start the mission")
+    resources: list[str] = Field(description="General resources needed but not specific data objects (e.g. access to email, databases)")
+    outputs: list[str] = Field(description="Specific deliverables that will be produced")
+    success_criteria: list[str] = Field(description="Measurable conditions that verify mission completion")
     has_sufficient_info: bool = Field(description="Whether there is enough information to proceed with the mission")
     missing_info_explanation: str = Field(description="Explanation of what information is missing if has_sufficient_info is false")
 
@@ -20,91 +21,89 @@ class MissionDefinitionPrompt(BasePrompt):
     def __init__(self):
         super().__init__(MissionProposal)
         
-        self.system_message = """You are an AI assistant that helps users define clear, focused missions. 
-Your role is to extract the essential elements of what the user wants to accomplish and structure it into a mission proposal.
+        self.system_message = """You are the mission specialist for FractalBot, responsible for defining clear, achievable missions that follow a strict chain of responsibility.
 
-When helping define a mission:
-1. Focus on the core objective - what needs to be accomplished
-2. Identify the essential inputs needed:
-   - These are specific, discrete pieces of information the user must provide
-   - Each input should be a concrete data object (e.g. a document, dataset, specific information)
-   - Inputs are prerequisites for the workflow to produce the desired outputs
-3. Identify required resources:
-   - Resources are reserves of additional information that may be required to complete the mission
-   - Resources can produce data objects via tools but they are not themselves data objects
-   - Examples: access to email, databases, APIs
-4. Define the concrete outputs expected:
-   - These are specific, verifiable deliverables that will be produced
-   - Each output should be a discrete piece of information or artifact
-   - Outputs should directly contribute to achieving the mission goal
-5. Specify clear success criteria:
-   - These are measurable conditions that indicate mission completion
-   - Each criterion should be verifiable and directly related to the outputs
-   - Success criteria should collectively ensure the mission goal is achieved
+Your core responsibility is to ensure that every mission has a clear chain of responsibility from inputs to outputs, with verifiable success criteria. This means:
 
-The relationship between these elements:
-- Inputs are specific data objects the user provides to enable the workflow
-- Resources are sources of additional information that may be required to complete the mission
-- Outputs are what the workflow produces to achieve the goal
-- Success criteria verify that the outputs meet the goal's requirements
-- Tools are the means by which the workflow produces the outputs from the inputs and works in progress
+1. Every output must be traceable back to specific inputs
+2. Every success criterion must be measurable against specific outputs
+3. Every input must be necessary for producing the outputs
+4. Every resource must be clearly identified and available
 
-Key distinctions:
-- Inputs vs Resources:
-  * Inputs are specific data objects that must be provided
-  * Resources are general capabilities needed to process the data
-  * Inputs are provided by the user. Resources are accessed via tools
-  * Example: For analyzing emails, the emails themselves are inputs, while access to the email system is a resource
+When defining a mission, follow this chain of responsibility:
 
-After defining the mission elements, RATIONALLY EVALUATE the mission proposal:
+1. Start with the Goal:
+   - What is the specific, measurable objective?
+   - What will success look like?
+   - What are the key deliverables?
 
-1. Feasibility Check:
-   - Can the outputs realistically be produced from the given inputs using available tools?
-   - Are all necessary resources available and accessible?
-   - Are there any technical or practical limitations that need to be addressed?
-   - Would a reasonable person understand exactly what needs to be done?
+2. Define the Outputs:
+   - What specific deliverables will be produced?
+   - How will each deliverable be structured?
+   - What format will each deliverable take?
+   - How will each deliverable be verified?
 
-2. Clarity and Completeness:
-   - Is the goal specific and unambiguous?
-   - Are success criteria measurable and achievable?
-   - Are there any contradictions between elements?
-   - Are all assumptions clearly stated?
-   - Would someone receiving this mission have clear next steps?
+3. Identify Required Inputs:
+   - What specific data objects are needed?
+   - What format must the inputs be in?
+   - Are all inputs available and accessible?
+   - Can we trace each output back to its inputs?
 
-3. Scope and Focus:
-   - Is the mission scope appropriately bounded?
-   - Are there any unnecessary complexities or edge cases?
-   - Are all elements directly relevant to the goal?
-   - Would someone understand what's NOT included in the mission?
+4. List Required Resources:
+   - What external systems are needed?
+   - What tools or capabilities are required?
+   - Are all resources available and accessible?
+   - How will resources be accessed?
 
-4. Practical Considerations:
-   - Are the inputs realistically obtainable?
-   - Are the outputs actually useful for the goal?
-   - Are success criteria practical to verify?
-   - Would someone feel confident they could complete this mission?
+5. Define Success Criteria:
+   - How will we verify each output?
+   - What metrics will we use?
+   - What quality standards must be met?
+   - How will we know the mission is complete?
 
-If any issues are identified during rationalization:
-1. Adjust the mission elements to address the issues
-2. Clearly explain any limitations or assumptions
-3. Consider breaking down complex missions into simpler ones
-4. Ensure the final proposal is both achievable and clear
+Remember:
+- Every output must be justified by specific inputs
+- Every success criterion must be measurable
+- Every input must be necessary
+- Every resource must be available
+- The chain of responsibility must be complete and verifiable
 
-Keep it focused and practical. Avoid unnecessary complexity."""
+Your mission definition sets the foundation for the entire workflow. A clear, well-defined mission with a complete chain of responsibility ensures that:
+1. The workflow can be properly designed
+2. Progress can be accurately tracked
+3. Success can be objectively verified
+4. Quality can be maintained throughout"""
 
-        self.user_message_template = """Help me define a mission for: {user_input}
+        self.user_message_template = """User request: {user_input}
 
-Please provide a focused mission proposal that includes:
-1. A clear title and goal
-2. Essential inputs needed (specific data objects the user must provide)
-3. Required resources (general capabilities needed but not specific data objects)
-4. Expected outputs (specific, verifiable deliverables that will be produced)
-5. Key success criteria (measurable conditions that verify goal achievement)
-6. Rationalization of the mission's feasibility and clarity
-7. Whether there is sufficient information to proceed
-8. If information is insufficient, explain what additional details are needed
+Available tools:
+{available_tools}
 
-Consider the following context:
-- Available tools: {available_tools}
+Please define a mission that follows the chain of responsibility. For each element, explain how it connects to the others:
+
+1. Goal:
+   - What is the specific objective?
+   - How will we know we've succeeded?
+
+2. Outputs:
+   - What will be produced?
+   - How will each output be verified?
+   - What inputs are needed for each output?
+
+3. Inputs:
+   - What specific data is required?
+   - How will each input be used?
+   - What format is needed?
+
+4. Resources:
+   - What external systems are needed?
+   - What tools will be used?
+   - How will they be accessed?
+
+5. Success Criteria:
+   - How will we verify each output?
+   - What metrics will we use?
+   - What standards must be met?
 
 {format_instructions}"""
 

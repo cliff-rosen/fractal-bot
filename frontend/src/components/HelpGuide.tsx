@@ -242,7 +242,49 @@ const sections: Section[] = [
                                     <li>Ensures the foundation for quality throughout the workflow</li>
                                 </ul>
                                 <p className="text-gray-700 dark:text-gray-300 mt-2 pl-6">
-                                    This phase is critical because it establishes the chain of responsibility that will guide the entire mission. If the inputs, outputs, and success criteria aren't well-defined, the entire workflow will suffer from the "garbage in, garbage out" principle.
+                                    This phase is critical because it establishes the chain of responsibility that will guide the entire mission. The mission definition process:
+                                </p>
+                                <ul className="list-disc pl-6 mt-2 text-gray-700 dark:text-gray-300">
+                                    <li><strong>Distinguishes Inputs from Resources:</strong>
+                                        <ul className="list-disc pl-6 mt-2">
+                                            <li>Inputs are specific data objects the user must provide</li>
+                                            <li>Resources are general capabilities accessed via tools</li>
+                                            <li>Example: For email analysis, the emails are inputs, while email system access is a resource</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Evaluates Mission Feasibility:</strong>
+                                        <ul className="list-disc pl-6 mt-2">
+                                            <li>Checks if outputs can be produced from given inputs</li>
+                                            <li>Verifies resource availability and accessibility</li>
+                                            <li>Identifies any technical or practical limitations</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Ensures Clarity and Completeness:</strong>
+                                        <ul className="list-disc pl-6 mt-2">
+                                            <li>Makes goals specific and unambiguous</li>
+                                            <li>Ensures success criteria are measurable</li>
+                                            <li>Clarifies all assumptions and requirements</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Manages Scope and Focus:</strong>
+                                        <ul className="list-disc pl-6 mt-2">
+                                            <li>Keeps mission scope appropriately bounded</li>
+                                            <li>Identifies and removes unnecessary complexities</li>
+                                            <li>Clarifies what's included and what's not</li>
+                                            <li>Considers breaking down complex missions</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Verifies Information Sufficiency:</strong>
+                                        <ul className="list-disc pl-6 mt-2">
+                                            <li>Ensures all necessary information is available</li>
+                                            <li>Identifies any missing details needed to proceed</li>
+                                            <li>Validates that inputs are realistically obtainable</li>
+                                            <li>Confirms outputs will be useful for the goal</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <p className="text-gray-700 dark:text-gray-300 mt-2 pl-6">
+                                    This comprehensive evaluation process ensures that the mission is well-defined, feasible, and focused before proceeding to workflow architecture. If any issues are identified, the mission elements are adjusted, limitations are clearly explained, and complex missions may be broken down into simpler ones. This prevents the "garbage in, garbage out" principle and sets up the workflow for success.
                                 </p>
                             </li>
                             <li><strong>Workflow Architecture:</strong> Balancing exploration and focus
