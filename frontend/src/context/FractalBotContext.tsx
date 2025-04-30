@@ -349,10 +349,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                         description: stage.description,
                         status: 'pending',
                         steps: [],
-                        assets: {
-                            inputs: [],
-                            outputs: []
-                        },
+                        assets: [],
                         inputs: stage.inputs || [],
                         outputs: stage.outputs || [],
                         success_criteria: stage.success_criteria || [],
@@ -367,6 +364,21 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
         setActiveView('workspace');
     }, [state.currentWorkspace, setWorkspace, setActiveView]);
+
+    const createWorkflowFromStageGenerator = useCallback((stageGenerator: StageGeneratorResult) => {
+        const now = new Date().toISOString();
+
+        return {
+            ...workflowTemplate,
+            name: 'Proposed Workflow',
+            description: stageGenerator.explanation,
+            stages: stageGenerator.stages.map((stage: any, index: number) => ({
+                ...stage,
+                createdAt: now,
+                updatedAt: now
+            })),
+        }
+    }, []);
 
     const generateWorkflow = useCallback(async () => {
         try {
@@ -386,8 +398,9 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
                     // Handle the final workflow
                     if (data.stage_generator) {
-                        setWorkspaceWithWorkflow(data.stage_generator);
-                        setWorkflow(data.stage_generator);
+                        const workflow = createWorkflowFromStageGenerator(data.stage_generator);
+                        setWorkspaceWithWorkflow(workflow);
+                        setWorkflow(workflow);
                     }
 
                     // Handle the token
