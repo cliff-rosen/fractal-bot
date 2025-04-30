@@ -24,6 +24,7 @@ import os
 from agents.prompts.mission_definition import MissionDefinitionPrompt, MissionProposal
 from agents.prompts.supervisor_prompt import SupervisorPrompt, SupervisorResponse
 from agents.prompts.steps_generator import StepsGeneratorPrompt, StepsGenerator
+from agents.prompts.stage_generator import StageGeneratorPrompt, StageGenerator
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
@@ -53,18 +54,18 @@ def getModel(node_name: str, config: Dict[str, Any], writer: Optional[Callable] 
     
     return ChatOpenAI(**chat_config)
 
-async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
+async def stage_generator_node(state: State, writer: StreamWriter, config: Dict[str, Any]) -> AsyncIterator[Dict[str, Any]]:
     """Generate a mission proposal based on user input"""
     if writer:
-        writer({"status": "steps_generator_in_progress"})
+        writer({"status": "stage_generator_in_progress"})
 
-    llm = getModel("steps_generator", config, writer)
+    llm = getModel("stage_generator", config, writer)
     
     tools_str = "\n".join([f"- {tool.name}: {tool.description}" for tool in state["selectedTools"]])
 
     if writer:
         writer({
-            "status": "steps_generator_request: " + state["mission"].goal
+            "status": "stage_generator_request: " + state["mission"].goal
         })
 
     try:
@@ -74,7 +75,7 @@ async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[
         outputs_str = "\n".join(f"- {output}" for output in mission.outputs)
 
         # Create and format the prompt
-        prompt = StepsGeneratorPrompt()
+        prompt = StageGeneratorPrompt()
         formatted_prompt = prompt.get_formatted_prompt(
             goal=mission.goal,
             inputs=inputs_str,
@@ -88,23 +89,24 @@ async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[
 
         print("Parsing response...")
 
-        steps_generator = prompt.parse_response(response.content)
+        stage_generator = prompt.parse_response(response.content)
         
         # Format the response message
-        steps_str = "\n".join([
-            f"Step {i+1}: {step.description}\n"
-            f"  Tool: {step.tool_id}\n"
-            f"  Inputs: {', '.join(step.inputs)}\n"
-            f"  Outputs: {', '.join(step.outputs)}\n"
-            for i, step in enumerate(steps_generator.steps)
+        stages_str = "\n".join([
+            f"Stage {i+1}: {stage.name}\n"
+            f"  Description: {stage.description}\n"
+            f"  Inputs: {', '.join(stage.inputs)}\n"
+            f"  Outputs: {', '.join(stage.outputs)}\n"
+            f"  Success Criteria: {', '.join(stage.success_criteria)}\n"
+            for i, stage in enumerate(stage_generator.stages)
         ])
 
-        response_content = f"""**Analysis:** {steps_generator.explanation}
+        response_content = f"""**Analysis:** {stage_generator.explanation}
 
-**Steps:**
-{steps_str}
+**Stages:**
+{stages_str}
 
-**Is Single Tool Solution:** {steps_generator.is_single_tool_solution}"""
+**Is Single Stage Solution:** {stage_generator.is_single_stage_solution}"""
 
         # Create a response message
         response_message = Message(
@@ -116,13 +118,13 @@ async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[
 
         if writer:
             writer({
-                "status": "steps_generator_completed",
-                "steps_generator": steps_generator.dict()
+                "status": "stage_generator_completed",
+                "stage_generator": stage_generator.dict()
             })
 
         return {
             "messages": [response_message],
-            "steps_generator": steps_generator.dict(),
+            "stage_generator": stage_generator.dict(),
             "token": response_content
         }
 
@@ -140,11 +142,10 @@ async def steps_generator_node(state: State, writer: StreamWriter, config: Dict[
 graph_builder = StateGraph(State)
 
 # Add nodes
-graph_builder.add_node("steps_generator", steps_generator_node)
+graph_builder.add_node("stage_generator", stage_generator_node)
 
 # Add edges
-graph_builder.add_edge(START, "steps_generator")
-
+graph_builder.add_edge(START, "stage_generator")
 
 # Compile the graph with streaming support
 compiled = graph_builder.compile()

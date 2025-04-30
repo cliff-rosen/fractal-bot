@@ -343,35 +343,19 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                     ...workflowTemplate,
                     name: 'Proposed Workflow',
                     description: workflow.explanation,
-                    stages: workflow.steps.map((step: any, index: number) => ({
+                    stages: workflow.stages.map((stage: any, index: number) => ({
                         id: `stage-${index}`,
-                        name: step.description,
-                        description: step.description,
+                        name: stage.name,
+                        description: stage.description,
                         status: 'pending',
-                        steps: [{
-                            id: `step-${index}`,
-                            name: step.description,
-                            description: step.description,
-                            status: 'pending',
-                            tool: step.tool_id !== 'deferred' ? {
-                                name: step.tool_id,
-                                configuration: {}
-                            } : undefined,
-                            assets: {
-                                inputs: [],
-                                outputs: []
-                            },
-                            inputs: step.inputs || [],
-                            outputs: step.outputs || [],
-                            createdAt: now,
-                            updatedAt: now
-                        }],
+                        steps: [],
                         assets: {
                             inputs: [],
                             outputs: []
                         },
-                        inputs: step.inputs || [],
-                        outputs: step.outputs || [],
+                        inputs: stage.inputs || [],
+                        outputs: stage.outputs || [],
+                        success_criteria: stage.success_criteria || [],
                         createdAt: now,
                         updatedAt: now
                     })),

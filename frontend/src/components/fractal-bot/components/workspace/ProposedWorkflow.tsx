@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Workflow, Stage, Step } from '../../types/index';
+import type { Workflow, Stage } from '../../types/index';
 
 interface ProposedWorkflowProps {
     workflow: Workflow;
@@ -10,7 +10,6 @@ export default function ProposedWorkflow({ workflow }: ProposedWorkflowProps) {
         <div className="space-y-6">
             <div>
                 <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Proposed Workflow</h2>
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-200 mt-1">{workflow.name}</h1>
                 <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
                     {workflow.description}
                 </p>
@@ -56,53 +55,19 @@ export default function ProposedWorkflow({ workflow }: ProposedWorkflowProps) {
                                 </div>
                             </div>
 
-                            {/* Stage Steps */}
-                            <div className="mt-4">
-                                <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Steps</h5>
-                                <ul className="space-y-3">
-                                    {stage.steps.map((step: Step, stepIndex: number) => (
-                                        <li key={step.id} className="bg-gray-100 dark:bg-gray-600/50 p-3 rounded-lg">
-                                            <div className="flex items-center">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-200">{step.name}</span>
-                                            </div>
-                                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{step.description}</p>
-
-                                            {/* Step Inputs and Outputs */}
-                                            <div className="mt-2 grid grid-cols-2 gap-3">
-                                                <div>
-                                                    <h6 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Inputs</h6>
-                                                    {step.inputs.length > 0 ? (
-                                                        <ul className="space-y-1">
-                                                            {step.inputs.map((input: string) => (
-                                                                <li key={input} className="text-xs text-gray-600 dark:text-gray-300">
-                                                                    {input}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    ) : (
-                                                        <p className="text-xs text-gray-400 dark:text-gray-500">No inputs</p>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <h6 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Outputs</h6>
-                                                    {step.outputs.length > 0 ? (
-                                                        <ul className="space-y-1">
-                                                            {step.outputs.map((output: string) => (
-                                                                <li key={output} className="text-xs text-gray-600 dark:text-gray-300">
-                                                                    {output}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    ) : (
-                                                        <p className="text-xs text-gray-400 dark:text-gray-500">No outputs</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            {/* Success Criteria */}
+                            {stage.success_criteria && stage.success_criteria.length > 0 && (
+                                <div className="mt-3 bg-gray-100 dark:bg-gray-600/50 p-3 rounded-lg">
+                                    <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Success Criteria</h5>
+                                    <ul className="space-y-1">
+                                        {stage.success_criteria.map((criterion: string, idx: number) => (
+                                            <li key={idx} className="text-sm text-gray-600 dark:text-gray-300">
+                                                {criterion}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

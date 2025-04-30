@@ -97,6 +97,14 @@ class MissionProposal(BaseModel):
     outputs: List[str]
     success_criteria: List[str]
 
+class StageProposal(BaseModel):
+    id: str
+    name: str
+    description: str
+    inputs: List[str]
+    outputs: List[str]
+    success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
+
 ### BOT REQUEST ###
 ### CHAT ###
 
