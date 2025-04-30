@@ -38,8 +38,8 @@ export type Workspace = {
     updatedAt: string;
 }
 
-export type StepsGeneratorResult = {
-    steps: Step[];
+export type StageGeneratorResult = {
+    stages: Stage[];
     inputs: string[];
     outputs: string[];
     success_criteria: string[];

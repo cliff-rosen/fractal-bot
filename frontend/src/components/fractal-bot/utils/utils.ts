@@ -6,7 +6,7 @@ interface DataFromLine {
     mission_proposal: MissionProposal | null;
     error: string | null;
     message: string | null;
-    steps_generator: StepsGeneratorResult | null;
+    stage_generator: StageGeneratorResult | null;
 }
 
 export function getDataFromLine(line: string): DataFromLine {
@@ -16,7 +16,7 @@ export function getDataFromLine(line: string): DataFromLine {
         mission_proposal: null,
         error: null,
         message: null,
-        steps_generator: null
+        stage_generator: null
     };
 
     if (!line.startsWith('data: ')) {
@@ -42,8 +42,8 @@ export function getDataFromLine(line: string): DataFromLine {
         if (data.error) {
             res.error = data.error;
         }
-        if (data.steps_generator) {
-            res.steps_generator = data.steps_generator;
+        if (data.stage_generator) {
+            res.stage_generator = data.stage_generator;
         }
     } catch (e) {
         res.error = e instanceof Error ? e.message : String(e);

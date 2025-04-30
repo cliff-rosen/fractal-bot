@@ -7,7 +7,6 @@ from schemas.bot import StageProposal
 class StageGenerator(BaseModel):
     """Structure for stages generator"""
     stages: List[StageProposal] = Field(description="List of stages in the workflow")
-    is_single_tool_solution: bool = Field(description="Whether the task can be solved by a single tool")
     explanation: str = Field(description="Explanation of why this decomposition was chosen")
 
 class StageGeneratorPrompt(BasePrompt):

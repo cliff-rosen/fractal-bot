@@ -23,7 +23,6 @@ import os
 
 from agents.prompts.mission_definition import MissionDefinitionPrompt, MissionProposal
 from agents.prompts.supervisor_prompt import SupervisorPrompt, SupervisorResponse
-from agents.prompts.steps_generator import StepsGeneratorPrompt, StepsGenerator
 from agents.prompts.stage_generator import StageGeneratorPrompt, StageGenerator
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -105,8 +104,7 @@ async def stage_generator_node(state: State, writer: StreamWriter, config: Dict[
 
 **Stages:**
 {stages_str}
-
-**Is Single Stage Solution:** {stage_generator.is_single_stage_solution}"""
+"""
 
         # Create a response message
         response_message = Message(
