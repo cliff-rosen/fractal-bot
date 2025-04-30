@@ -128,42 +128,25 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
         raise ValueError("No user message found in state")
 
     # Get current state information
-    mission_proposal = state.get("mission_proposal")
     mission = state.get("mission")
-    workflow = mission.get("workflow") if mission else None
+    workflow = mission.workflow if mission else None
 
     # Determine state values for the prompt
-    has_mission_proposal = bool(mission_proposal)
     has_mission = bool(mission)
     has_workflow = bool(workflow)
 
     # Get status information
-    mission_proposal_status = "none"
-    if mission_proposal:
-        mission_proposal_status = "pending" if not mission_proposal.get("has_sufficient_info", True) else "ready"
-
-    mission_status = mission.get("status", "none") if mission else "none"
-    workflow_status = workflow.get("status", "none") if workflow else "none"
+    mission_status = mission.status if mission else "none"
+    workflow_status = workflow.status if workflow else "none"
 
     # Check if we already have a mission proposal in the conversation
-    if mission_proposal:
-        # If we have a mission proposal, provide a final answer explaining it
-        response_content = f"I've created a mission to help you with your request. Here's what we'll do:\n\n" \
-                         f"**Mission Title:** {mission_proposal['title']}\n" \
-                         f"**Goal:** {mission_proposal['goal']}\n\n" \
-                         f"We'll need the following inputs:\n" + \
-                         "\n".join(f"- {input}" for input in mission_proposal['inputs']) + \
-                         f"\n\nAnd we'll deliver:\n" + \
-                         "\n".join(f"- {output}" for output in mission_proposal['outputs']) + \
-                         f"\n\nWe'll know we've succeeded when:\n" + \
-                         "\n".join(f"- {criteria}" for criteria in mission_proposal['success_criteria'])
-
-        # Add validation information if mission is incomplete
-        if not mission_proposal.get('has_sufficient_info', True):
-            response_content += f"\n\n**Additional Information Needed:**\n{mission_proposal['missing_info_explanation']}\n\n" \
-                              "Would you like to provide the missing information so we can proceed with this mission?"
-        else:
-            response_content += "\n\nWould you like to proceed with this mission?"
+    if mission and mission.status == "complete":
+        # If mission is complete, provide a final answer
+        response_content = f"Mission complete! Here are the results:\n\n" \
+                         f"**Mission Title:** {mission.title}\n" \
+                         f"**Goal:** {mission.goal}\n\n" \
+                         f"Outputs produced:\n" + \
+                         "\n".join(f"- {output}" for output in mission.outputs)
 
         response_message = Message(
             id=str(uuid.uuid4()),
@@ -190,9 +173,6 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
         prompt = SupervisorPrompt()
         formatted_prompt = prompt.get_formatted_prompt(
             user_input=last_message.content,
-            has_mission_proposal=has_mission_proposal,
-            mission_proposal_status=mission_proposal_status,
-            has_mission=has_mission,
             mission_status=mission_status,
             has_workflow=has_workflow,
             workflow_status=workflow_status
@@ -215,13 +195,9 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
         if supervisor_response.response_type == "MISSION_SPECIALIST":
             next_node = "mission_proposal_node"
         elif supervisor_response.response_type == "WORKFLOW_SPECIALIST":
-            next_node = "workflow_node"  # You'll need to implement this node
+            next_node = "workflow_node"
         else:
             next_node = END
-            print("No next node found")
-
-        print("Supervisor response:")
-        print(supervisor_response)
 
         if writer:
             writer({
