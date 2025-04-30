@@ -41,9 +41,9 @@ export default function FractalBot() {
   return (
     <div className="h-screen flex flex-col">
       <div className="flex-1 min-h-0">
-        <div className="grid grid-cols-12 gap-6 h-full">
-          {/* Left Chat Rail (cols 1-4) */}
-          <div key="chat-rail" className="col-span-4 h-full overflow-hidden">
+        <div className="flex h-full gap-6">
+          {/* Left Chat Rail */}
+          <div key="chat-rail" className="w-1/3 h-full">
             <Chat
               messages={currentMessages}
               streamingMessage={currentStreamingMessage}
@@ -51,9 +51,9 @@ export default function FractalBot() {
             />
           </div>
 
-          {/* Main Content Area (cols 5-12) */}
+          {/* Main Content Area */}
           {currentItemView.isOpen ? (
-            <div key="item-view" className="col-span-8 h-full">
+            <div key="item-view" className="w-2/3 h-full">
               <ItemView
                 itemView={currentItemView}
                 tools={currentTools}
@@ -63,8 +63,8 @@ export default function FractalBot() {
             </div>
           ) : (
             <>
-              {/* Main Content Area (cols 5-10) */}
-              <div key="main-content" className={`h-full flex flex-col ${isRightColumnCollapsed ? 'col-span-8' : 'col-span-5'}`}>
+              {/* Main Content Area */}
+              <div key="main-content" className={`h-full flex flex-col ${isRightColumnCollapsed ? 'w-2/3' : 'w-5/12'}`}>
                 {/* Mission Header */}
                 <div className="mb-6 pt-4">
                   <Mission />
@@ -114,10 +114,10 @@ export default function FractalBot() {
                 </div>
               </div>
 
-              {/* Right Rail (cols 11-12) */}
+              {/* Right Rail */}
               <div
                 key="right-rail"
-                className={`h-full overflow-hidden flex flex-col transition-all duration-300 ease-in-out ${isRightColumnCollapsed ? 'w-0' : 'col-span-3'
+                className={`h-full overflow-hidden flex flex-col transition-all duration-300 ease-in-out ${isRightColumnCollapsed ? 'w-0' : 'w-3/12'
                   }`}
               >
                 <div className="h-1/2 overflow-y-auto">

@@ -29,6 +29,14 @@ Your core responsibility is to ensure that every mission has a clear chain of re
 3. Every input must be necessary for producing the outputs
 4. Every resource must be clearly identified and available
 
+Key Distinctions:
+- Inputs are specific data objects that will be processed or transformed to produce outputs
+- Resources are tools, systems, or capabilities needed to perform the mission but are not themselves transformed
+- Example: For a word-finding mission:
+  * Inputs: The set of allowed letters, constraints (e.g., mandatory letters)
+  * Resources: Dictionary for validation, word processing tools
+  * Outputs: List of valid words meeting the criteria
+
 When defining a mission, follow this chain of responsibility:
 
 1. Start with the Goal:

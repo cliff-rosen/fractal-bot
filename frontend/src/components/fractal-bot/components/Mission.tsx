@@ -25,6 +25,10 @@ export default function Mission({
                 return 'text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
             case 'failed':
                 return 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
+            case 'ready':
+                return 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20';
+            case 'pending':
+                return 'text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
             default:
                 return 'text-gray-700 dark:text-gray-400 bg-gray-100 dark:bg-gray-700';
         }
@@ -33,15 +37,15 @@ export default function Mission({
     const getStatusText = (status: string) => {
         switch (status) {
             case 'completed':
-                return 'Completed';
+                return 'COMPLETED';
             case 'current':
-                return 'In Progress';
+                return 'IN PROGRESS';
             case 'failed':
-                return 'Failed';
+                return 'FAILED';
             case 'ready':
-                return 'Ready';
+                return 'READY';
             default:
-                return 'Pending';
+                return 'PENDING';
         }
     };
 
