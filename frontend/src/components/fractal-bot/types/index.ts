@@ -112,7 +112,6 @@ export interface Workflow {
 export interface Mission {
     id: string;
     title: string;
-    description: string;
     goal: string;
     status: string;
     workflow: Workflow;
@@ -127,7 +126,6 @@ export interface Mission {
 
 export type MissionProposal = {
     title: string;  // Clear, concise title describing the mission
-    description: string;  // Detailed explanation of what the mission entails
     goal: string;  // Specific, measurable objective to be achieved
     inputs: string[];  // Specific data objects that must be provided to start the mission
     resources: string[];  // General resources needed but not specific data objects

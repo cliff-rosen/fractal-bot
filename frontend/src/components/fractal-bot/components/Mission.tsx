@@ -62,90 +62,89 @@ export default function Mission({
                         <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Mission</h2>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-200 mt-1">{mission.title}</h1>
                         <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
-                            {mission.description}
-                        </p>
-                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            <span className="font-medium">Goal:</span> {mission.goal}
+                            {mission.goal}
                         </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-3">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
                             {getStatusText(mission.status)}
                         </span>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleGenerateWorkflowClick}
-                                disabled={isGenerating}
-                                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isGenerating
-                                    ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
-                                    : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
-                                    }`}
-                            >
-                                {isGenerating ? (
-                                    <span className="flex items-center gap-2">
-                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Generating...
-                                    </span>
-                                ) : (
-                                    'Generate Workflow'
-                                )}
-                            </button>
-                            <button
-                                onClick={resetState}
-                                className="px-3 py-1.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                            >
-                                Reset All
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleGenerateWorkflowClick}
+                            disabled={isGenerating}
+                            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isGenerating
+                                ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                                : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                                }`}
+                        >
+                            {isGenerating ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Generating...
+                                </span>
+                            ) : (
+                                'Generate Workflow'
+                            )}
+                        </button>
+                        <button
+                            onClick={resetState}
+                            className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        >
+                            Reset All
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-6 p-6 border-t border-gray-100 dark:border-gray-700">
-                <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Inputs</h3>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Specific data objects required to start the mission</p>
-                    <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                        {mission.inputs.map((input: string) => (
-                            <li key={input} className="flex items-center">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                {input}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Resources</h3>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Sources of additional information that may be required</p>
-                    <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                        {mission.resources.map((resource: string) => (
-                            <li key={resource} className="flex items-center">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                {resource}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Specific deliverables that will be produced</p>
-                    <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                        {mission.outputs.map((output: string) => (
-                            <li key={output} className="flex items-center">
-                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                {output}
-                            </li>
-                        ))}
-                    </ul>
+            <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
+                <div className="grid grid-cols-1 gap-6">
+                    <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Inputs & Resources</h3>
+                        <div className="mt-4 grid grid-cols-2 gap-6">
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Required Inputs</h4>
+                                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                    {mission.inputs.map((input: string) => (
+                                        <li key={input} className="flex items-center">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                            {input}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Available Resources</h4>
+                                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                    {mission.resources.map((resource: string) => (
+                                        <li key={resource} className="flex items-center">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                            {resource}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
+                        <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                            {mission.outputs.map((output: string) => (
+                                <li key={output} className="flex items-center">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                    {output}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
 
             <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
                 <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Success Criteria</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Measurable conditions that verify mission completion</p>
                 <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
                     {mission.success_criteria.map((criterion: string) => (
                         <li key={criterion} className="flex items-center">

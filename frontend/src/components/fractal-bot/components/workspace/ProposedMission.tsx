@@ -10,13 +10,10 @@ export default function ProposedMission({ mission }: ProposedMissionProps) {
         <div className="space-y-6">
             <div>
                 <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Proposed Mission</h2>
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-200 mt-1">{mission.title}</h1>
-                <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
-                    {mission.description}
-                </p>
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium">Goal:</span> {mission.goal}
-                </p>
+                <div className="flex flex-col gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200">{mission.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300">{mission.goal}</p>
+                </div>
             </div>
 
             <div className="mt-6">
