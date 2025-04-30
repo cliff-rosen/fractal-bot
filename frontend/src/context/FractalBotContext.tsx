@@ -387,6 +387,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                     // Handle the final workflow
                     if (data.stage_generator) {
                         setWorkspaceWithWorkflow(data.stage_generator);
+                        setWorkflow(data.stage_generator);
                     }
 
                     // Handle the token
