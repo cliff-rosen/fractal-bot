@@ -231,16 +231,30 @@ const sections: Section[] = [
                 content: (
                     <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
                         <p className="text-gray-700 dark:text-gray-300 mb-3">
-                            How the schema evolves during mission execution:
+                            The mission lifecycle evolves in real-time through several key phases:
                         </p>
                         <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                            <li><strong>Mission Definition:</strong> Initial creation of mission goals and success criteria</li>
-                            <li><strong>Workflow Architecture:</strong> Design of stages and their relationships
+                            <li><strong>Mission Definition:</strong> Establishing the chain of responsibility
                                 <ul className="list-disc pl-6 mt-2">
-                                    <li>Stages are created with defined inputs, outputs, and success criteria</li>
-                                    <li>Stage dependencies and data flow are established</li>
-                                    <li>No tools are assigned at this stage</li>
+                                    <li>Defines the goal and what success looks like</li>
+                                    <li>Identifies required inputs and expected outputs</li>
+                                    <li>Sets clear success criteria that truly represent goal achievement</li>
+                                    <li>Ensures the foundation for quality throughout the workflow</li>
                                 </ul>
+                                <p className="text-gray-700 dark:text-gray-300 mt-2 pl-6">
+                                    This phase is critical because it establishes the chain of responsibility that will guide the entire mission. If the inputs, outputs, and success criteria aren't well-defined, the entire workflow will suffer from the "garbage in, garbage out" principle.
+                                </p>
+                            </li>
+                            <li><strong>Workflow Architecture:</strong> Balancing exploration and focus
+                                <ul className="list-disc pl-6 mt-2">
+                                    <li>Defines major stages that remain relatively fixed</li>
+                                    <li>Establishes clear boundaries for each stage</li>
+                                    <li>Identifies stage-level inputs, outputs, and success criteria</li>
+                                    <li>Creates a framework for systematic exploration</li>
+                                </ul>
+                                <p className="text-gray-700 dark:text-gray-300 mt-2 pl-6">
+                                    The architecture phase finds the balance between exploring the full solution space and maintaining focus. By establishing clear stage boundaries and success criteria, it prevents the workflow from going down unproductive rabbit holes while still allowing for thorough exploration of valid solutions.
+                                </p>
                             </li>
                             <li><strong>Stage Execution:</strong> Dynamic creation and execution of steps
                                 <ul className="list-disc pl-6 mt-2">
@@ -257,71 +271,21 @@ const sections: Section[] = [
                                     <li>Tool assignments happen dynamically</li>
                                     <li>Success criteria verification drives progression</li>
                                 </ul>
+                                <p className="text-gray-700 dark:text-gray-300 mt-2 pl-6">
+                                    As the workflow progresses, the schema evolves to reflect the current state of the mission. Each stage's completion is verified against its success criteria, ensuring that the outputs meet the required standards before proceeding. The final stage's completion involves:
+                                </p>
+                                <ul className="list-disc pl-6 mt-2 text-gray-700 dark:text-gray-300">
+                                    <li>Verification that all success criteria are met</li>
+                                    <li>Delivery of final outputs that achieve the mission goal</li>
+                                    <li>Archiving of completed assets for future reference</li>
+                                    <li>Summary of mission results and outcomes</li>
+                                </ul>
                             </li>
                         </ul>
                     </div>
                 )
             }
         ]
-    },
-    {
-        id: 'lifecycle',
-        title: 'Mission Lifecycle',
-        content: (
-            <div className="space-y-6">
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">1. Mission Proposal</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        The journey begins with a mission proposal:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>Describe your task in natural language</li>
-                        <li>FractalBot analyzes requirements</li>
-                        <li>Proposes a structured mission plan</li>
-                        <li>Identifies needed inputs and resources</li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">2. Workflow Architecture</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        The mission is structured into stages:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>Defines major phases of the mission</li>
-                        <li>Establishes stage dependencies and flow</li>
-                        <li>Identifies stage inputs and outputs</li>
-                        <li>Sets up stage-level success criteria</li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">3. Stage Execution</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        Each stage is executed through steps:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>Breaks down stage into specific steps</li>
-                        <li>Assigns appropriate tools to steps</li>
-                        <li>Manages step-level assets and data</li>
-                        <li>Provides real-time step status updates</li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">4. Completion</h4>
-                    <p className="text-gray-700 dark:text-gray-300 mb-3">
-                        The mission concludes with:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>Verification of success criteria</li>
-                        <li>Delivery of final outputs</li>
-                        <li>Archiving of completed assets</li>
-                        <li>Summary of mission results</li>
-                    </ul>
-                </div>
-            </div>
-        )
     },
     {
         id: 'interface',
@@ -375,33 +339,7 @@ const sections: Section[] = [
         content: (
             <div className="space-y-6">
                 <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Mission Planning</h4>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>Be specific about your goals and requirements</li>
-                        <li>Clearly define success criteria</li>
-                        <li>Identify all necessary inputs upfront</li>
-                        <li>Consider resource availability</li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Workflow Management</h4>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>Review each stage before proceeding</li>
-                        <li>Monitor asset status regularly</li>
-                        <li>Keep track of tool outputs</li>
-                        <li>Document any issues or changes</li>
-                    </ul>
-                </div>
-
-                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Communication</h4>
-                    <ul className="list-disc pl-6 space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>Provide clear feedback to FractalBot</li>
-                        <li>Ask for clarification when needed</li>
-                        <li>Report issues promptly</li>
-                        <li>Share relevant context</li>
-                    </ul>
+                    TBD
                 </div>
             </div>
         )
