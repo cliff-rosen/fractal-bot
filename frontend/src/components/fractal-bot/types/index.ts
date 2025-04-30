@@ -1,5 +1,5 @@
 // Common status types
-export type Status = 'completed' | 'current' | 'pending' | 'failed' | 'in_progress';
+export type Status = 'completed' | 'current' | 'pending' | 'failed' | 'in_progress' | 'ready';
 export type AssetStatus = 'pendingCompletion' | 'pendingApproval' | 'ready' | 'archived' | 'error';
 
 // Workspace types
@@ -38,6 +38,12 @@ export type Workspace = {
     updatedAt: string;
 }
 
+export type StepsGeneratorResult = {
+    steps: Step[];
+    inputs: string[];
+    outputs: string[];
+    success_criteria: string[];
+}
 
 // Asset types
 export type Asset = {

@@ -38,6 +38,8 @@ export default function Mission({
                 return 'In Progress';
             case 'failed':
                 return 'Failed';
+            case 'ready':
+                return 'Ready';
             default:
                 return 'Pending';
         }

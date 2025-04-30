@@ -130,7 +130,7 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
     # Get current state information
     mission = state.get("mission")
     workflow = mission.workflow if mission else None
-
+                  
     # Determine state values for the prompt
     has_mission = bool(mission)
     has_workflow = bool(workflow)

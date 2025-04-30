@@ -1,4 +1,4 @@
-import { MissionProposal, Mission, Workflow, Status } from "../types";
+import { MissionProposal, Mission, Workflow, Status, StepsGeneratorResult } from "../types";
 
 interface DataFromLine {
     token: string | null;
@@ -6,7 +6,7 @@ interface DataFromLine {
     mission_proposal: MissionProposal | null;
     error: string | null;
     message: string | null;
-    steps_generator: StepsGenerator | null;
+    steps_generator: StepsGeneratorResult | null;
 }
 
 export function getDataFromLine(line: string): DataFromLine {
@@ -67,12 +67,14 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
         updatedAt: now
     };
 
+    console.log(proposal);
+
     return {
         id: crypto.randomUUID(),
         title: proposal.title,
         description: proposal.description,
         goal: proposal.goal,
-        status: 'pending' as Status,
+        status: 'ready' as Status,
         workflow: emptyWorkflow,
         assets: [],
         inputs: proposal.inputs,
