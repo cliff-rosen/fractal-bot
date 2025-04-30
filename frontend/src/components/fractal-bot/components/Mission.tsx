@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface MissionProps {
@@ -8,10 +8,8 @@ interface MissionProps {
 export default function Mission({
     className = ''
 }: MissionProps) {
-    const [isGenerating, setIsGenerating] = useState(false);
     const {
         state,
-        generateWorkflow,
         resetState
     } = useFractalBot();
 
@@ -49,15 +47,6 @@ export default function Mission({
         }
     };
 
-    const handleGenerateWorkflowClick = async () => {
-        setIsGenerating(true);
-        try {
-            await generateWorkflow();
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
     return (
         <div className={`dark:bg-[#1e2330] ${className}`}>
             <div className="p-6">
@@ -73,26 +62,6 @@ export default function Mission({
                         <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
                             {getStatusText(mission.status)}
                         </span>
-                        <button
-                            onClick={handleGenerateWorkflowClick}
-                            disabled={isGenerating}
-                            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isGenerating
-                                ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
-                                : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
-                                }`}
-                        >
-                            {isGenerating ? (
-                                <span className="flex items-center gap-2">
-                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Generating...
-                                </span>
-                            ) : (
-                                'Generate Workflow'
-                            )}
-                        </button>
                         <button
                             onClick={resetState}
                             className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors"
