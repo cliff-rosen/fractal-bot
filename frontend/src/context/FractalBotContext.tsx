@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine } from '@/components/fractal-bot/types/index';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult } from '@/components/fractal-bot/types/index';
 import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from '@/components/fractal-bot/types/type-defaults';
 import { botApi } from '@/lib/api/botApi';
 import { Message, MessageRole } from '@/types/message';
@@ -372,6 +372,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             ...workflowTemplate,
             name: 'Proposed Workflow',
             description: stageGenerator.explanation,
+            status: 'ready',
             stages: stageGenerator.stages.map((stage: any, index: number) => ({
                 ...stage,
                 createdAt: now,

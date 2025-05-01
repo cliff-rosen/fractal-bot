@@ -25,6 +25,9 @@ export default function Workflow({ className = '', workflow, workspaceState }: W
         }
     };
 
+    // Show generate button only when mission is ready and workflow is not ready
+    const shouldShowGenerateButton = state.currentMission.status === 'ready' && workflow.status !== 'ready';
+
     return (
         <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow p-6 ${className}`}>
             <div className="flex justify-between items-center mb-4">
@@ -57,7 +60,7 @@ export default function Workflow({ className = '', workflow, workspaceState }: W
                 <FullWorkflow className="mt-4" stages={workflow.stages} workspaceState={workspaceState} />
             )}
 
-            {state.currentMission.status === 'ready' && (
+            {shouldShowGenerateButton && (
                 <div className="mt-6 flex justify-end">
                     <button
                         onClick={handleGenerateWorkflowClick}

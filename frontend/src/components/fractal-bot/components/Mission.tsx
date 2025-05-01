@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFractalBot } from '@/context/FractalBotContext';
+import { LayoutGrid, List } from 'lucide-react';
 
 interface MissionProps {
     className?: string;
@@ -13,6 +14,7 @@ export default function Mission({
         resetState
     } = useFractalBot();
 
+    const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('compact');
     const mission = state.currentMission;
 
     const getStatusColor = (status: string) => {
@@ -62,6 +64,26 @@ export default function Mission({
                         <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
                             {getStatusText(mission.status)}
                         </span>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={() => setViewMode('compact')}
+                                className={`p-2 rounded-lg ${viewMode === 'compact'
+                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                    : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    }`}
+                            >
+                                <LayoutGrid className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('expanded')}
+                                className={`p-2 rounded-lg ${viewMode === 'expanded'
+                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                    : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    }`}
+                            >
+                                <List className="w-5 h-5" />
+                            </button>
+                        </div>
                         <button
                             onClick={resetState}
                             className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -72,29 +94,45 @@ export default function Mission({
                 </div>
             </div>
 
-            <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
-                <div className="grid grid-cols-1 gap-6">
-                    <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Inputs & Resources</h3>
-                        <div className="mt-4 grid grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Required Inputs</h4>
-                                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                    {mission.inputs.map((input: string) => (
-                                        <li key={input} className="flex items-center">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                            {input}
-                                        </li>
-                                    ))}
-                                </ul>
+            {viewMode === 'expanded' ? (
+                <>
+                    <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
+                        <div className="grid grid-cols-1 gap-6">
+                            <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Inputs & Resources</h3>
+                                <div className="mt-4 grid grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Required Inputs</h4>
+                                        <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                            {mission.inputs.map((input: string) => (
+                                                <li key={input} className="flex items-center">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                                    {input}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Available Resources</h4>
+                                        <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                            {mission.resources.map((resource: string) => (
+                                                <li key={resource} className="flex items-center">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                                    {resource}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Available Resources</h4>
+
+                            <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
                                 <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                    {mission.resources.map((resource: string) => (
-                                        <li key={resource} className="flex items-center">
+                                    {mission.outputs.map((output: string) => (
+                                        <li key={output} className="flex items-center">
                                             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                            {resource}
+                                            {output}
                                         </li>
                                     ))}
                                 </ul>
@@ -102,31 +140,42 @@ export default function Mission({
                         </div>
                     </div>
 
-                    <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
+                    <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
+                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Success Criteria</h3>
                         <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                            {mission.outputs.map((output: string) => (
-                                <li key={output} className="flex items-center">
+                            {mission.success_criteria.map((criterion: string) => (
+                                <li key={criterion} className="flex items-center">
                                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                    {output}
+                                    {criterion}
                                 </li>
                             ))}
                         </ul>
                     </div>
+                </>
+            ) : (
+                <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
+                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                {mission.inputs.length} required
+                            </p>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
+                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Resources</h4>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                {mission.resources.length} available
+                            </p>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
+                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                {mission.outputs.length} expected
+                            </p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
-                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Success Criteria</h3>
-                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                    {mission.success_criteria.map((criterion: string) => (
-                        <li key={criterion} className="flex items-center">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                            {criterion}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            )}
         </div>
     );
 } 

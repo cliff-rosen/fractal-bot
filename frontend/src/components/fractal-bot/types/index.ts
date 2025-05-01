@@ -43,6 +43,7 @@ export type StageGeneratorResult = {
     inputs: string[];
     outputs: string[];
     success_criteria: string[];
+    explanation: string;
 }
 
 // Asset types
