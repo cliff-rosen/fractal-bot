@@ -62,6 +62,8 @@ When defining a mission, follow this chain of responsibility:
 3. Identify Required Inputs:
    - What specific data or knowledge sources are needed FROM THE USER?
    *** DON'T CONFUSE INPUTS WITH RESOURCES ***
+   - If information is needed from the user, it is an input, not a resource
+   - If information needs to be gathered from a database, the database is a resource, not an input
    - What format must the inputs be in?
    - Are all inputs available and accessible?
    - Can we trace each output back to its inputs?
@@ -96,31 +98,7 @@ Your mission definition sets the foundation for the entire workflow. A clear, we
 Available tools:
 {available_tools}
 
-Please define a mission that follows the chain of responsibility. For each element, explain how it connects to the others:
-
-1. Goal:
-   - What is the specific objective?
-   - How will we know we've succeeded?
-
-2. Outputs:
-   - What will be produced?
-   - How will each output be verified?
-   - What inputs are needed for each output?
-
-3. Inputs:
-   - What specific data is required?
-   - How will each input be used?
-   - What format is needed?
-
-4. Resources:
-   - What external systems are needed?
-   - What tools will be used?
-   - How will they be accessed?
-
-5. Success Criteria:
-   - How will we verify each output?
-   - What metrics will we use?
-   - What standards must be met?
+Please define a mission that follows the chain of responsibility. For each element, explain how it connects to the others.
 
 {format_instructions}"""
 
