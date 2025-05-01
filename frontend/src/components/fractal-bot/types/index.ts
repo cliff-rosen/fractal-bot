@@ -121,6 +121,7 @@ export interface Mission {
     resources: string[];  // General resources needed but not specific data objects (e.g. access to email, databases)
     outputs: string[];  // Specific deliverables that will be produced
     success_criteria: string[];  // Measurable conditions that verify mission completion
+    selectedTools: Tool[];  // Tools selected for this mission
     createdAt: string;
     updatedAt: string;
 }
@@ -132,6 +133,7 @@ export type MissionProposal = {
     resources: string[];  // General resources needed but not specific data objects
     outputs: string[];  // Specific deliverables that will be produced
     success_criteria: string[];  // Measurable conditions that verify mission completion
+    selectedTools: Tool[];  // Tools selected for this mission
 }
 
 // Chat message types

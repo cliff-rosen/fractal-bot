@@ -83,20 +83,22 @@ class Mission(BaseModel):
     status: str
     workflow: Workflow
     assets: List[Asset]
-    inputs: List[str]
-    resources: List[str]
-    outputs: List[str]
+    inputs: List[str]  # Specific data objects required to start the mission
+    resources: List[str]  # General resources needed but not specific data objects (e.g. access to email, databases)
+    outputs: List[str]  # Specific deliverables that will be produced
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify mission completion")
+    selectedTools: List[Tool] = Field(default_factory=list, description="Tools selected for this mission")
     createdAt: str
     updatedAt: str
 
 class MissionProposal(BaseModel):
     title: str
-    description: str
     goal: str
     inputs: List[str]
+    resources: List[str] = Field(default_factory=list)
     outputs: List[str]
     success_criteria: List[str]
+    selectedTools: List[Tool] = Field(default_factory=list)
 
 class StageProposal(BaseModel):
     id: str

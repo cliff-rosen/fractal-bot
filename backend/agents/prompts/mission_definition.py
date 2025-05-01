@@ -2,15 +2,10 @@ from typing import Dict, Any, List
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 from .base_prompt import BasePrompt
+from schemas.bot import MissionProposal as BaseMissionProposal
 
-class MissionProposal(BaseModel):
+class MissionProposal(BaseMissionProposal):
     """Structure for mission proposal"""
-    title: str = Field(description="Clear, concise title describing the mission")
-    goal: str = Field(description="Specific, measurable objective to be achieved")
-    inputs: List[str] = Field(description="Specific data objects that must be provided to start the mission")
-    resources: List[str] = Field(description="General resources needed but not specific data objects")
-    outputs: List[str] = Field(description="Specific deliverables that will be produced")
-    success_criteria: List[str] = Field(description="Measurable conditions that verify mission completion")
     has_sufficient_info: bool = Field(description="Whether there is enough information to proceed with the mission")
     missing_info_explanation: str = Field(description="Explanation of what information is missing if has_sufficient_info is false")
 

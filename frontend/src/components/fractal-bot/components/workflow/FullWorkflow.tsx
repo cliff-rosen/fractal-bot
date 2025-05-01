@@ -3,6 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import type { Stage, Step } from '../../types/index';
 import { getStatusClass } from './types';
 import type { WorkspaceState } from '../../types/index';
+import StepRenderer from './StepRenderer';
 
 interface FullWorkflowProps {
     className?: string;
@@ -97,24 +98,14 @@ export default function FullWorkflow({ className = '', stages, workspaceState, o
 
                                 {/* Stage Steps */}
                                 {stage.steps && stage.steps.length > 0 && (
-                                    <div className="border-t border-gray-100 dark:border-gray-700">
+                                    <div className="border-t border-gray-100 dark:border-gray-700 p-3 pl-8">
                                         {stage.steps.map((step) => (
-                                            <div
+                                            <StepRenderer
                                                 key={step.id}
-                                                className={`flex items-center p-3 pl-8 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${workspaceState.currentStepPath?.includes(step.id)
-                                                    ? 'bg-emerald-50 dark:bg-emerald-900/30'
-                                                    : ''
-                                                    }`}
-                                                onClick={() => onStepClick(step)}
-                                            >
-                                                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium ${getStatusClass(step.status)} dark:bg-opacity-20`}>
-                                                    {step.id.split('-')[2]}
-                                                </div>
-                                                <span className="ml-2 text-gray-900 dark:text-gray-200">{step.name}</span>
-                                                {workspaceState.currentStepPath?.includes(step.id) && (
-                                                    <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400">Current Step</span>
-                                                )}
-                                            </div>
+                                                step={step}
+                                                isCurrent={workspaceState.currentStepPath?.includes(step.id)}
+                                                onStepClick={onStepClick}
+                                            />
                                         ))}
                                     </div>
                                 )}

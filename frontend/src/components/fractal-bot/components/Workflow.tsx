@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import CondensedWorkflow from './workflow/CondensedWorkflow';
 import FullWorkflow from './workflow/FullWorkflow';
-import type { Workflow, WorkspaceState, Stage, Step } from '../types/index';
+import type { Workflow, WorkspaceState, Stage, Step, Tool } from '../types/index';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface WorkflowProps {
@@ -61,6 +61,7 @@ export default function Workflow({ className = '', workflow, workspaceState, onS
                     className="mt-4"
                     stages={workflow.stages}
                     onStageClick={onStageClick}
+                    onStepClick={onStepClick}
                 />
             ) : (
                 <FullWorkflow

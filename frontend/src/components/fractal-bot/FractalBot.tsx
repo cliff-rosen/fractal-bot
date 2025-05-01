@@ -86,6 +86,8 @@ export default function FractalBot() {
                   <Workflow
                     workflow={currentWorkflow}
                     workspaceState={currentWorkspaceState}
+                    onStageClick={handleItemSelect}
+                    onStepClick={handleItemSelect}
                   />
                 </div>
 

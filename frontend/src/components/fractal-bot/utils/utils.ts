@@ -72,15 +72,15 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
     return {
         id: crypto.randomUUID(),
         title: proposal.title,
-        description: proposal.description,
         goal: proposal.goal,
         status: 'ready' as Status,
         workflow: emptyWorkflow,
         assets: [],
         inputs: proposal.inputs,
-        resources: proposal.resources,
+        resources: proposal.resources || [],
         outputs: proposal.outputs,
         success_criteria: proposal.success_criteria,
+        selectedTools: proposal.selectedTools || [],
         createdAt: now,
         updatedAt: now
     };
