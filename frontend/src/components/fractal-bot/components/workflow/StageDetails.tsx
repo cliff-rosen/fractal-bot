@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Stage, Step, Tool } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 import StepItem from './Step';
@@ -18,52 +18,108 @@ export default function StageDetails({ stage, onStepClick }: StageDetailsProps) 
     const [selectedStep, setSelectedStep] = useState<Step | null>(null);
     const { state, setWorkflow } = useFractalBot();
 
+    // Reset selected step when stage changes
+    useEffect(() => {
+        setSelectedStep(null);
+    }, [stage.id]);
+
+    const createNewStep = (): Step => ({
+        id: `step-${Date.now()}`,
+        name: stepName,
+        description: stepDescription,
+        status: 'pending',
+        assets: { inputs: [], outputs: [] },
+        inputs: [],
+        outputs: [],
+        tool: stepType === 'tool' ? {
+            name: state.currentMission.selectedTools.find(t => t.id === selectedTool)?.name || '',
+            configuration: {}
+        } : undefined,
+        substeps: stepType === 'substeps' ? [] : undefined,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    });
+
+    const addStepToParent = (parentStep: Step | null, newStep: Step): Step => {
+        if (!parentStep) return newStep;
+
+        return {
+            ...parentStep,
+            substeps: [...(parentStep.substeps || []), newStep]
+        };
+    };
+
+    const updateStepInStage = (stage: Stage, stepId: string, updatedStep: Step): Stage => {
+        const updateStepRecursively = (steps: Step[]): Step[] => {
+            return steps.map(step => {
+                if (step.id === stepId) {
+                    return updatedStep;
+                }
+                if (step.substeps && step.substeps.length > 0) {
+                    return {
+                        ...step,
+                        substeps: updateStepRecursively(step.substeps)
+                    };
+                }
+                return step;
+            });
+        };
+
+        return {
+            ...stage,
+            steps: updateStepRecursively(stage.steps)
+        };
+    };
+
     const handleAddStep = () => {
         if (!stepName || !stepDescription) return;
 
-        const newStep: Step = {
-            id: `step-${Date.now()}`,
-            name: stepName,
-            description: stepDescription,
-            status: 'pending',
-            assets: { inputs: [], outputs: [] },
-            inputs: [],
-            outputs: [],
-            tool: stepType === 'tool' ? {
-                name: state.currentMission.selectedTools.find(t => t.id === selectedTool)?.name || '',
-                configuration: {}
-            } : undefined,
-            substeps: stepType === 'substeps' ? [] : undefined,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
+        const newStep = createNewStep();
 
-        // Update the workflow with the new step
-        const updatedWorkflow = {
-            ...state.currentWorkflow,
-            stages: state.currentWorkflow.stages.map(s =>
-                s.id === stage.id
-                    ? {
-                        ...s,
-                        steps: s.steps.map(step => {
-                            if (selectedStep && step.id === selectedStep.id) {
-                                return {
-                                    ...step,
-                                    substeps: [...(step.substeps || []), newStep]
-                                };
-                            }
-                            return step;
-                        })
-                    }
-                    : s
-            )
-        };
+        // If we're adding to a selected step, add it as a substep
+        if (selectedStep) {
+            const updatedStep = {
+                ...selectedStep,
+                substeps: [...(selectedStep.substeps || []), newStep]
+            };
 
-        setWorkflow(updatedWorkflow);
+            // Update the workflow with the modified step
+            const updatedWorkflow = {
+                ...state.currentWorkflow,
+                stages: state.currentWorkflow.stages.map(s =>
+                    s.id === stage.id
+                        ? {
+                            ...s,
+                            steps: s.steps.map(step =>
+                                step.id === selectedStep.id ? updatedStep : step
+                            )
+                        }
+                        : s
+                )
+            };
+            setWorkflow(updatedWorkflow);
+        } else {
+            // Otherwise, add it as a top-level step to the stage
+            const updatedWorkflow = {
+                ...state.currentWorkflow,
+                stages: state.currentWorkflow.stages.map(s =>
+                    s.id === stage.id
+                        ? { ...s, steps: [...(s.steps || []), newStep] }
+                        : s
+                )
+            };
+            setWorkflow(updatedWorkflow);
+        }
+
+        resetForm();
+    };
+
+    const resetForm = () => {
         setIsAddingStep(false);
         setStepName('');
         setStepDescription('');
         setSelectedTool('');
+        setSelectedStep(null);
     };
 
     const handleStepClick = (step: Step) => {
@@ -74,6 +130,25 @@ export default function StageDetails({ stage, onStepClick }: StageDetailsProps) 
         setSelectedStep(parentStep);
         setIsAddingStep(true);
         setStepType('tool');
+    };
+
+    const handleClearAllSteps = () => {
+        console.log('Current stage:', stage);
+        console.log('Current workflow:', state.currentWorkflow);
+
+        const updatedWorkflow = {
+            ...state.currentWorkflow,
+            stages: state.currentWorkflow.stages.map(s => {
+                if (s.id === stage.id) {
+                    console.log('Found matching stage, clearing steps');
+                    return { ...s, steps: [] };
+                }
+                return s;
+            })
+        };
+
+        console.log('Updated workflow:', updatedWorkflow);
+        setWorkflow(updatedWorkflow);
     };
 
     const renderStepDetails = (step: Step) => {
@@ -141,12 +216,20 @@ export default function StageDetails({ stage, onStepClick }: StageDetailsProps) 
                 <>
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{stage.name}</h3>
-                        <button
-                            onClick={() => setIsAddingStep(!isAddingStep)}
-                            className="px-3 py-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg"
-                        >
-                            {isAddingStep ? 'Cancel' : 'Add Step'}
-                        </button>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={handleClearAllSteps}
+                                className="px-3 py-1 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
+                            >
+                                Clear All Steps
+                            </button>
+                            <button
+                                onClick={() => setIsAddingStep(!isAddingStep)}
+                                className="px-3 py-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg"
+                            >
+                                {isAddingStep ? 'Cancel' : 'Add Step'}
+                            </button>
+                        </div>
                     </div>
 
                     {isAddingStep ? (
