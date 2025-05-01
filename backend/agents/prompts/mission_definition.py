@@ -39,7 +39,7 @@ Your core responsibility is to ensure that every mission has clear definitions f
 Working backwards, if the inputs are sufficient for the outputs, the outputs meet the succcess criteria, and the success criteria is predictive of a successful mission, then we've engineered a mission that is clear, achievable, and has a clear chain of responsibility.
 
 Key Distinctions:
-- Inputs are specific data objects or knowledge sources that will be processed or transformed to produce outputs
+- Inputs are specific data objects or knowledge sources that will be supplied to the mission by the user. They are not resources or information that the mission will use or produce.
 - Resources are tools, systems, or capabilities needed to perform the mission but are not themselves transformed
 - Example: For a research mission about climate change:
   * Inputs: Scientific papers, climate data, policy documents
@@ -60,7 +60,8 @@ When defining a mission, follow this chain of responsibility:
    - How will each deliverable be verified?
 
 3. Identify Required Inputs:
-   - What specific data or knowledge sources are needed?
+   - What specific data or knowledge sources are needed FROM THE USER?
+   *** DON'T CONFUSE INPUTS WITH RESOURCES ***
    - What format must the inputs be in?
    - Are all inputs available and accessible?
    - Can we trace each output back to its inputs?

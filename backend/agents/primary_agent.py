@@ -54,7 +54,7 @@ def validate_state(state: State) -> bool:
 
 def getModel(node_name: str, config: Dict[str, Any], writer: Optional[Callable] = None) -> ChatOpenAI:
     """Get the appropriate model for a given node."""
-    model_name = "gpt-4o-mini"  
+    model_name = "gpt-4o"  
     
     chat_config = {
         "model": model_name,
