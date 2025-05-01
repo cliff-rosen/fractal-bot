@@ -137,6 +137,18 @@ export default function Mission({
                                     ))}
                                 </ul>
                             </div>
+
+                            <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Selected Tools</h3>
+                                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                    {(mission.selectedTools || []).map((tool) => (
+                                        <li key={tool.id} className="flex items-center">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                            {tool.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
                     </div>
 
@@ -171,6 +183,12 @@ export default function Mission({
                             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                                 {mission.outputs.length} expected
+                            </p>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
+                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Tools</h4>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                {(mission.selectedTools || []).length} selected
                             </p>
                         </div>
                     </div>
