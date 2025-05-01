@@ -174,7 +174,6 @@ async def supervisor_node(state: State, writer: StreamWriter, config: Dict[str, 
         formatted_prompt = prompt.get_formatted_prompt(
             user_input=last_message.content,
             mission_status=mission_status,
-            has_workflow=has_workflow,
             workflow_status=workflow_status
         )
 
