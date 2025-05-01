@@ -36,9 +36,8 @@ export const workflowTemplate: Workflow = {
 export const missionTemplate: Mission = {
     id: 'mission-template',
     title: '',
-    description: '',
-    status: 'pending',
     goal: '',
+    status: 'pending',
     workflow: workflowTemplate,
     assets: [],
     inputs: [],

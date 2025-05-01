@@ -1,4 +1,4 @@
-import { MissionProposal, Mission, Workflow, Status, StepsGeneratorResult } from "../types";
+import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult } from "../types";
 
 interface DataFromLine {
     token: string | null;

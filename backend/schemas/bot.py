@@ -84,6 +84,7 @@ class Mission(BaseModel):
     workflow: Workflow
     assets: List[Asset]
     inputs: List[str]
+    resources: List[str]
     outputs: List[str]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify mission completion")
     createdAt: str
