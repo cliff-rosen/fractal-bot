@@ -17,22 +17,26 @@ export default function CondensedWorkflow({
     onStageClick,
     onStepClick
 }: CondensedWorkflowProps) {
-    const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
+    const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
     const { state } = useFractalBot();
 
     const handleStageClick = (stage: Stage) => {
-        setSelectedStage(stage);
+        setSelectedStageId(stage.id);
         onStageClick(stage);
     };
 
+    const selectedStage = selectedStageId
+        ? state.currentWorkflow.stages.find(s => s.id === selectedStageId)
+        : null;
+
     return (
         <div className={className}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
                 {stages.map((stage) => (
                     <div
                         key={stage.id}
                         onClick={() => handleStageClick(stage)}
-                        className={`p-4 rounded-lg cursor-pointer transition-colors ${selectedStage?.id === stage.id
+                        className={`flex-shrink-0 w-64 p-4 rounded-lg cursor-pointer transition-colors ${selectedStageId === stage.id
                             ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
                             : 'bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                             }`}

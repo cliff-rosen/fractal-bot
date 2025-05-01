@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Stage, Step } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 import StepComponent from './Step';
+import { Sparkles } from 'lucide-react';
 
 interface StageDetailsProps {
     stage: Stage;
@@ -49,9 +50,20 @@ export default function StageDetails({ stage }: StageDetailsProps) {
     };
 
     const handleAddSubstep = (parentStep: Step) => {
-        if (!stepName || !stepDescription) return;
+        const newStep: Step = {
+            id: `step-${Date.now()}`,
+            name: `Substep ${(parentStep.substeps?.length || 0) + 1}`,
+            description: 'New substep',
+            status: 'pending',
+            assets: { inputs: [], outputs: [] },
+            inputs: [],
+            outputs: [],
+            tool: undefined,
+            substeps: undefined,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
 
-        const newStep = createNewStep();
         const updatedParentStep = {
             ...parentStep,
             substeps: [...(parentStep.substeps || []), newStep]
@@ -71,7 +83,6 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             )
         };
         setWorkflow(updatedWorkflow);
-        resetForm();
     };
 
     const handleClearAllSteps = () => {
@@ -84,6 +95,16 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             )
         };
         setWorkflow(updatedWorkflow);
+    };
+
+    const handleEditStep = (step: Step) => {
+        console.log('Editing step:', step);
+        // TODO: Implement step editing UI
+    };
+
+    const handleAISuggestion = async () => {
+        // TODO: Implement AI suggestion logic
+        console.log('Requesting AI suggestion for stage:', stage.id);
     };
 
     const resetForm = () => {
@@ -103,6 +124,13 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                         className="px-3 py-1 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
                     >
                         Clear All Steps
+                    </button>
+                    <button
+                        onClick={handleAISuggestion}
+                        className="px-3 py-1 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg flex items-center gap-1"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        AI Suggest
                     </button>
                     <button
                         onClick={() => setIsAddingStep(!isAddingStep)}
@@ -207,6 +235,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                                 key={step.id}
                                 step={step}
                                 onAddSubstep={handleAddSubstep}
+                                onEditStep={handleEditStep}
                             />
                         ))
                     ) : (

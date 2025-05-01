@@ -91,39 +91,14 @@ export default function FractalBot() {
                   />
                 </div>
 
-                {/* View Toggle */}
-                <div className="flex justify-end mb-4">
-                  <div className="inline-flex rounded-lg shadow-sm" role="group">
-                    <button
-                      type="button"
-                      onClick={() => setActiveView('workspace')}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-l-lg transition-colors ${activeView === 'workspace'
-                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
-                        : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
-                        }`}
-                    >
-                      Workspace
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveView('history')}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-r-lg transition-colors ${activeView === 'history'
-                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
-                        : 'text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
-                        }`}
-                    >
-                      Status History
-                    </button>
-                  </div>
+                {/* Workspace Canvas */}
+                <div className="flex-1 overflow-y-auto">
+                  {/* Content goes here */}
                 </div>
 
-                {/* Workspace Canvas or Status History */}
-                <div className="flex-1 overflow-y-auto">
-                  {activeView === 'workspace' ? (
-                    <Workspace workspace={currentWorkspace} />
-                  ) : (
-                    <StatusHistory messages={statusHistory} />
-                  )}
+                {/* Status History */}
+                <div className="border-t border-gray-200 dark:border-gray-700">
+                  <StatusHistory messages={statusHistory} />
                 </div>
               </div>
 
