@@ -5,15 +5,19 @@ import { getStatusClass } from './types';
 interface CondensedWorkflowProps {
     className?: string;
     stages: Stage[];
+    onStageClick: (stage: Stage) => void;
 }
 
-export default function CondensedWorkflow({ className = '', stages }: CondensedWorkflowProps) {
+export default function CondensedWorkflow({ className = '', stages, onStageClick }: CondensedWorkflowProps) {
     return (
         <div className={className}>
             <div className="flex items-center justify-between">
                 {stages.map((stage, index) => (
                     <React.Fragment key={stage.id}>
-                        <div className="flex flex-col items-center">
+                        <div
+                            className="flex flex-col items-center cursor-pointer"
+                            onClick={() => onStageClick(stage)}
+                        >
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${getStatusClass(stage.status)} dark:bg-opacity-20`}>
                                 {stage.id.split('-')[1]}
                             </div>

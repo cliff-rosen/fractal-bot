@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
-import type { Stage } from '../../types/index';
+import type { Stage, Step } from '../../types/index';
 import { getStatusClass } from './types';
 import type { WorkspaceState } from '../../types/index';
 
@@ -8,9 +8,11 @@ interface FullWorkflowProps {
     className?: string;
     stages: Stage[];
     workspaceState: WorkspaceState;
+    onStageClick: (stage: Stage) => void;
+    onStepClick: (step: Step) => void;
 }
 
-export default function FullWorkflow({ className = '', stages, workspaceState }: FullWorkflowProps) {
+export default function FullWorkflow({ className = '', stages, workspaceState, onStageClick, onStepClick }: FullWorkflowProps) {
     const [expandedStages, setExpandedStages] = useState<string[]>([]);
 
     // Initialize expanded stages with the current stage
@@ -35,7 +37,10 @@ export default function FullWorkflow({ className = '', stages, workspaceState }:
                     <div key={stage.id} className="border border-gray-100 dark:border-gray-700 rounded-lg">
                         <div
                             className="flex items-center p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-                            onClick={() => toggleStage(stage.id)}
+                            onClick={() => {
+                                toggleStage(stage.id);
+                                onStageClick(stage);
+                            }}
                         >
                             <ChevronRight
                                 className={`w-5 h-5 mr-2 transform transition-transform text-gray-400 dark:text-gray-500 ${expandedStages.includes(stage.id) ? 'rotate-90' : ''
@@ -61,7 +66,7 @@ export default function FullWorkflow({ className = '', stages, workspaceState }:
                                 <div className="grid grid-cols-2 gap-4 p-3 pl-8 border-t border-gray-100 dark:border-gray-700">
                                     <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
                                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Inputs</h4>
-                                        {stage.inputs.length > 0 ? (
+                                        {stage.inputs && stage.inputs.length > 0 ? (
                                             <ul className="space-y-1">
                                                 {stage.inputs.map((input) => (
                                                     <li key={input} className="text-sm text-gray-600 dark:text-gray-300">
@@ -73,9 +78,10 @@ export default function FullWorkflow({ className = '', stages, workspaceState }:
                                             <p className="text-sm text-gray-400 dark:text-gray-500">No inputs</p>
                                         )}
                                     </div>
+
                                     <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
                                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Outputs</h4>
-                                        {stage.outputs.length > 0 ? (
+                                        {stage.outputs && stage.outputs.length > 0 ? (
                                             <ul className="space-y-1">
                                                 {stage.outputs.map((output) => (
                                                     <li key={output} className="text-sm text-gray-600 dark:text-gray-300">
@@ -95,10 +101,11 @@ export default function FullWorkflow({ className = '', stages, workspaceState }:
                                         {stage.steps.map((step) => (
                                             <div
                                                 key={step.id}
-                                                className={`flex items-center p-3 pl-8 hover:bg-gray-50 dark:hover:bg-gray-700 ${workspaceState.currentStepPath?.includes(step.id)
-                                                        ? 'bg-emerald-50 dark:bg-emerald-900/30'
-                                                        : ''
+                                                className={`flex items-center p-3 pl-8 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${workspaceState.currentStepPath?.includes(step.id)
+                                                    ? 'bg-emerald-50 dark:bg-emerald-900/30'
+                                                    : ''
                                                     }`}
+                                                onClick={() => onStepClick(step)}
                                             >
                                                 <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-medium ${getStatusClass(step.status)} dark:bg-opacity-20`}>
                                                     {step.id.split('-')[2]}

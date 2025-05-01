@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import CondensedWorkflow from './workflow/CondensedWorkflow';
 import FullWorkflow from './workflow/FullWorkflow';
-import type { Workflow, WorkspaceState } from '../types/index';
+import type { Workflow, WorkspaceState, Stage, Step } from '../types/index';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface WorkflowProps {
     className?: string;
     workflow: Workflow;
     workspaceState: WorkspaceState;
+    onStageClick: (stage: Stage) => void;
+    onStepClick: (step: Step) => void;
 }
 
-export default function Workflow({ className = '', workflow, workspaceState }: WorkflowProps) {
+export default function Workflow({ className = '', workflow, workspaceState, onStageClick, onStepClick }: WorkflowProps) {
     const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('compact');
     const [isGenerating, setIsGenerating] = useState(false);
     const { state, generateWorkflow } = useFractalBot();
@@ -55,9 +57,19 @@ export default function Workflow({ className = '', workflow, workspaceState }: W
             </div>
 
             {viewMode === 'compact' ? (
-                <CondensedWorkflow className="mt-4" stages={workflow.stages} />
+                <CondensedWorkflow
+                    className="mt-4"
+                    stages={workflow.stages}
+                    onStageClick={onStageClick}
+                />
             ) : (
-                <FullWorkflow className="mt-4" stages={workflow.stages} workspaceState={workspaceState} />
+                <FullWorkflow
+                    className="mt-4"
+                    stages={workflow.stages}
+                    workspaceState={workspaceState}
+                    onStageClick={onStageClick}
+                    onStepClick={onStepClick}
+                />
             )}
 
             {shouldShowGenerateButton && (

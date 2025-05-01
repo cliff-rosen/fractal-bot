@@ -400,7 +400,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
                     // Handle the final workflow
                     if (data.stage_generator) {
                         const workflow = createWorkflowFromStageGenerator(data.stage_generator);
-                        setWorkspaceWithWorkflow(workflow);
+                        //setWorkspaceWithWorkflow(workflow);
                         setWorkflow(workflow);
                     }
 
