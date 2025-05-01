@@ -4,7 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from .base_prompt import BasePrompt
 from schemas.bot import StageProposal
 
-class StageGenerator(BaseModel):
+class StageGeneratorResponse(BaseModel):
     """Structure for stages generator"""
     stages: List[StageProposal] = Field(description="List of stages in the workflow")
     explanation: str = Field(description="Explanation of why this decomposition was chosen")
@@ -13,7 +13,7 @@ class StageGeneratorPrompt(BasePrompt):
     """Prompt template for stages generator"""
     
     def __init__(self):
-        super().__init__(StageGenerator)
+        super().__init__(StageGeneratorResponse)
         
         self.system_message = """You are an AI assistant that specializes in strategic task decomposition. Your job is to analyze tasks and either:
 1. Find a single tool that can accomplish the entire task directly, or

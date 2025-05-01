@@ -23,7 +23,7 @@ import os
 
 from agents.prompts.mission_definition import MissionDefinitionPrompt, MissionProposal
 from agents.prompts.supervisor_prompt import SupervisorPrompt, SupervisorResponse
-from agents.prompts.stage_generator import StageGeneratorPrompt, StageGenerator
+from agents.prompts.stage_generator import StageGeneratorPrompt, StageGeneratorResponse
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
