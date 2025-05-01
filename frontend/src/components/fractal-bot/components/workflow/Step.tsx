@@ -2,89 +2,71 @@ import React, { useState } from 'react';
 import type { Step } from '../../types';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
-interface StepItemProps {
+interface StepProps {
     step: Step;
-    onStepClick: (step: Step) => void;
-    onAddSubstep: (parentStep: Step) => void;
+    onAddSubstep: (step: Step) => void;
     isSubstep?: boolean;
 }
 
-export default function StepItem({ step, onStepClick, onAddSubstep, isSubstep = false }: StepItemProps) {
+export default function Step({ step, onAddSubstep, isSubstep = false }: StepProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const handleClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onStepClick(step);
-    };
-
-    const handleExpandClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const toggleExpand = () => {
         setIsExpanded(!isExpanded);
     };
 
-    const handleAddSubstep = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onAddSubstep(step);
-    };
-
     return (
-        <div className="space-y-2">
+        <div className={`${isSubstep ? 'ml-4' : ''} border-l-2 border-gray-200 dark:border-gray-700 pl-4`}>
             <div
-                onClick={handleClick}
-                className={`p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${isSubstep ? 'ml-4' : ''}`}
+                className="flex items-center space-x-2 cursor-pointer py-2"
+                onClick={toggleExpand}
             >
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2">
-                        {step.substeps && step.substeps.length > 0 && (
-                            <button
-                                onClick={handleExpandClick}
-                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                {isExpanded ? (
-                                    <ChevronDown className="w-4 h-4" />
-                                ) : (
-                                    <ChevronRight className="w-4 h-4" />
-                                )}
-                            </button>
-                        )}
-                        <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{step.name}</h4>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{step.description}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        {step.tool && (
-                            <span className="px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded">
-                                {step.tool.name}
-                            </span>
-                        )}
-                        {step.substeps && step.substeps.length > 0 && (
-                            <span className="px-2 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 rounded">
-                                {step.substeps.length} substeps
-                            </span>
-                        )}
-                        {!step.tool && (
-                            <button
-                                onClick={handleAddSubstep}
-                                className="px-2 py-1 text-xs font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded"
-                            >
-                                Add Substep
-                            </button>
-                        )}
-                    </div>
+                {step.substeps ? (
+                    isExpanded ? (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                    ) : (
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                    )
+                ) : null}
+                <div className="flex-1">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{step.name}</h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{step.description}</p>
                 </div>
             </div>
-            {isExpanded && step.substeps && step.substeps.length > 0 && (
-                <div className="mt-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                    {step.substeps.map(substep => (
-                        <StepItem
-                            key={substep.id}
-                            step={substep}
-                            onStepClick={onStepClick}
-                            onAddSubstep={onAddSubstep}
-                            isSubstep={true}
-                        />
-                    ))}
+
+            {isExpanded && (
+                <div className="mt-2 space-y-2">
+                    {step.tool ? (
+                        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">{step.tool.name}</p>
+                            {/* Add tool configuration UI here */}
+                        </div>
+                    ) : step.substeps ? (
+                        <>
+                            <div className="flex justify-between items-center mb-2">
+                                <h5 className="text-xs font-medium text-gray-700 dark:text-gray-300">Substeps</h5>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onAddSubstep(step);
+                                    }}
+                                    className="px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg"
+                                >
+                                    Add Substep
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {step.substeps.map(substep => (
+                                    <Step
+                                        key={substep.id}
+                                        step={substep}
+                                        onAddSubstep={onAddSubstep}
+                                        isSubstep={true}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    ) : null}
                 </div>
             )}
         </div>
