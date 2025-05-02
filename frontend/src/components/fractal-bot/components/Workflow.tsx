@@ -68,8 +68,6 @@ export default function Workflow({ className = '', workflow, workspaceState, onS
                     className="mt-4"
                     stages={workflow.stages}
                     workspaceState={workspaceState}
-                    onStageClick={onStageClick}
-                    onStepClick={onStepClick}
                 />
             )}
 

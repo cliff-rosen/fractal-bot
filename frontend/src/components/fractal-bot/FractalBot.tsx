@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Chat from './components/Chat';
 import Mission from './components/Mission';
 import Workflow from './components/Workflow';
-import Workspace from './components/Workspace';
 import Assets from './components/Assets';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
@@ -85,8 +84,6 @@ export default function FractalBot() {
                   <Workflow
                     workflow={currentWorkflow}
                     workspaceState={currentWorkspaceState}
-                    onStageClick={handleItemSelect}
-                    onStepClick={handleItemSelect}
                   />
                 </div>
 

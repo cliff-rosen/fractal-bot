@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
-import type { Stage, Step } from '../../types';
-import { getStatusClass } from './types';
+import type { Stage } from '../../types';
 import StageDetails from './StageDetails';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface CondensedWorkflowProps {
     className?: string;
     stages: Stage[];
-    onStageClick: (stage: Stage) => void;
-    onStepClick: (step: Step) => void;
 }
 
 export default function CondensedWorkflow({
     className = '',
-    stages,
-    onStageClick,
-    onStepClick
+    stages
 }: CondensedWorkflowProps) {
     const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
     const { state } = useFractalBot();
 
     const handleStageClick = (stage: Stage) => {
         setSelectedStageId(stage.id);
-        onStageClick(stage);
     };
 
     const selectedStage = selectedStageId
@@ -51,7 +45,6 @@ export default function CondensedWorkflow({
                 <div className="mt-6">
                     <StageDetails
                         stage={selectedStage}
-                        onStepClick={onStepClick}
                     />
                 </div>
             )}
