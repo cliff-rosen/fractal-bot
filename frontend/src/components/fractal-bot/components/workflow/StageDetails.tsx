@@ -107,27 +107,18 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         var updatedWorkflow = {}
         var updatedSteps = stage.steps.filter(step => step.id !== targetStepId);
 
-        // if step found at top level, remove it
-        if (updatedSteps.length < stage.steps.length) {
-            updatedWorkflow = {
-                ...state.currentWorkflow,
-                stages: state.currentWorkflow.stages.map(s =>
-                    s.id === stage.id
-                        ? { ...s, steps: updatedSteps }
-                        : s
-                )
-            }
-        } else {
-            // if step found in substeps, remove it from substeps
+
+        if (updatedSteps.length == stage.steps.length) {
             updatedSteps = updatedSteps.map(step => deleteSubstepFromStepTree(step))
-            updatedWorkflow = {
-                ...state.currentWorkflow,
-                stages: state.currentWorkflow.stages.map(s =>
-                    s.id === stage.id
-                        ? { ...s, steps: updatedSteps }
-                        : s
-                )
-            }
+        }
+
+        updatedWorkflow = {
+            ...state.currentWorkflow,
+            stages: state.currentWorkflow.stages.map(s =>
+                s.id === stage.id
+                    ? { ...s, steps: updatedSteps }
+                    : s
+            )
         }
 
         setWorkflow(updatedWorkflow);
