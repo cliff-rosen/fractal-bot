@@ -1,4 +1,4 @@
-import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState, Tool } from './index';
+import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState, Tool, MissionProposal, Stage  } from './index';
 import { createMissionFromProposal } from '../utils/utils';
 
 // default workspace object
@@ -33,6 +33,24 @@ export const workflowTemplate: Workflow = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 }
+
+export const workflowExample: Workflow = {
+    id: 'workflow-example',
+    name: 'Top 10 Dance Colleges in the United States',
+    description: 'To produce a ranked list of the top 10 colleges for dance in the United States based on specified criteria.',
+    status: 'ready',
+    stages: [
+        {"id": "1", "name": "Defining Ranking Criteria", "description": "Establish a clear set of criteria to evaluate and rank dance colleges.", "inputs": ["List of potential criteria (faculty quality, facilities, alumni success)"], "outputs": ["Finalized list of ranking criteria"], "success_criteria": ["Criteria list is approved by stakeholders or experts in the field."], "status": "pending", "steps": [], "assets": [], "createdAt": new Date().toISOString(), "updatedAt": new Date().toISOString()},
+       {"id": "2", "name": "Data Collection", "description": "Gather data on dance colleges in the United States based on the defined criteria.", "inputs": ["Finalized ranking criteria", "Geographic scope (United States)"], "outputs": ["Compiled data on dance colleges including metrics related to the criteria"], "success_criteria": ["Data collected from at least 20 colleges, ensuring a diverse representation."], "status": "pending", "steps": [], "assets": [], "createdAt": new Date().toISOString(), "updatedAt": new Date().toISOString()},
+       {"id": "3", "name": "Analysis and Ranking", "description": "Analyze the collected data and produce a ranked list of the top 10 colleges for dance.", "inputs": ["Compiled data from the previous stage", "Finalized ranking criteria"], "outputs": ["Ranked list of the top 10 colleges for dance with justification for each ranking"], "success_criteria": ["The ranked list is validated by a review process, ensuring it meets the specified criteria."], "status": "pending", "steps": [], "assets": [], "createdAt": new Date().toISOString(), "updatedAt": new Date().toISOString()}
+    ],
+    assets: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+}
+
+
+
 // default mission object
 export const missionTemplate: Mission = {
     id: 'mission-template',
@@ -49,7 +67,6 @@ export const missionTemplate: Mission = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 }
-
 
 export const missionProposalTemplate: MissionProposal = {
     title: "Top 10 Dance Colleges in the United States",

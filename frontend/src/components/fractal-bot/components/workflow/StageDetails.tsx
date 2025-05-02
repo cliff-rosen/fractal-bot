@@ -113,12 +113,13 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         // TODO: Implement AI suggestion logic
     };
 
-    const renderStep = (step: Step, depth: number = 0) => {
+    const renderStep = (step: Step, depth: number = 0, isSubstep: boolean = false) => {
         const isExpanded = expandedSteps.includes(step.id);
         const isComposite = !!step.substeps;
+        const indentClass = isSubstep ? `ml-${depth * 6}` : '';
 
         return (
-            <div key={step.id} className="mb-4" style={{ marginLeft: `${depth * 24}px` }}>
+            <div key={step.id} className={`mb-4 ${indentClass}`}>
                 <div className="flex items-center gap-2 mb-2">
                     {step.substeps && (
                         <button
@@ -126,18 +127,18 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                         >
                             {isExpanded ? (
-                                <ChevronDown className="w-4 h-4" />
+                                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             ) : (
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             )}
                         </button>
                     )}
                     <div className="flex-1 flex items-center gap-2">
-                        <span className="text-sm font-medium">{step.name}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{step.name}</span>
                         <select
                             value={isComposite ? 'composite' : 'atomic'}
                             onChange={(e) => handleStepTypeChange(step.id, e.target.value as StepType)}
-                            className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800"
+                            className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         >
                             <option value="atomic">Atomic</option>
                             <option value="composite">Composite</option>
@@ -146,7 +147,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                             <select
                                 value={step.tool?.name || ''}
                                 onChange={(e) => handleToolSelect(step.id, e.target.value)}
-                                className="flex-1 text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800"
+                                className="flex-1 text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                             >
                                 <option value="">Select a tool</option>
                                 {state.currentMission.selectedTools.map((tool) => (
@@ -175,7 +176,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
 
                 {isExpanded && step.substeps && (
                     <div className="mt-4">
-                        {step.substeps.map(substep => renderStep(substep, depth + 1))}
+                        {step.substeps.map(substep => renderStep(substep, depth + 1, true))}
                         <button
                             onClick={() => {/* TODO: Add substep */ }}
                             className="mt-2 flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-2 py-1"
@@ -203,7 +204,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             </div>
 
             <div className="space-y-2">
-                {stage.steps.map(step => renderStep(step))}
+                {stage.steps.map(step => renderStep(step, 0, false))}
             </div>
         </div>
     );
