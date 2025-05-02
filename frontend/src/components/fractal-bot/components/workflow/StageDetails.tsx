@@ -1,25 +1,15 @@
 import React, { useState } from 'react';
 import type { Stage, Step } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
-import { ChevronDown, ChevronRight, Plus, Trash2, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import StepComponent from './Step';
 
 interface StageDetailsProps {
     stage: Stage;
 }
 
-type StepType = 'atomic' | 'composite';
-
 export default function StageDetails({ stage }: StageDetailsProps) {
     const { state, setWorkflow } = useFractalBot();
-    const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
-
-    const toggleStepExpansion = (stepId: string) => {
-        setExpandedSteps(prev =>
-            prev.includes(stepId)
-                ? prev.filter(id => !id.startsWith(stepId))
-                : [...prev, stepId]
-        );
-    };
 
     const handleAddStep = () => {
         const newStep: Step = {
@@ -27,9 +17,11 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             name: `Step ${(stage.steps?.length || 0) + 1}`,
             description: '',
             status: 'pending',
+            type: 'atomic',
             assets: { inputs: [], outputs: [] },
             inputs: [],
             outputs: [],
+            isSubstep: false,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -57,22 +49,40 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         setWorkflow(updatedWorkflow);
     };
 
-    const handleStepTypeChange = (stepId: string, type: StepType) => {
+    const handleStepTypeChange = (stepId: string, type: 'atomic' | 'composite') => {
         const updatedWorkflow = {
             ...state.currentWorkflow,
             stages: state.currentWorkflow.stages.map(s =>
                 s.id === stage.id
                     ? {
                         ...s,
-                        steps: s.steps.map(step =>
-                            step.id === stepId
-                                ? {
+                        steps: s.steps.map(step => {
+                            if (step.id === stepId) {
+                                return {
                                     ...step,
-                                    tool: type === 'atomic' ? { name: '', configuration: {} } : undefined,
-                                    substeps: type === 'composite' ? [] : undefined
-                                }
-                                : step
-                        )
+                                    type,
+                                    tool: type === 'atomic' ? (step.tool || { name: '', configuration: {} }) : undefined,
+                                    substeps: type === 'composite' ? (step.substeps || []) : undefined
+                                };
+                            }
+                            // Handle substeps
+                            if (step.substeps) {
+                                return {
+                                    ...step,
+                                    substeps: step.substeps.map(substep =>
+                                        substep.id === stepId
+                                            ? {
+                                                ...substep,
+                                                type,
+                                                tool: type === 'atomic' ? (substep.tool || { name: '', configuration: {} }) : undefined,
+                                                substeps: type === 'composite' ? (substep.substeps || []) : undefined
+                                            }
+                                            : substep
+                                    )
+                                };
+                            }
+                            return step;
+                        })
                     }
                     : s
             )
@@ -108,86 +118,56 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         setWorkflow(updatedWorkflow);
     };
 
-    const handleAISuggest = (stepId: string) => {
-        console.log('AI suggestion requested for step:', stepId);
-        // TODO: Implement AI suggestion logic
+    const handleAddSubstep = (parentStep: Step) => {
+        const newStep: Step = {
+            id: `step-${Date.now()}`,
+            name: 'New Substep',
+            description: '',
+            status: 'pending',
+            type: 'atomic',
+            assets: { inputs: [], outputs: [] },
+            inputs: [],
+            outputs: [],
+            isSubstep: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        const addSubstepToStep = (steps: Step[], targetId: string): Step[] => {
+            return steps.map(step => {
+                if (step.id === targetId) {
+                    return {
+                        ...step,
+                        substeps: [...(step.substeps || []), newStep]
+                    };
+                }
+                if (step.substeps) {
+                    return {
+                        ...step,
+                        substeps: addSubstepToStep(step.substeps, targetId)
+                    };
+                }
+                return step;
+            });
+        };
+
+        const updatedWorkflow = {
+            ...state.currentWorkflow,
+            stages: state.currentWorkflow.stages.map(s =>
+                s.id === stage.id
+                    ? {
+                        ...s,
+                        steps: addSubstepToStep(s.steps, parentStep.id)
+                    }
+                    : s
+            )
+        };
+        setWorkflow(updatedWorkflow);
     };
 
-    const renderStep = (step: Step, depth: number = 0, isSubstep: boolean = false) => {
-        const isExpanded = expandedSteps.includes(step.id);
-        const isComposite = !!step.substeps;
-        const indentClass = isSubstep ? `ml-${depth * 6}` : '';
-
-        return (
-            <div key={step.id} className={`mb-4 ${indentClass}`}>
-                <div className="flex items-center gap-2 mb-2">
-                    {step.substeps && (
-                        <button
-                            onClick={() => toggleStepExpansion(step.id)}
-                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                        >
-                            {isExpanded ? (
-                                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                            ) : (
-                                <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                            )}
-                        </button>
-                    )}
-                    <div className="flex-1 flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{step.name}</span>
-                        <select
-                            value={isComposite ? 'composite' : 'atomic'}
-                            onChange={(e) => handleStepTypeChange(step.id, e.target.value as StepType)}
-                            className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                        >
-                            <option value="atomic">Atomic</option>
-                            <option value="composite">Composite</option>
-                        </select>
-                        {!isComposite && (
-                            <select
-                                value={step.tool?.name || ''}
-                                onChange={(e) => handleToolSelect(step.id, e.target.value)}
-                                className="flex-1 text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                            >
-                                <option value="">Select a tool</option>
-                                {state.currentMission.selectedTools.map((tool) => (
-                                    <option key={tool.id} value={tool.id}>
-                                        {tool.name}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-                        <button
-                            onClick={() => handleAISuggest(step.id)}
-                            className="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded"
-                            title="AI Suggest"
-                        >
-                            <Sparkles className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => handleDeleteStep(step.id)}
-                            className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
-                            title="Delete Step"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-
-                {isExpanded && step.substeps && (
-                    <div className="mt-4">
-                        {step.substeps.map(substep => renderStep(substep, depth + 1, true))}
-                        <button
-                            onClick={() => {/* TODO: Add substep */ }}
-                            className="mt-2 flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-2 py-1"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Add Step
-                        </button>
-                    </div>
-                )}
-            </div>
-        );
+    const handleEditStep = (step: Step) => {
+        // TODO: Implement step editing logic
+        console.log('Edit step:', step);
     };
 
     return (
@@ -204,7 +184,18 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             </div>
 
             <div className="space-y-2">
-                {stage.steps.map(step => renderStep(step, 0, false))}
+                {stage.steps.map(step => (
+                    <StepComponent
+                        key={step.id}
+                        step={step}
+                        onAddSubstep={handleAddSubstep}
+                        onEditStep={handleEditStep}
+                        onDeleteStep={handleDeleteStep}
+                        onStepTypeChange={handleStepTypeChange}
+                        onToolSelect={handleToolSelect}
+                        availableTools={state.currentMission.selectedTools}
+                    />
+                ))}
             </div>
         </div>
     );

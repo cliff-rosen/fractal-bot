@@ -64,6 +64,7 @@ export interface Step {
     name: string;
     description: string;
     status: string;
+    type: 'atomic' | 'composite';
     assets: {
         inputs: string[];
         outputs: string[];
@@ -75,6 +76,7 @@ export interface Step {
         configuration: Record<string, any>;
     };
     substeps?: Step[];
+    isSubstep?: boolean;
     createdAt: string;
     updatedAt: string;
 }
