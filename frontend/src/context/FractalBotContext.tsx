@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult } from '@/components/fractal-bot/types/index';
-import { assetsTemplate, missionTemplate, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from '@/components/fractal-bot/types/type-defaults';
+import { assetsTemplate, missionExample, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from '@/components/fractal-bot/types/type-defaults';
 import { botApi } from '@/lib/api/botApi';
 import { Message, MessageRole } from '@/types/message';
 import { createMissionFromProposal, getDataFromLine } from '@/components/fractal-bot/utils/utils';
@@ -41,7 +41,7 @@ type FractalBotAction =
 
 // Initial state
 const initialState: FractalBotState = {
-    currentMission: missionTemplate,
+    currentMission: missionExample,
     currentMissionProposal: undefined,
     currentWorkspaceState: workspaceStateTemplate,
     currentMessages: [],

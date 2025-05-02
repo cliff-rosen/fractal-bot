@@ -1,4 +1,5 @@
 import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState, Tool } from './index';
+import { createMissionFromProposal } from '../utils/utils';
 
 // default workspace object
 export const workspaceTemplate: Workspace = {
@@ -44,9 +45,24 @@ export const missionTemplate: Mission = {
     resources: [],  // General resources needed but not specific data objects
     outputs: [],
     success_criteria: [],
+    selectedTools: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 }
+
+
+export const missionProposalTemplate: MissionProposal = {
+    title: "Top 10 Dance Colleges in the United States",
+    goal: "To produce a ranked list of the top 10 colleges for dance in the United States based on specified criteria.",
+    inputs: ["Ranking criteria (e.g., faculty quality, facilities, alumni success)", "Geographic scope (United States)"],
+    resources: ["College databases", "Dance program directories", "Ranking methodologies"],
+    outputs: ["Ranked list of top 10 colleges with justification for each ranking"],
+    success_criteria: ["The list includes 10 colleges", "Each college ranking is justified with data", "Criteria for ranking are consistently applied"],
+    selectedTools: [{"id": "tool1", "name": "College Database Search", "description": "A tool to search and retrieve data from college databases.", "category": "Data Retrieval", "inputs": [{"type": "string", "is_array": false, "name": "Search Query", "description": "The search query to find colleges offering dance programs."}], "outputs": [{"type": "array", "is_array": true, "name": "College List", "description": "A list of colleges retrieved from the database."}], "steps": null}, {"id": "tool2", "name": "Ranking Methodology Application", "description": "A tool to apply ranking methodologies to the list of colleges.", "category": "Data Analysis", "inputs": [{"type": "array", "is_array": true, "name": "College List", "description": "The list of colleges to be ranked."}, {"type": "array", "is_array": true, "name": "Ranking Criteria", "description": "The criteria used to rank the colleges."}], "outputs": [{"type": "array", "is_array": true, "name": "Ranked College List", "description": "A list of colleges ranked according to the specified criteria."}], "steps": null}], "has_sufficient_info": true, "missing_info_explanation": ""
+}
+
+export const missionExample = createMissionFromProposal(missionProposalTemplate);
+
 
 export const workspaceStateTemplate: WorkspaceState = {
     currentMissionId: null,

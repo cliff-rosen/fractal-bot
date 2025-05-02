@@ -8,7 +8,6 @@ import Tools from './components/Tools';
 import ItemView from './components/ItemView';
 import StatusHistory from './components/StatusHistory';
 import { useFractalBot } from '@/context/FractalBotContext';
-import MissionSection from './components/MissionSection';
 import type { Stage, Step } from './types/index';
 
 export default function FractalBot() {
