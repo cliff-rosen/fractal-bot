@@ -80,14 +80,43 @@ export default function StageDetails({ stage }: StageDetailsProps) {
     };
 
     const handleDeleteStep = (stepId: string) => {
-        const updatedWorkflow = {
-            ...state.currentWorkflow,
-            stages: state.currentWorkflow.stages.map(s =>
-                s.id === stage.id
-                    ? { ...s, steps: s.steps.filter(step => !step.id.startsWith(stepId)) }
-                    : s
-            )
+        console.log('Deleting step:', stepId);
+
+        const deleteSubstepFromStepTree = (parentStep: Step, targetId: string): Step[] => {
+
+            if (parentStep.substeps?.length == 0)
+                return [];
+
+            const newSteps = parentStep.substeps?.map(step => {
+                if (step.id === targetId) {
+                    const newSteps = { ...step, substeps: [] };
+                    return newSteps;
+                }
+                `if (step?.substeps) {
+                    return { ...step, substeps: deleteSubstepFromStepTree(step.substeps, targetId) };
+                }
+                return step;
+            });
+
+            return newSteps;
         };
+
+        var updatedWorkflow = {}
+        var updatedSteps = stage.steps.filter(step => step.id !== stepId);
+
+        if (updatedSteps.length < stage.steps.length) {
+            updatedWorkflow = {
+                ...state.currentWorkflow,
+                stages: state.currentWorkflow.stages.map(s =>
+                    s.id === stage.id
+                        ? { ...s, steps: updatedSteps }
+                        : s
+                )
+            }
+        } else {
+            updatedSteps = updatedSteps.map(step => deleteSubstepFromStepTree(step))
+        }
+
         setWorkflow(updatedWorkflow);
     };
 
