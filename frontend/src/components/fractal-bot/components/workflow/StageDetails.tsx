@@ -8,29 +8,71 @@ interface StageDetailsProps {
     stage: Stage;
 }
 
+
+const getNewStep = (stage: Stage) => {
+    const stepId = `step-${Date.now()}`;
+    const newStep: Step = {
+        id: stepId,
+        name: `Step ${(stage.steps?.length || 0) + 1}`,
+        description: '',
+        status: 'pending',
+        type: 'atomic',
+        assets: { inputs: [], outputs: [] },
+        inputs: [],
+        outputs: [],
+        isSubstep: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    return newStep;
+};
+
 export default function StageDetails({ stage }: StageDetailsProps) {
     const { state, setWorkflow } = useFractalBot();
 
     const handleAddStep = () => {
-        const newStep: Step = {
-            id: `step-${Date.now()}`,
-            name: `Step ${(stage.steps?.length || 0) + 1}`,
-            description: '',
-            status: 'pending',
-            type: 'atomic',
-            assets: { inputs: [], outputs: [] },
-            inputs: [],
-            outputs: [],
-            isSubstep: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+        const newStep = getNewStep(stage);
+        const updatedWorkflow = {
+            ...state.currentWorkflow,
+            stages: state.currentWorkflow.stages.map(s =>
+                s.id === stage.id
+                    ? { ...s, steps: [...(s.steps || []), newStep] }
+                    : s
+            )
+        };
+        setWorkflow(updatedWorkflow);
+    };
+
+    const handleAddSubstep = (parentStep: Step) => {
+        const newStep = getNewStep(stage);
+        newStep.isSubstep = true;
+
+        const addSubstepToStep = (steps: Step[], targetId: string): Step[] => {
+            return steps.map(step => {
+                if (step.id === targetId) {
+                    return {
+                        ...step,
+                        substeps: [...(step.substeps || []), newStep]
+                    };
+                }
+                if (step.substeps) {
+                    return {
+                        ...step,
+                        substeps: addSubstepToStep(step.substeps, targetId)
+                    };
+                }
+                return step;
+            });
         };
 
         const updatedWorkflow = {
             ...state.currentWorkflow,
             stages: state.currentWorkflow.stages.map(s =>
                 s.id === stage.id
-                    ? { ...s, steps: [...(s.steps || []), newStep] }
+                    ? {
+                        ...s,
+                        steps: addSubstepToStep(s.steps, parentStep.id)
+                    }
                     : s
             )
         };
@@ -111,53 +153,6 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                                 }
                                 : step
                         )
-                    }
-                    : s
-            )
-        };
-        setWorkflow(updatedWorkflow);
-    };
-
-    const handleAddSubstep = (parentStep: Step) => {
-        const newStep: Step = {
-            id: `step-${Date.now()}`,
-            name: 'New Substep',
-            description: '',
-            status: 'pending',
-            type: 'atomic',
-            assets: { inputs: [], outputs: [] },
-            inputs: [],
-            outputs: [],
-            isSubstep: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        const addSubstepToStep = (steps: Step[], targetId: string): Step[] => {
-            return steps.map(step => {
-                if (step.id === targetId) {
-                    return {
-                        ...step,
-                        substeps: [...(step.substeps || []), newStep]
-                    };
-                }
-                if (step.substeps) {
-                    return {
-                        ...step,
-                        substeps: addSubstepToStep(step.substeps, targetId)
-                    };
-                }
-                return step;
-            });
-        };
-
-        const updatedWorkflow = {
-            ...state.currentWorkflow,
-            stages: state.currentWorkflow.stages.map(s =>
-                s.id === stage.id
-                    ? {
-                        ...s,
-                        steps: addSubstepToStep(s.steps, parentStep.id)
                     }
                     : s
             )

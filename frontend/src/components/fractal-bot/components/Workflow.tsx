@@ -33,7 +33,7 @@ export default function Workflow({ className = '', workflow, workspaceState, onS
     return (
         <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow p-6 ${className}`}>
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow Stages</h2>
+                <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow</h2>
                 <div className="flex space-x-2">
                     <button
                         onClick={() => setViewMode('compact')}
