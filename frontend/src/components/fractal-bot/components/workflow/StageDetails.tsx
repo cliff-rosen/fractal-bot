@@ -3,6 +3,7 @@ import type { Stage, Step } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { Plus } from 'lucide-react';
 import StepComponent from './Step';
+import { getDirectSubsteps } from '../../types/step-utils';
 
 interface StageDetailsProps {
     stage: Stage;
@@ -79,31 +80,34 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         setWorkflow(updatedWorkflow);
     };
 
-    const handleDeleteStep = (stepId: string) => {
-        console.log('Deleting step:', stepId);
+    const handleDeleteStep = (targetStepId: string) => {
+        console.log('Deleting step:', targetStepId);
 
-        const deleteSubstepFromStepTree = (parentStep: Step, targetId: string): Step[] => {
+        const deleteSubstepFromStepTree = (parentStep: Step): Step => {
 
-            if (parentStep.substeps?.length == 0)
-                return [];
+            if (parentStep.substeps?.length == 0 || parentStep.substeps == undefined)
+                return parentStep;
 
-            const newSteps = parentStep.substeps?.map(step => {
-                if (step.id === targetId) {
-                    const newSteps = { ...step, substeps: [] };
-                    return newSteps;
+            const initialChildSteps = getDirectSubsteps(parentStep)
+            const newChildSteps = initialChildSteps.filter(step => step.id !== targetStepId)
+
+            if (newChildSteps.length < initialChildSteps.length)
+                return {
+                    ...parentStep,
+                    substeps: newChildSteps
                 }
-                `if (step?.substeps) {
-                    return { ...step, substeps: deleteSubstepFromStepTree(step.substeps, targetId) };
-                }
-                return step;
-            });
 
-            return newSteps;
+            return {
+                ...parentStep,
+                substeps: initialChildSteps.map(step => deleteSubstepFromStepTree(step))
+            }
+
         };
 
         var updatedWorkflow = {}
-        var updatedSteps = stage.steps.filter(step => step.id !== stepId);
+        var updatedSteps = stage.steps.filter(step => step.id !== targetStepId);
 
+        // if step found at top level, remove it
         if (updatedSteps.length < stage.steps.length) {
             updatedWorkflow = {
                 ...state.currentWorkflow,
@@ -114,7 +118,16 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 )
             }
         } else {
+            // if step found in substeps, remove it from substeps
             updatedSteps = updatedSteps.map(step => deleteSubstepFromStepTree(step))
+            updatedWorkflow = {
+                ...state.currentWorkflow,
+                stages: state.currentWorkflow.stages.map(s =>
+                    s.id === stage.id
+                        ? { ...s, steps: updatedSteps }
+                        : s
+                )
+            }
         }
 
         setWorkflow(updatedWorkflow);
