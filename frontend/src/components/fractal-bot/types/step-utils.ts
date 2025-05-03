@@ -8,6 +8,16 @@ export function getDirectSubsteps(step: Step): Step[] {
     return step.substeps;
 }
 
+export const stepHasChildren = (step: Step) => {
+    return step.substeps && step.substeps.length > 0
+}
+
+export const getStepWithUpdatedType = (step: Step, type: 'atomic' | 'composite') => {
+    return {
+        ...step,
+        type
+    }
+}
 
 ///////////////////////////// AUTO GENERATED /////////////////////////////
 

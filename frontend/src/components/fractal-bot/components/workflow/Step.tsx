@@ -8,7 +8,7 @@ interface StepProps {
     onEditStep?: (step: Step) => void;
     onDeleteStep?: (stepId: string) => void;
     onStepTypeChange?: (stepId: string, type: 'atomic' | 'composite') => void;
-    onToolSelect?: (stepId: string, toolId: string) => void;
+    onToolSelect?: (step: Step, toolId: string) => void;
     availableTools?: any[];
     depth?: number;
 }
@@ -41,12 +41,12 @@ export default function Step({
 
     const handleStepTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         e.stopPropagation();
-        onStepTypeChange?.(step.id, e.target.value as 'atomic' | 'composite');
+        onStepTypeChange?.(step, e.target.value as 'atomic' | 'composite');
     };
 
     const handleToolSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         e.stopPropagation();
-        onToolSelect?.(step.id, e.target.value);
+        onToolSelect?.(step, e.target.value);
     };
 
     const isComposite = step.type === 'composite';

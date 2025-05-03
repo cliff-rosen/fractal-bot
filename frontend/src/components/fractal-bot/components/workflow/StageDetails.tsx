@@ -3,7 +3,7 @@ import type { Stage, Step } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { Plus } from 'lucide-react';
 import StepComponent from './Step';
-import { getDirectSubsteps } from '../../types/step-utils';
+import { getDirectSubsteps, getStepWithUpdatedType, stepHasChildren } from '../../types/step-utils';
 
 interface StageDetailsProps {
     stage: Stage;
@@ -124,41 +124,30 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         setWorkflow(updatedWorkflow);
     };
 
-    const handleStepTypeChange = (stepId: string, type: 'atomic' | 'composite') => {
+    const handleStepTypeChange = (targetStep: Step, type: 'atomic' | 'composite') => {
+
+        const getTreeWithUpdatedSubstepType = (step: Step): Step => {
+
+            if (step.id == targetStep.id) {
+                return getStepWithUpdatedType(step, type)
+            }
+
+            if (!stepHasChildren(step)) {
+                return step
+            }
+
+            return {
+                ...step,
+                substeps: step.substeps?.map(substep => getTreeWithUpdatedSubstepType(substep))
+            }
+        }
+
+        const updatedTree = stage.steps.map(step => getTreeWithUpdatedSubstepType(step))
         const updatedWorkflow = {
             ...state.currentWorkflow,
             stages: state.currentWorkflow.stages.map(s =>
                 s.id === stage.id
-                    ? {
-                        ...s,
-                        steps: s.steps.map(step => {
-                            if (step.id === stepId) {
-                                return {
-                                    ...step,
-                                    type,
-                                    tool: type === 'atomic' ? (step.tool || { name: '', configuration: {} }) : undefined,
-                                    substeps: type === 'composite' ? (step.substeps || []) : undefined
-                                };
-                            }
-                            // Handle substeps
-                            if (step.substeps) {
-                                return {
-                                    ...step,
-                                    substeps: step.substeps.map(substep =>
-                                        substep.id === stepId
-                                            ? {
-                                                ...substep,
-                                                type,
-                                                tool: type === 'atomic' ? (substep.tool || { name: '', configuration: {} }) : undefined,
-                                                substeps: type === 'composite' ? (substep.substeps || []) : undefined
-                                            }
-                                            : substep
-                                    )
-                                };
-                            }
-                            return step;
-                        })
-                    }
+                    ? { ...s, steps: updatedTree }
                     : s
             )
         };
