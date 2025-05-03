@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult } from '@/components/fractal-bot/types/index';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult, Step } from '@/components/fractal-bot/types/index';
 import { assetsTemplate, missionExample, workflowExample, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from '@/components/fractal-bot/types/type-defaults';
 import { botApi } from '@/lib/api/botApi';
 import { Message, MessageRole } from '@/types/message';
@@ -37,7 +37,12 @@ type FractalBotAction =
     | { type: 'SET_ITEM_VIEW'; payload: ItemViewType }
     | { type: 'SET_ACTIVE_VIEW'; payload: 'workspace' | 'history' }
     | { type: 'SET_STATUS_HISTORY'; payload: string[] | ((prevState: FractalBotState) => string[]) }
-    | { type: 'RESET_STATE' };
+    | { type: 'RESET_STATE' }
+    | { type: 'ADD_STEP'; payload: { stageId: string; step: Step } }
+    | { type: 'ADD_SUBSTEP'; payload: { stageId: string; parentStepId: string; step: Step } }
+    | { type: 'DELETE_STEP'; payload: { stageId: string; stepId: string } }
+    | { type: 'UPDATE_STEP_TYPE'; payload: { stageId: string; stepId: string; type: 'atomic' | 'composite' } }
+    | { type: 'UPDATE_STEP_TOOL'; payload: { stageId: string; stepId: string; tool: { id: string; name: string; configuration: Record<string, any> } } };
 
 // Initial state
 const initialState: FractalBotState = {
@@ -88,6 +93,12 @@ const FractalBotContext = createContext<{
     clearAllTools: () => void;
     openToolsManager: () => void;
     closeItemView: () => void;
+    // Step management functions
+    addStep: (stageId: string, step: Step) => void;
+    addSubstep: (stageId: string, parentStepId: string, step: Step) => void;
+    deleteStep: (stageId: string, stepId: string) => void;
+    updateStepType: (stageId: string, stepId: string, type: 'atomic' | 'composite') => void;
+    updateStepTool: (stageId: string, stepId: string, tool: { id: string; name: string; configuration: Record<string, any> }) => void;
 } | undefined>(undefined);
 
 // Reducer function
@@ -131,6 +142,156 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
             };
         case 'RESET_STATE':
             return initialState;
+        case 'ADD_STEP': {
+            const { stageId, step } = action.payload;
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? { ...stage, steps: [...(stage.steps || []), step] }
+                            : stage
+                    )
+                }
+            };
+        }
+        case 'ADD_SUBSTEP': {
+            const { stageId, parentStepId, step } = action.payload;
+            const addSubstepToStep = (steps: Step[], targetId: string): Step[] => {
+                return steps.map(step => {
+                    if (step.id === targetId) {
+                        return {
+                            ...step,
+                            substeps: [...(step.substeps || []), action.payload.step]
+                        };
+                    }
+                    if (step.substeps) {
+                        return {
+                            ...step,
+                            substeps: addSubstepToStep(step.substeps, targetId)
+                        };
+                    }
+                    return step;
+                });
+            };
+
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? {
+                                ...stage,
+                                steps: addSubstepToStep(stage.steps, parentStepId)
+                            }
+                            : stage
+                    )
+                }
+            };
+        }
+        case 'DELETE_STEP': {
+            const { stageId, stepId } = action.payload;
+            const deleteSubstepFromStepTree = (parentStep: Step): Step => {
+                if (!parentStep.substeps?.length) return parentStep;
+
+                const initialChildSteps = parentStep.substeps;
+                const newChildSteps = initialChildSteps.filter(step => step.id !== stepId);
+
+                if (newChildSteps.length < initialChildSteps.length) {
+                    return {
+                        ...parentStep,
+                        substeps: newChildSteps
+                    };
+                }
+
+                return {
+                    ...parentStep,
+                    substeps: initialChildSteps.map(step => deleteSubstepFromStepTree(step))
+                };
+            };
+
+            const updatedSteps = state.currentWorkflow.stages
+                .find(stage => stage.id === stageId)
+                ?.steps.filter(step => step.id !== stepId)
+                .map(step => deleteSubstepFromStepTree(step)) || [];
+
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? { ...stage, steps: updatedSteps }
+                            : stage
+                    )
+                }
+            };
+        }
+        case 'UPDATE_STEP_TYPE': {
+            const { stageId, stepId, type } = action.payload;
+            const getTreeWithUpdatedSubstepType = (step: Step): Step => {
+                if (step.id === stepId) {
+                    return {
+                        ...step,
+                        type,
+                        tool: type === 'composite' ? undefined : step.tool
+                    };
+                }
+                if (!step.substeps?.length) return step;
+                return {
+                    ...step,
+                    substeps: step.substeps.map(substep => getTreeWithUpdatedSubstepType(substep))
+                };
+            };
+
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? {
+                                ...stage,
+                                steps: stage.steps.map(step => getTreeWithUpdatedSubstepType(step))
+                            }
+                            : stage
+                    )
+                }
+            };
+        }
+        case 'UPDATE_STEP_TOOL': {
+            const { stageId, stepId, tool } = action.payload;
+            const getTreeWithUpdatedTool = (step: Step): Step => {
+                if (step.id === stepId) {
+                    return {
+                        ...step,
+                        tool
+                    };
+                }
+                if (!step.substeps?.length) return step;
+                return {
+                    ...step,
+                    substeps: step.substeps.map(substep => getTreeWithUpdatedTool(substep))
+                };
+            };
+
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? {
+                                ...stage,
+                                steps: stage.steps.map(step => getTreeWithUpdatedTool(step))
+                            }
+                            : stage
+                    )
+                }
+            };
+        }
         default:
             return state;
     }
@@ -426,6 +587,27 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'RESET_STATE' });
     }, []);
 
+    // Step management functions
+    const addStep = useCallback((stageId: string, step: Step) => {
+        dispatch({ type: 'ADD_STEP', payload: { stageId, step } });
+    }, []);
+
+    const addSubstep = useCallback((stageId: string, parentStepId: string, step: Step) => {
+        dispatch({ type: 'ADD_SUBSTEP', payload: { stageId, parentStepId, step } });
+    }, []);
+
+    const deleteStep = useCallback((stageId: string, stepId: string) => {
+        dispatch({ type: 'DELETE_STEP', payload: { stageId, stepId } });
+    }, []);
+
+    const updateStepType = useCallback((stageId: string, stepId: string, type: 'atomic' | 'composite') => {
+        dispatch({ type: 'UPDATE_STEP_TYPE', payload: { stageId, stepId, type } });
+    }, []);
+
+    const updateStepTool = useCallback((stageId: string, stepId: string, tool: { id: string; name: string; configuration: Record<string, any> }) => {
+        dispatch({ type: 'UPDATE_STEP_TOOL', payload: { stageId, stepId, tool } });
+    }, []);
+
     return (
         <FractalBotContext.Provider value={{
             state,
@@ -453,7 +635,13 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             selectAllTools,
             clearAllTools,
             openToolsManager,
-            closeItemView
+            closeItemView,
+            // Step management functions
+            addStep,
+            addSubstep,
+            deleteStep,
+            updateStepType,
+            updateStepTool,
         }}>
             {children}
         </FractalBotContext.Provider>
