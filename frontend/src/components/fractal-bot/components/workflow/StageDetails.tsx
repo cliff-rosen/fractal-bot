@@ -154,28 +154,38 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         setWorkflow(updatedWorkflow);
     };
 
-    const handleToolSelect = (stepId: string, toolId: string) => {
+    const handleToolSelect = (targetStep: Step, toolId: string) => {
         const selectedTool = state.currentMission.selectedTools.find(t => t.id === toolId);
         if (!selectedTool) return;
 
+        const getTreeWithUpdatedTool = (step: Step): Step => {
+            if (step.id === targetStep.id) {
+                return {
+                    ...step,
+                    tool: {
+                        id: selectedTool.id,
+                        name: selectedTool.name,
+                        configuration: {}
+                    }
+                };
+            }
+
+            if (!stepHasChildren(step)) {
+                return step;
+            }
+
+            return {
+                ...step,
+                substeps: step.substeps?.map(substep => getTreeWithUpdatedTool(substep))
+            };
+        };
+
+        const updatedTree = stage.steps.map(step => getTreeWithUpdatedTool(step));
         const updatedWorkflow = {
             ...state.currentWorkflow,
             stages: state.currentWorkflow.stages.map(s =>
                 s.id === stage.id
-                    ? {
-                        ...s,
-                        steps: s.steps.map(step =>
-                            step.id === stepId
-                                ? {
-                                    ...step,
-                                    tool: {
-                                        name: selectedTool.name,
-                                        configuration: {}
-                                    }
-                                }
-                                : step
-                        )
-                    }
+                    ? { ...s, steps: updatedTree }
                     : s
             )
         };

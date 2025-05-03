@@ -46,6 +46,32 @@ export type StageGeneratorResult = {
     explanation: string;
 }
 
+export interface SchemaType {
+    type: 'string' | 'file' | 'object';
+    is_array: boolean;
+    name: string;
+    description: string;
+}
+
+export interface ToolStep {
+    name: string;
+    description: string;
+    tool_id: string;
+    inputs: SchemaType[];
+    outputs: SchemaType[];
+}
+
+export interface Tool {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    inputs: SchemaType[];
+    outputs: SchemaType[];
+    steps?: ToolStep[];
+}
+
+
 // Asset types
 export type Asset = {
     id: string;
@@ -72,6 +98,7 @@ export interface Step {
     inputs: string[];
     outputs: string[];
     tool?: {
+        id: string;
         name: string;
         configuration: Record<string, any>;
     };
@@ -168,31 +195,6 @@ export type WorkspaceState = {
     // First element is the top-level step, last element is the current step
     currentStepPath: string[];
     viewMode: 'compact' | 'expanded';
-}
-
-export interface SchemaType {
-    type: 'string' | 'file' | 'object';
-    is_array: boolean;
-    name: string;
-    description: string;
-}
-
-export interface ToolStep {
-    name: string;
-    description: string;
-    tool_id: string;
-    inputs: SchemaType[];
-    outputs: SchemaType[];
-}
-
-export interface Tool {
-    id: string;
-    name: string;
-    description: string;
-    category: string;
-    inputs: SchemaType[];
-    outputs: SchemaType[];
-    steps?: ToolStep[];
 }
 
 export interface ItemView {

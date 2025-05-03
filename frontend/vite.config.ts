@@ -13,7 +13,17 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      host: true, // or '0.0.0.0'
+      host: '0.0.0.0',
+      port: 5173,
+      strictPort: true,
+      hmr: {
+        clientPort: 5173,
+        protocol: 'ws'
+      },
+      watch: {
+        usePolling: true
+      },
+      cors: true
     }
   }
 })

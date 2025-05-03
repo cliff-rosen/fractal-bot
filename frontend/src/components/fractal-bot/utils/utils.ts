@@ -1,4 +1,5 @@
 import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult } from "../types";
+import { v4 as uuidv4 } from 'uuid';
 
 interface DataFromLine {
     token: string | null;
@@ -57,7 +58,7 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
 
     // Create an empty workflow with initial state
     const emptyWorkflow: Workflow = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         name: `${proposal.title} Workflow`,
         description: `Workflow for ${proposal.title}`,
         status: 'pending' as Status,
@@ -70,7 +71,7 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
     console.log(proposal);
 
     return {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         title: proposal.title,
         goal: proposal.goal,
         status: 'ready' as Status,

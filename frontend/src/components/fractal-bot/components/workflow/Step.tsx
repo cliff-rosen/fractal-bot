@@ -7,7 +7,7 @@ interface StepProps {
     onAddSubstep: (step: Step) => void;
     onEditStep?: (step: Step) => void;
     onDeleteStep?: (stepId: string) => void;
-    onStepTypeChange?: (stepId: string, type: 'atomic' | 'composite') => void;
+    onStepTypeChange?: (step: Step, type: 'atomic' | 'composite') => void;
     onToolSelect?: (step: Step, toolId: string) => void;
     availableTools?: any[];
     depth?: number;
@@ -70,7 +70,7 @@ export default function Step({
                         </select>
                         {!isComposite && (
                             <select
-                                value={step.tool?.name || ''}
+                                value={step.tool?.id || ''}
                                 onChange={handleToolSelect}
                                 className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                             >
