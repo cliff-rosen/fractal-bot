@@ -66,31 +66,76 @@ export default function StageDetails({ stage }: StageDetailsProps) {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{stage.name}</h3>
-                <button
-                    onClick={handleAddStep}
-                    className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-3 py-1"
-                >
-                    <Plus className="w-4 h-4" />
-                    Add Step
-                </button>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between items-start">
+                    <div className="space-y-0.5">
+                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Stage</h3>
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{stage.name}</h2>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
+                            {stage.description}
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleAddStep}
+                        className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-2 py-1"
+                    >
+                        <Plus className="w-3 h-3" />
+                        Add Step
+                    </button>
+                </div>
             </div>
 
-            <div className="space-y-2">
-                {stage.steps.map(step => (
-                    <StepComponent
-                        key={step.id}
-                        step={step}
-                        onAddSubstep={handleAddSubstep}
-                        onEditStep={handleEditStep}
-                        onDeleteStep={handleDeleteStep}
-                        onStepTypeChange={handleStepTypeChange}
-                        onToolSelect={handleToolSelect}
-                        availableTools={state.currentMission.selectedTools}
-                    />
-                ))}
+            <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
+                        <ul className="mt-1 space-y-0.5">
+                            {stage.inputs.slice(0, 3).map((input: string) => (
+                                <li key={input} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                    {input}
+                                </li>
+                            ))}
+                            {stage.inputs.length > 3 && (
+                                <li className="text-xs text-gray-500 dark:text-gray-400">
+                                    +{stage.inputs.length - 3} more
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
+                        <ul className="mt-1 space-y-0.5">
+                            {stage.outputs.slice(0, 3).map((output: string) => (
+                                <li key={output} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                    {output}
+                                </li>
+                            ))}
+                            {stage.outputs.length > 3 && (
+                                <li className="text-xs text-gray-500 dark:text-gray-400">
+                                    +{stage.outputs.length - 3} more
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div className="p-4">
+                <div className="space-y-2">
+                    {stage.steps.map(step => (
+                        <StepComponent
+                            key={step.id}
+                            step={step}
+                            onAddSubstep={handleAddSubstep}
+                            onEditStep={handleEditStep}
+                            onDeleteStep={handleDeleteStep}
+                            onStepTypeChange={handleStepTypeChange}
+                            onToolSelect={handleToolSelect}
+                            availableTools={state.currentMission.selectedTools}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );

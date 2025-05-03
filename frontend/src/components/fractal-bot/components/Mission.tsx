@@ -51,42 +51,42 @@ export default function Mission({
 
     return (
         <div className={`dark:bg-[#1e2330] ${className}`}>
-            <div className="p-6">
+            <div className="p-4">
                 <div className="flex justify-between items-start">
-                    <div>
+                    <div className="space-y-0.5">
                         <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Mission</h2>
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-200 mt-1">{mission.title}</h1>
-                        <p className="mt-3 text-gray-600 dark:text-gray-300 leading-relaxed">
+                        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-200">{mission.title}</h1>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
                             {mission.goal}
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
                             {getStatusText(mission.status)}
                         </span>
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-1">
                             <button
                                 onClick={() => setViewMode('compact')}
-                                className={`p-2 rounded-lg ${viewMode === 'compact'
+                                className={`p-1.5 rounded-lg ${viewMode === 'compact'
                                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                                     : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
                                     }`}
                             >
-                                <LayoutGrid className="w-5 h-5" />
+                                <LayoutGrid className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('expanded')}
-                                className={`p-2 rounded-lg ${viewMode === 'expanded'
+                                className={`p-1.5 rounded-lg ${viewMode === 'expanded'
                                     ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                                     : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
                                     }`}
                             >
-                                <List className="w-5 h-5" />
+                                <List className="w-4 h-4" />
                             </button>
                         </div>
                         <button
                             onClick={resetState}
-                            className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                            className="px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg transition-colors"
                         >
                             Reset All
                         </button>
@@ -165,31 +165,37 @@ export default function Mission({
                     </div>
                 </>
             ) : (
-                <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
+                <div className="mt-2 p-3 border-t border-gray-100 dark:border-gray-700">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                                {mission.inputs.length} required
-                            </p>
+                            <ul className="mt-1 space-y-0.5">
+                                {mission.inputs.slice(0, 3).map((input: string) => (
+                                    <li key={input} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                        {input}
+                                    </li>
+                                ))}
+                                {mission.inputs.length > 3 && (
+                                    <li className="text-xs text-gray-500 dark:text-gray-400">
+                                        +{mission.inputs.length - 3} more
+                                    </li>
+                                )}
+                            </ul>
                         </div>
-                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
-                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Resources</h4>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                                {mission.resources.length} available
-                            </p>
-                        </div>
-                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
+                        <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                                {mission.outputs.length} expected
-                            </p>
-                        </div>
-                        <div className="bg-gray-50 dark:bg-[#252b3b] p-3 rounded-lg">
-                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Tools</h4>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                                {(mission.selectedTools || []).length} selected
-                            </p>
+                            <ul className="mt-1 space-y-0.5">
+                                {mission.outputs.slice(0, 3).map((output: string) => (
+                                    <li key={output} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                        {output}
+                                    </li>
+                                ))}
+                                {mission.outputs.length > 3 && (
+                                    <li className="text-xs text-gray-500 dark:text-gray-400">
+                                        +{mission.outputs.length - 3} more
+                                    </li>
+                                )}
+                            </ul>
                         </div>
                     </div>
                 </div>
