@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Stage, Step, Tool } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { Plus } from 'lucide-react';
 import StepComponent from './Step';
-import { getDirectSubsteps, getStepWithUpdatedType, stepHasChildren } from '../../types/step-utils';
+import { getAvailableInputs } from '../../utils/utils';
 
 interface StageDetailsProps {
     stage: Stage;
@@ -28,7 +28,10 @@ const getNewStep = (stage: Stage) => {
 };
 
 export default function StageDetails({ stage }: StageDetailsProps) {
-    const { state, addStep, addSubstep, deleteStep, updateStepType, updateStepTool } = useFractalBot();
+    const { state, addStep, addSubstep, deleteStep, updateStepType, updateStepTool, updateStepInput, updateStepOutput } = useFractalBot();
+
+    // Get all available inputs (workflow inputs + previous step outputs)
+    const availableInputs = getAvailableInputs(state.currentWorkflow, stage.id);
 
     const handleAddStep = () => {
         const newStep = getNewStep(stage);
@@ -53,11 +56,15 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         const selectedTool = state.currentMission.selectedTools.find((t: Tool) => t.id === toolId);
         if (!selectedTool) return;
 
-        updateStepTool(stage.id, targetStep.id, {
-            id: selectedTool.id,
-            name: selectedTool.name,
-            configuration: {}
-        });
+        updateStepTool(stage.id, targetStep.id, selectedTool);
+    };
+
+    const handleInputSelect = (targetStep: Step, input: string) => {
+        updateStepInput(stage.id, targetStep.id, input);
+    };
+
+    const handleOutputSelect = (targetStep: Step, output: string) => {
+        updateStepOutput(stage.id, targetStep.id, output);
     };
 
     const handleEditStep = (step: Step) => {
@@ -132,7 +139,10 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                             onDeleteStep={handleDeleteStep}
                             onStepTypeChange={handleStepTypeChange}
                             onToolSelect={handleToolSelect}
+                            onInputSelect={handleInputSelect}
+                            onOutputSelect={handleOutputSelect}
                             availableTools={state.currentMission.selectedTools}
+                            availableInputs={availableInputs}
                         />
                     ))}
                 </div>

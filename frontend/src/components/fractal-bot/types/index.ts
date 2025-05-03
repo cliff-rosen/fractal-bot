@@ -97,11 +97,7 @@ export interface Step {
     };
     inputs: string[];
     outputs: string[];
-    tool?: {
-        id: string;
-        name: string;
-        configuration: Record<string, any>;
-    };
+    tool?: Tool;
     substeps?: Step[];
     isSubstep?: boolean;
     createdAt: string;
@@ -134,6 +130,7 @@ export interface Workflow {
     status: string;
     stages: Stage[];
     assets: Asset[];
+    inputs: string[];
     createdAt: string;
     updatedAt: string;
 }

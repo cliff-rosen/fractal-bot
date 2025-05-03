@@ -48,7 +48,7 @@ class Step(BaseModel):
     assets: Dict[str, List[str]]
     inputs: List[str]
     outputs: List[str]
-    tool: Optional[Dict[str, Any]] = None
+    tool: Optional[Tool] = None
     substeps: Optional[List['Step']] = None
     createdAt: str
     updatedAt: str

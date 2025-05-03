@@ -42,7 +42,9 @@ type FractalBotAction =
     | { type: 'ADD_SUBSTEP'; payload: { stageId: string; parentStepId: string; step: Step } }
     | { type: 'DELETE_STEP'; payload: { stageId: string; stepId: string } }
     | { type: 'UPDATE_STEP_TYPE'; payload: { stageId: string; stepId: string; type: 'atomic' | 'composite' } }
-    | { type: 'UPDATE_STEP_TOOL'; payload: { stageId: string; stepId: string; tool: { id: string; name: string; configuration: Record<string, any> } } };
+    | { type: 'UPDATE_STEP_TOOL'; payload: { stageId: string; stepId: string; tool: Tool } }
+    | { type: 'UPDATE_STEP_INPUT'; payload: { stageId: string; stepId: string; input: string } }
+    | { type: 'UPDATE_STEP_OUTPUT'; payload: { stageId: string; stepId: string; output: string } };
 
 // Initial state
 const initialState: FractalBotState = {
@@ -98,7 +100,9 @@ const FractalBotContext = createContext<{
     addSubstep: (stageId: string, parentStepId: string, step: Step) => void;
     deleteStep: (stageId: string, stepId: string) => void;
     updateStepType: (stageId: string, stepId: string, type: 'atomic' | 'composite') => void;
-    updateStepTool: (stageId: string, stepId: string, tool: { id: string; name: string; configuration: Record<string, any> }) => void;
+    updateStepTool: (stageId: string, stepId: string, tool: Tool) => void;
+    updateStepInput: (stageId: string, stepId: string, input: string) => void;
+    updateStepOutput: (stageId: string, stepId: string, output: string) => void;
 } | undefined>(undefined);
 
 // Reducer function
@@ -286,6 +290,68 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
                             ? {
                                 ...stage,
                                 steps: stage.steps.map(step => getTreeWithUpdatedTool(step))
+                            }
+                            : stage
+                    )
+                }
+            };
+        }
+        case 'UPDATE_STEP_INPUT': {
+            const { stageId, stepId, input } = action.payload;
+            const getTreeWithUpdatedInput = (step: Step): Step => {
+                if (step.id === stepId) {
+                    return {
+                        ...step,
+                        inputs: [input]
+                    };
+                }
+                if (!step.substeps?.length) return step;
+                return {
+                    ...step,
+                    substeps: step.substeps.map(substep => getTreeWithUpdatedInput(substep))
+                };
+            };
+
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? {
+                                ...stage,
+                                steps: stage.steps.map(step => getTreeWithUpdatedInput(step))
+                            }
+                            : stage
+                    )
+                }
+            };
+        }
+        case 'UPDATE_STEP_OUTPUT': {
+            const { stageId, stepId, output } = action.payload;
+            const getTreeWithUpdatedOutput = (step: Step): Step => {
+                if (step.id === stepId) {
+                    return {
+                        ...step,
+                        outputs: [output]
+                    };
+                }
+                if (!step.substeps?.length) return step;
+                return {
+                    ...step,
+                    substeps: step.substeps.map(substep => getTreeWithUpdatedOutput(substep))
+                };
+            };
+
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? {
+                                ...stage,
+                                steps: stage.steps.map(step => getTreeWithUpdatedOutput(step))
                             }
                             : stage
                     )
@@ -604,8 +670,16 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'UPDATE_STEP_TYPE', payload: { stageId, stepId, type } });
     }, []);
 
-    const updateStepTool = useCallback((stageId: string, stepId: string, tool: { id: string; name: string; configuration: Record<string, any> }) => {
+    const updateStepTool = useCallback((stageId: string, stepId: string, tool: Tool) => {
         dispatch({ type: 'UPDATE_STEP_TOOL', payload: { stageId, stepId, tool } });
+    }, []);
+
+    const updateStepInput = useCallback((stageId: string, stepId: string, input: string) => {
+        dispatch({ type: 'UPDATE_STEP_INPUT', payload: { stageId, stepId, input } });
+    }, []);
+
+    const updateStepOutput = useCallback((stageId: string, stepId: string, output: string) => {
+        dispatch({ type: 'UPDATE_STEP_OUTPUT', payload: { stageId, stepId, output } });
     }, []);
 
     return (
@@ -642,6 +716,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             deleteStep,
             updateStepType,
             updateStepTool,
+            updateStepInput,
+            updateStepOutput,
         }}>
             {children}
         </FractalBotContext.Provider>

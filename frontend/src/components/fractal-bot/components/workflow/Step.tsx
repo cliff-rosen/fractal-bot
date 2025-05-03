@@ -1,6 +1,7 @@
-import React from 'react';
-import type { Step } from '../../types';
+import React, { useMemo } from 'react';
+import type { Step, Tool, SchemaType } from '../../types';
 import { Pencil, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { getFilteredInputs } from '../../utils/utils';
 
 interface StepProps {
     step: Step;
@@ -9,7 +10,10 @@ interface StepProps {
     onDeleteStep?: (stepId: string) => void;
     onStepTypeChange?: (step: Step, type: 'atomic' | 'composite') => void;
     onToolSelect?: (step: Step, toolId: string) => void;
-    availableTools?: any[];
+    onInputSelect?: (step: Step, input: string) => void;
+    onOutputSelect?: (step: Step, output: string) => void;
+    availableTools?: Tool[];
+    availableInputs?: string[];
     depth?: number;
 }
 
@@ -20,7 +24,10 @@ export default function Step({
     onDeleteStep,
     onStepTypeChange,
     onToolSelect,
+    onInputSelect,
+    onOutputSelect,
     availableTools = [],
+    availableInputs = [],
     depth = 0
 }: StepProps) {
     const handleEditClick = (e: React.MouseEvent) => {
@@ -49,7 +56,25 @@ export default function Step({
         onToolSelect?.(step, e.target.value);
     };
 
+    const handleInputSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        e.stopPropagation();
+        onInputSelect?.(step, e.target.value);
+    };
+
+    const handleOutputSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        e.stopPropagation();
+        onOutputSelect?.(step, e.target.value);
+    };
+
     const isComposite = step.type === 'composite';
+
+    // Get available inputs based on tool's schema type
+    const filteredInputs = useMemo(() => {
+        if (!step.tool || !step.tool.inputs) return availableInputs;
+
+        const toolInputTypes = step.tool.inputs.map(input => input.type);
+        return getFilteredInputs(availableInputs, toolInputTypes);
+    }, [step.tool, availableInputs]);
 
     return (
         <div className={`${depth > 0 ? 'ml-4' : ''} border-l-2 border-gray-200 dark:border-gray-700 pl-4`}>
@@ -58,6 +83,38 @@ export default function Step({
                     <div className="flex-1">
                         <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{step.name}</h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{step.description}</p>
+                        <div className="mt-1 grid grid-cols-2 gap-2">
+                            <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                                <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h5>
+                                <select
+                                    value={step.inputs[0] || ''}
+                                    onChange={handleInputSelect}
+                                    className="mt-1 w-full text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                >
+                                    <option value="">Select input</option>
+                                    {filteredInputs.map((input) => (
+                                        <option key={input} value={input}>
+                                            {input}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                                <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h5>
+                                <select
+                                    value={step.outputs[0] || ''}
+                                    onChange={handleOutputSelect}
+                                    className="mt-1 w-full text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                >
+                                    <option value="">Select output</option>
+                                    {step.outputs.map((output) => (
+                                        <option key={output} value={output}>
+                                            {output}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <select
@@ -132,7 +189,10 @@ export default function Step({
                             onDeleteStep={onDeleteStep}
                             onStepTypeChange={onStepTypeChange}
                             onToolSelect={onToolSelect}
+                            onInputSelect={onInputSelect}
+                            onOutputSelect={onOutputSelect}
                             availableTools={availableTools}
+                            availableInputs={availableInputs}
                             depth={depth + 1}
                         />
                     ))}

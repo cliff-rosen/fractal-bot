@@ -1,4 +1,4 @@
-import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult } from "../types";
+import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult, Stage, Step } from "../types";
 import { v4 as uuidv4 } from 'uuid';
 
 interface DataFromLine {
@@ -85,4 +85,35 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
         createdAt: now,
         updatedAt: now
     };
+}
+
+export function getAvailableInputs(workflow: Workflow, currentStageId: string): string[] {
+    const inputs = new Set<string>();
+
+    // Add workflow inputs if they exist
+    if (workflow.inputs) {
+        workflow.inputs.forEach(input => inputs.add(input));
+    }
+
+    // Add outputs from previous steps
+    const currentStageIndex = workflow.stages.findIndex(s => s.id === currentStageId);
+    if (currentStageIndex > 0) {
+        workflow.stages.slice(0, currentStageIndex).forEach(prevStage => {
+            prevStage.steps.forEach(step => {
+                if (step.outputs) {
+                    step.outputs.forEach(output => inputs.add(output));
+                }
+            });
+        });
+    }
+
+    return Array.from(inputs);
+}
+
+export function getFilteredInputs(availableInputs: string[], toolInputTypes: string[]): string[] {
+    // TODO: Implement proper type matching logic based on your schema types
+    // This is a placeholder - you'll need to implement the actual type matching
+    return availableInputs.filter(input => {
+        return toolInputTypes.some(type => type === 'string'); // Simplified for now
+    });
 } 
