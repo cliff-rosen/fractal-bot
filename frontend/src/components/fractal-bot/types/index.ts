@@ -64,6 +64,9 @@ export type SchemaValueType =
     | SearchResult
     | KnowledgeBase;
 
+// Variable status types
+export type VariableStatus = 'pending' | 'ready' | 'error';
+
 // Base variable type - combines schema with identifiers and value
 export interface WorkflowVariable {
     variable_id: string;     // System-wide unique ID
@@ -73,11 +76,85 @@ export interface WorkflowVariable {
     description?: string;   // Human-readable description
     io_type: 'input' | 'output' | 'evaluation';
     required?: boolean;
+    status: VariableStatus;  // Current status of the variable
+    error_message?: string;  // Optional error message when status is 'error'
 }
 
 // Common status types
 export type Status = 'completed' | 'current' | 'pending' | 'failed' | 'in_progress' | 'ready';
 export type AssetStatus = 'pendingCompletion' | 'pendingApproval' | 'ready' | 'archived' | 'error';
+
+// Step execution states
+export type StepExecutionState = 'pending' | 'in_progress' | 'completed' | 'failed' | 'skipped' | 'blocked';
+
+// Step configuration states
+export type StepConfigState = 'unconfigured' | 'configuring' | 'resolved' | 'inputs_pending' | 'error';
+
+// Step status type that combines execution and configuration states
+export interface StepStatus {
+    executionState: StepExecutionState;
+    configState: StepConfigState;
+    lastUpdated: string;
+    error?: string;
+}
+
+// Helper function to check if a step is resolved
+export function isStepResolved(step: Step): boolean {
+    // Check if all required inputs are ready
+    const allInputsReady = step.inputs
+        .filter(input => input.required)
+        .every(input => input.status === 'ready');
+
+    if (!allInputsReady) {
+        return false;
+    }
+
+    if (step.type === 'atomic') {
+        // Atomic step is resolved if it has a configured tool
+        return step.tool !== undefined;
+    } else if (step.type === 'composite') {
+        // Composite step is resolved if it has at least 2 child steps and all are resolved
+        return step.substeps !== undefined &&
+            step.substeps.length >= 2 &&
+            step.substeps.every(substep => isStepResolved(substep));
+    }
+    return false;
+}
+
+// Helper function to get step status
+export function getStepStatus(step: Step): StepStatus {
+    const resolved = isStepResolved(step);
+
+    // Check input readiness
+    const allInputsReady = step.inputs
+        .filter(input => input.required)
+        .every(input => input.status === 'ready');
+
+    // Check for input errors
+    const hasInputErrors = step.inputs
+        .filter(input => input.required)
+        .some(input => input.status === 'error');
+
+    let configState: StepConfigState;
+    if (hasInputErrors) {
+        configState = 'error';
+    } else if (!allInputsReady) {
+        configState = 'inputs_pending';
+    } else if (resolved) {
+        configState = 'resolved';
+    } else if (step.tool || (step.substeps && step.substeps.length > 0)) {
+        configState = 'configuring';
+    } else {
+        configState = 'unconfigured';
+    }
+
+    return {
+        executionState: step.status as StepExecutionState,
+        configState,
+        lastUpdated: step.updatedAt,
+        error: step.status === 'failed' ? 'Step execution failed' : undefined
+    };
+}
 
 // Workspace types
 export type WorkspaceType = 'proposedMission' | 'proposedWorkflowDesign' | 'workflowStepStatus' | 'stepDetails' | 'thinking' | 'progressUpdate' | 'text';
@@ -169,7 +246,7 @@ export interface Step {
     inputs: WorkflowVariable[];
     outputs: WorkflowVariable[];
     substeps?: Step[];  // Nested steps
-    status: string;     // Step status
+    status: StepExecutionState;     // Updated to use StepExecutionState type
     assets: Record<string, string[]>;  // Assets associated with the step
     createdAt: string;  // Creation timestamp
     updatedAt: string;  // Update timestamp

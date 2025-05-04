@@ -77,9 +77,9 @@ export default function FractalBot() {
                 </div>
 
                 {/* Status History */}
-                <div className="border-t border-gray-200 dark:border-gray-700">
+                {/* <div className="border-t border-gray-200 dark:border-gray-700">
                   <StatusHistory messages={statusHistory} />
-                </div>
+                </div> */}
               </div>
 
               {/* Right Rail */}
