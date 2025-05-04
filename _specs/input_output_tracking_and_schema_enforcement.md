@@ -1,129 +1,166 @@
 # Input/Output Tracking and Schema Enforcement Specification
 
-## Current State Analysis
-
-### 1. Input/Output Tracking
-- Currently, inputs and outputs are tracked separately from assets
-- Workflow variables are stored in `WorkflowVariable` model with `io_type` field
-- Basic validation exists for workflow inputs through `validateWorkflowInputs`
-- Assets are tracked separately with their own status and lifecycle
-- No clear connection between assets and workflow inputs/outputs
-
-### 2. Schema Enforcement
-- Basic schema validation exists through `validateSchemaValue`
-- Tool inputs/outputs have schema definitions but enforcement is incomplete
-- `SchemaType` interface exists but lacks comprehensive validation
-- No strict type checking between tool schemas and step inputs/outputs
-- Limited support for complex nested schemas
-
-## Key Issues
-
-1. **Disconnected Tracking Systems**
-   - Assets and inputs/outputs are tracked separately
-   - No clear mapping between assets and workflow variables
-   - Difficulty in tracing data flow through the system
-
-2. **Incomplete Schema Validation**
-   - Tool schemas don't strictly enforce type compatibility
-   - Step inputs/outputs don't validate against tool schemas
-   - Limited support for complex data structures
-
-3. **Missing Data Flow Tracking**
-   - No clear way to track data transformations
-   - Difficulty in ensuring data integrity through workflow
-   - No validation of data dependencies between steps
-
-## Recommendations
-
-### 1. Unified Asset and Variable System
+## Core Types
 
 ```typescript
-interface UnifiedVariable {
+export interface WorkflowVariable {
+    variable_id: string;     // System-wide unique ID
+    name: VariableName;      // Reference name in current context
+    schema: Schema;          // Structure definition
+    value?: SchemaValueType; // Actual data
+    description?: string;    // Human-readable description
+    io_type: 'input' | 'output' | 'evaluation';
+    required?: boolean;
+}
+
+export type PrimitiveType = 'string' | 'number' | 'boolean';
+export type ComplexType = 'object' | 'file';
+export type ValueType = PrimitiveType | ComplexType;
+
+export interface Schema {
+    type: ValueType;
+    description?: string;
+    is_array: boolean;  // If true, the value will be an array of the base type
+    fields?: Record<string, Schema>;  // Only used for object type
+    format?: string;    // Format constraints
+    content_types?: string[];
+}
+
+export type SchemaValueType =
+    | string
+    | number
+    | boolean
+    | object
+    | file
+    | query
+    | SearchResult
+    | KnowledgeBase
+```
+
+## System Structure
+
+### 1. Mission Level
+```typescript
+interface Mission {
     id: string;
-    name: string;
-    type: 'asset' | 'input' | 'output';
-    schema: Schema;
-    value?: SchemaValueType;
-    status: VariableStatus;
-    dependencies?: string[];  // References to other variables this depends on
-    transformations?: {
-        tool_id: string;
-        step_id: string;
-        timestamp: string;
-    }[];
+    title: string;
+    goal: string;
+    status: string;
+    workflow: Workflow;
+    inputs: WorkflowVariable[];  // Mission-level inputs
+    outputs: WorkflowVariable[]; // Mission-level outputs
+    success_criteria: string[];
+    selectedTools: Tool[];
 }
 ```
 
-### 2. Enhanced Schema System
-
+### 2. Workflow Level
 ```typescript
-interface EnhancedSchema extends Schema {
-    // Add validation rules
-    validation?: {
-        required?: boolean;
-        min?: number;
-        max?: number;
-        pattern?: string;
-        custom?: (value: any) => boolean;
-    };
-    // Add metadata for tracking
-    metadata?: {
-        source?: string;  // Where this schema came from
-        version?: string;
-        deprecated?: boolean;
-    };
+interface Workflow {
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    stages: Stage[];
+    inputs: WorkflowVariable[];  // Workflow-level inputs
+    outputs: WorkflowVariable[]; // Workflow-level outputs
 }
+```
 
-// Schema compatibility checking
-function isSchemaCompatible(source: EnhancedSchema, target: EnhancedSchema): boolean {
-    // Implement comprehensive schema compatibility checking
-    // This would check type compatibility, array status, nested fields, etc.
+### 3. Stage Level
+```typescript
+interface Stage {
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    steps: Step[];
+    inputs: WorkflowVariable[];  // Stage-level inputs
+    outputs: WorkflowVariable[]; // Stage-level outputs
+    success_criteria: string[];
+}
+```
+
+### 4. Step Level
+```typescript
+interface Step {
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    type: 'atomic' | 'composite';
+    tool?: Tool;
+    inputs: WorkflowVariable[];  // Step-level inputs
+    outputs: WorkflowVariable[]; // Step-level outputs
+    substeps?: Step[];
+}
+```
+
+### 5. Tool Level
+```typescript
+interface Tool {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    inputs: WorkflowVariable[];  // Tool-level inputs
+    outputs: WorkflowVariable[]; // Tool-level outputs
+    steps?: ToolStep[];
+}
+```
+
+## Data Flow and Validation
+
+### 1. Variable Propagation
+- Mission inputs propagate to workflow inputs
+- Workflow inputs propagate to stage inputs
+- Stage inputs propagate to step inputs
+- Step inputs must match tool input schemas
+- Tool outputs propagate to step outputs
+- Step outputs propagate to stage outputs
+- Stage outputs propagate to workflow outputs
+- Workflow outputs propagate to mission outputs
+
+### 2. Schema Validation Rules
+```typescript
+function validateVariablePropagation(
+    source: WorkflowVariable,
+    target: WorkflowVariable
+): boolean {
+    // Check schema compatibility
+    if (!isSchemaCompatible(source.schema, target.schema)) {
+        return false;
+    }
+
+    // Check required status
+    if (target.required && !source.value) {
+        return false;
+    }
+
+    // Check io_type compatibility
+    if (source.io_type === 'output' && target.io_type === 'input') {
+        return true;
+    }
+    if (source.io_type === 'evaluation' && target.io_type === 'evaluation') {
+        return true;
+    }
+    return false;
 }
 ```
 
 ### 3. Data Flow Tracking
-
 ```typescript
-interface DataFlowNode {
-    id: string;
-    type: 'mission' | 'workflow' | 'stage' | 'step' | 'tool';
-    inputs: UnifiedVariable[];
-    outputs: UnifiedVariable[];
-    dependencies: string[];  // References to other nodes
-    transformations: {
-        from: string;  // Source variable ID
-        to: string;    // Target variable ID
-        tool_id: string;
-        step_id: string;
-        timestamp: string;
-    }[];
-}
-
-interface DataFlowGraph {
-    nodes: Record<string, DataFlowNode>;
-    edges: {
-        from: string;  // Source node ID
-        to: string;    // Target node ID
-        variables: string[];  // Variables flowing between nodes
-    }[];
-}
-```
-
-### 4. Tool Integration
-
-```typescript
-interface ToolIntegration {
-    tool_id: string;
-    input_mappings: {
-        tool_param: string;
+interface DataFlowEdge {
+    source: {
         variable_id: string;
-        schema_compatibility: boolean;
-    }[];
-    output_mappings: {
-        tool_output: string;
+        node_id: string;
+        node_type: 'mission' | 'workflow' | 'stage' | 'step' | 'tool';
+    };
+    target: {
         variable_id: string;
-        schema_compatibility: boolean;
-    }[];
+        node_id: string;
+        node_type: 'mission' | 'workflow' | 'stage' | 'step' | 'tool';
+    };
     validation_status: 'valid' | 'invalid' | 'warning';
     validation_errors?: string[];
 }
@@ -131,52 +168,52 @@ interface ToolIntegration {
 
 ## Implementation Plan
 
-### Phase 1: Schema Enhancement
-1. Extend `Schema` interface with validation rules
-2. Implement comprehensive schema compatibility checking
-3. Add schema versioning and metadata support
+### Phase 1: Core Type Implementation
+1. Implement `WorkflowVariable` type
+2. Update all existing types to use `WorkflowVariable`
+3. Implement schema validation utilities
 
-### Phase 2: Unified Variable System
-1. Create new `UnifiedVariable` type
-2. Implement migration from current asset and variable systems
-3. Add data transformation tracking
+### Phase 2: Data Flow Implementation
+1. Implement variable propagation system
+2. Add validation at each propagation point
+3. Create data flow tracking system
 
-### Phase 3: Data Flow Tracking
-1. Implement `DataFlowNode` and `DataFlowGraph`
-2. Create visualization tools for data flow
-3. Add validation for data dependencies
+### Phase 3: Tool Integration
+1. Update tool interface to use `WorkflowVariable`
+2. Implement tool schema validation
+3. Add compatibility checking between tools and steps
 
-### Phase 4: Tool Integration
-1. Enhance tool schema validation
-2. Implement input/output mapping validation
-3. Add compatibility checking between tool and step schemas
+### Phase 4: UI/UX Implementation
+1. Create variable management interface
+2. Implement data flow visualization
+3. Add validation feedback and error reporting
 
 ## Benefits
 
-1. **Improved Data Integrity**
-   - Strict schema validation throughout the system
-   - Clear tracking of data transformations
-   - Validation of data dependencies
+1. **Unified Variable System**
+   - Single type for all inputs/outputs
+   - Consistent schema validation
+   - Clear data flow tracking
 
-2. **Better Debugging**
+2. **Improved Type Safety**
+   - Strong typing throughout the system
+   - Runtime schema validation
+   - Clear error messages
+
+3. **Better Debugging**
    - Clear data flow visualization
-   - Easy identification of schema mismatches
-   - Tracking of data transformations
-
-3. **Enhanced Tool Integration**
-   - Strict validation of tool inputs/outputs
-   - Clear mapping between tool and step schemas
-   - Better error reporting for schema mismatches
+   - Easy identification of validation failures
+   - Tracking of variable transformations
 
 ## Migration Strategy
 
-1. **Backward Compatibility**
-   - Maintain support for existing schemas
-   - Provide migration tools for old data
-   - Support both old and new validation systems during transition
+1. **Type Migration**
+   - Update all existing types to use `WorkflowVariable`
+   - Provide migration utilities for old data
+   - Support both old and new systems during transition
 
 2. **Gradual Rollout**
-   - Start with new features in new workflows
+   - Start with new workflows
    - Gradually migrate existing workflows
    - Provide clear documentation and support
 
