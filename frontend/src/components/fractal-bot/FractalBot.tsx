@@ -23,29 +23,16 @@ export default function FractalBot() {
   } = useFractalBot();
 
   const {
-    currentMission,
     currentMissionProposal,
-    currentWorkspaceState,
     currentMessages,
     currentStreamingMessage,
-    currentWorkflow,
-    currentWorkspace,
     currentTools,
     currentAssets,
     selectedToolIds,
     currentItemView,
-    activeView,
     statusHistory
   } = state;
 
-  const [selectedItem, setSelectedItem] = useState<{
-    item: Stage | Step;
-    type: 'stage' | 'step' | 'substep';
-  } | null>(null);
-
-  const handleItemSelect = (item: Stage | Step, type: 'stage' | 'step' | 'substep') => {
-    setSelectedItem({ item, type });
-  };
 
   return (
     <div className="h-screen flex flex-col">
@@ -81,10 +68,7 @@ export default function FractalBot() {
 
                 {/* Stage Tracker */}
                 <div className="mb-6">
-                  <Workflow
-                    workflow={currentWorkflow}
-                    workspaceState={currentWorkspaceState}
-                  />
+                  <Workflow />
                 </div>
 
                 {/* Workspace Canvas */}

@@ -4,16 +4,13 @@ import StageDetails from './StageDetails';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface CondensedWorkflowProps {
-    className?: string;
-    stages: Stage[];
 }
 
-export default function CondensedWorkflow({
-    className = '',
-    stages
-}: CondensedWorkflowProps) {
+export default function CondensedWorkflow() {
     const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
     const { state } = useFractalBot();
+
+    const stages = state.currentWorkflow.stages;
 
     const handleStageClick = (stage: Stage) => {
         setSelectedStageId(stage.id);
@@ -24,7 +21,7 @@ export default function CondensedWorkflow({
         : null;
 
     return (
-        <div className={className}>
+        <div>
             <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
                 {stages.map((stage) => (
                     <div

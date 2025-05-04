@@ -2,21 +2,17 @@ import React, { useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import CondensedWorkflow from './workflow/CondensedWorkflow';
 import FullWorkflow from './workflow/FullWorkflow';
-import type { Workflow, WorkspaceState, Stage, Step, Tool } from '../types/index';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface WorkflowProps {
-    className?: string;
-    workflow: Workflow;
-    workspaceState: WorkspaceState;
-    onStageClick: (stage: Stage) => void;
-    onStepClick: (step: Step) => void;
 }
 
-export default function Workflow({ className = '', workflow, workspaceState, onStageClick, onStepClick }: WorkflowProps) {
+export default function Workflow({ }: WorkflowProps) {
     const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('compact');
     const [isGenerating, setIsGenerating] = useState(false);
     const { state, generateWorkflow } = useFractalBot();
+
+    const workflow = state.currentWorkflow;
 
     const handleGenerateWorkflowClick = async () => {
         setIsGenerating(true);
@@ -31,7 +27,7 @@ export default function Workflow({ className = '', workflow, workspaceState, onS
     const shouldShowGenerateButton = state.currentMission.status === 'ready' && workflow.status !== 'ready';
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow p-6 ${className}`}>
+        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow p-6`}>
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow</h2>
                 <div className="flex space-x-2">
@@ -57,18 +53,9 @@ export default function Workflow({ className = '', workflow, workspaceState, onS
             </div>
 
             {viewMode === 'compact' ? (
-                <CondensedWorkflow
-                    className="mt-4"
-                    stages={workflow.stages}
-                    onStageClick={onStageClick}
-                    onStepClick={onStepClick}
-                />
+                <CondensedWorkflow />
             ) : (
-                <FullWorkflow
-                    className="mt-4"
-                    stages={workflow.stages}
-                    workspaceState={workspaceState}
-                />
+                <FullWorkflow />
             )}
 
             {shouldShowGenerateButton && (
