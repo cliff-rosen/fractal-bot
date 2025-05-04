@@ -3,8 +3,6 @@ import type { Stage } from '../../types';
 import StageDetails from './StageDetails';
 import { useFractalBot } from '@/context/FractalBotContext';
 
-interface CondensedWorkflowProps {
-}
 
 export default function CondensedWorkflow() {
     const [selectedStageId, setSelectedStageId] = useState<string | null>(null);

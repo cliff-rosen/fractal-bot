@@ -16,26 +16,37 @@ class Asset(BaseModel):
 
 ### TOOLS ###
 
-class SchemaType(BaseModel):
+class Schema(BaseModel):
     type: str
     is_array: bool
-    name: str
     description: str
+    fields: Optional[Dict[str, Any]] = None
+    format: Optional[str] = None
+    content_types: Optional[List[str]] = None
+
+class WorkflowVariable(BaseModel):
+    variable_id: str
+    name: str
+    schema: Schema
+    value: Optional[Any] = None
+    description: Optional[str] = None
+    io_type: str
+    required: Optional[bool] = None
 
 class ToolStep(BaseModel):
     name: str
     description: str
     tool_id: str
-    inputs: List[SchemaType]
-    outputs: List[SchemaType]
+    inputs: List[WorkflowVariable]
+    outputs: List[WorkflowVariable]
 
 class Tool(BaseModel):
     id: str
     name: str
     description: str
     category: str
-    inputs: List[SchemaType]
-    outputs: List[SchemaType]
+    inputs: List[WorkflowVariable]
+    outputs: List[WorkflowVariable]
     steps: Optional[List[ToolStep]] = None
 
 ### WORKFLOW ###
@@ -45,13 +56,16 @@ class Step(BaseModel):
     name: str
     description: str
     status: str
-    assets: Dict[str, List[str]]
-    inputs: List[str]
-    outputs: List[str]
+    assets: Dict[str, List[str]] = Field(default_factory=dict)
+    inputs: List[WorkflowVariable]
+    outputs: List[WorkflowVariable]
     tool: Optional[Tool] = None
     substeps: Optional[List['Step']] = None
     createdAt: str
     updatedAt: str
+    type: Optional[str] = None
+    tool_id: Optional[str] = None
+    isSubstep: Optional[bool] = None
 
 class Stage(BaseModel):
     id: str
@@ -59,9 +73,8 @@ class Stage(BaseModel):
     description: str
     status: str
     steps: List[Step]
-    assets: Dict[str, List[str]]
-    inputs: List[str]
-    outputs: List[str]
+    inputs: List[WorkflowVariable]
+    outputs: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
     createdAt: str
     updatedAt: str
@@ -72,7 +85,8 @@ class Workflow(BaseModel):
     description: str
     status: str
     stages: List[Stage]
-    assets: List[Asset]
+    inputs: List[WorkflowVariable]
+    outputs: List[WorkflowVariable]
     createdAt: str
     updatedAt: str
 
@@ -82,10 +96,9 @@ class Mission(BaseModel):
     goal: str
     status: str
     workflow: Workflow
-    assets: List[Asset]
-    inputs: List[str]  # Specific data objects required to start the mission
-    resources: List[str]  # General resources needed but not specific data objects (e.g. access to email, databases)
-    outputs: List[str]  # Specific deliverables that will be produced
+    inputs: List[WorkflowVariable]
+    resources: List[str]
+    outputs: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify mission completion")
     selectedTools: List[Tool] = Field(default_factory=list, description="Tools selected for this mission")
     createdAt: str
@@ -94,9 +107,9 @@ class Mission(BaseModel):
 class MissionProposal(BaseModel):
     title: str
     goal: str
-    inputs: List[str]
+    inputs: List[WorkflowVariable]
     resources: List[str] = Field(default_factory=list)
-    outputs: List[str]
+    outputs: List[WorkflowVariable]
     success_criteria: List[str]
     selectedTools: List[Tool] = Field(default_factory=list)
 
@@ -104,8 +117,8 @@ class StageProposal(BaseModel):
     id: str
     name: str
     description: str
-    inputs: List[str]
-    outputs: List[str]
+    inputs: List[WorkflowVariable]
+    outputs: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
 
 ### BOT REQUEST ###
