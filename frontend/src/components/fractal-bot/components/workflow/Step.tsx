@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { Step, Tool, SchemaType } from '../../types';
+import type { Step, Tool, WorkflowVariable } from '../../types';
 import { Pencil, Sparkles, Plus, Trash2 } from 'lucide-react';
 import { getFilteredInputs } from '../../utils/utils';
 
@@ -10,10 +10,10 @@ interface StepProps {
     onDeleteStep?: (stepId: string) => void;
     onStepTypeChange?: (step: Step, type: 'atomic' | 'composite') => void;
     onToolSelect?: (step: Step, toolId: string) => void;
-    onInputSelect?: (step: Step, input: string) => void;
-    onOutputSelect?: (step: Step, output: string) => void;
+    onInputSelect?: (step: Step, input: WorkflowVariable) => void;
+    onOutputSelect?: (step: Step, output: WorkflowVariable) => void;
     availableTools?: Tool[];
-    availableInputs?: string[];
+    availableInputs?: WorkflowVariable[];
     depth?: number;
 }
 
@@ -58,23 +58,27 @@ export default function Step({
 
     const handleInputSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         e.stopPropagation();
-        onInputSelect?.(step, e.target.value);
+        const selectedInput = availableInputs.find(input => input.variable_id === e.target.value);
+        if (selectedInput) {
+            onInputSelect?.(step, selectedInput);
+        }
     };
 
     const handleOutputSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         e.stopPropagation();
-        onOutputSelect?.(step, e.target.value);
+        const selectedOutput = step.outputs.find(output => output.variable_id === e.target.value);
+        if (selectedOutput) {
+            onOutputSelect?.(step, selectedOutput);
+        }
     };
 
     const isComposite = step.type === 'composite';
 
     // Get available inputs based on tool's schema type
     const filteredInputs = useMemo(() => {
-        if (!step.tool || !step.tool.inputs) return availableInputs;
-
-        const toolInputTypes = step.tool.inputs.map(input => input.type);
-        return getFilteredInputs(availableInputs, toolInputTypes);
-    }, [step.tool, availableInputs]);
+        if (!availableInputs.length) return [];
+        return getFilteredInputs(availableInputs, availableTools.map(tool => tool.inputs.map(input => input.schema.type)).flat());
+    }, [availableInputs, availableTools]);
 
     return (
         <div className={`${depth > 0 ? 'ml-4' : ''} border-l-2 border-gray-200 dark:border-gray-700 pl-4`}>
@@ -87,14 +91,14 @@ export default function Step({
                             <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                                 <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h5>
                                 <select
-                                    value={step.inputs[0] || ''}
+                                    value={step.inputs[0]?.variable_id || ''}
                                     onChange={handleInputSelect}
                                     className="mt-1 w-full text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                                 >
                                     <option value="">Select input</option>
                                     {filteredInputs.map((input) => (
-                                        <option key={input} value={input}>
-                                            {input}
+                                        <option key={input.variable_id} value={input.variable_id}>
+                                            {input.name}
                                         </option>
                                     ))}
                                 </select>
@@ -102,14 +106,14 @@ export default function Step({
                             <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                                 <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h5>
                                 <select
-                                    value={step.outputs[0] || ''}
+                                    value={step.outputs[0]?.variable_id || ''}
                                     onChange={handleOutputSelect}
                                     className="mt-1 w-full text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                                 >
                                     <option value="">Select output</option>
                                     {step.outputs.map((output) => (
-                                        <option key={output} value={output}>
-                                            {output}
+                                        <option key={output.variable_id} value={output.variable_id}>
+                                            {output.name}
                                         </option>
                                     ))}
                                 </select>

@@ -1,4 +1,4 @@
-import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult, Stage, Step } from "../types";
+import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult, Stage, Step, WorkflowVariable } from "../types";
 import { v4 as uuidv4 } from 'uuid';
 
 interface DataFromLine {
@@ -63,7 +63,8 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
         description: `Workflow for ${proposal.title}`,
         status: 'pending' as Status,
         stages: [],
-        assets: [],
+        inputs: [],
+        outputs: [],
         createdAt: now,
         updatedAt: now
     };
@@ -76,7 +77,6 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
         goal: proposal.goal,
         status: 'ready' as Status,
         workflow: emptyWorkflow,
-        assets: [],
         inputs: proposal.inputs,
         resources: proposal.resources || [],
         outputs: proposal.outputs,
@@ -87,12 +87,12 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
     };
 }
 
-export function getAvailableInputs(workflow: Workflow, currentStageId: string): string[] {
-    const inputs = new Set<string>();
+export function getAvailableInputs(workflow: Workflow, currentStageId: string): WorkflowVariable[] {
+    const inputs: WorkflowVariable[] = [];
 
     // Add workflow inputs if they exist
     if (workflow.inputs) {
-        workflow.inputs.forEach(input => inputs.add(input));
+        inputs.push(...workflow.inputs);
     }
 
     // Add outputs from previous steps
@@ -101,19 +101,19 @@ export function getAvailableInputs(workflow: Workflow, currentStageId: string): 
         workflow.stages.slice(0, currentStageIndex).forEach(prevStage => {
             prevStage.steps.forEach(step => {
                 if (step.outputs) {
-                    step.outputs.forEach(output => inputs.add(output));
+                    inputs.push(...step.outputs);
                 }
             });
         });
     }
 
-    return Array.from(inputs);
+    return inputs;
 }
 
-export function getFilteredInputs(availableInputs: string[], toolInputTypes: string[]): string[] {
+export function getFilteredInputs(availableInputs: WorkflowVariable[], toolInputTypes: string[]): WorkflowVariable[] {
     // TODO: Implement proper type matching logic based on your schema types
     // This is a placeholder - you'll need to implement the actual type matching
     return availableInputs.filter(input => {
-        return toolInputTypes.some(type => type === 'string'); // Simplified for now
+        return toolInputTypes.some(type => type === input.schema.type);
     });
 } 

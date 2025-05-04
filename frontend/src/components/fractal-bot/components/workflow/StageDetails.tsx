@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Stage, Step, Tool } from '../../types';
+import type { Stage, Step, Tool, WorkflowVariable } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { Plus } from 'lucide-react';
 import StepComponent from './Step';
@@ -17,6 +17,7 @@ const getNewStep = (stage: Stage) => {
         description: '',
         status: 'pending',
         type: 'atomic',
+        tool_id: '',
         assets: { inputs: [], outputs: [] },
         inputs: [],
         outputs: [],
@@ -59,11 +60,11 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         updateStepTool(stage.id, targetStep.id, selectedTool);
     };
 
-    const handleInputSelect = (targetStep: Step, input: string) => {
+    const handleInputSelect = (targetStep: Step, input: WorkflowVariable) => {
         updateStepInput(stage.id, targetStep.id, input);
     };
 
-    const handleOutputSelect = (targetStep: Step, output: string) => {
+    const handleOutputSelect = (targetStep: Step, output: WorkflowVariable) => {
         updateStepOutput(stage.id, targetStep.id, output);
     };
 
@@ -98,9 +99,9 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                     <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
                         <ul className="mt-1 space-y-0.5">
-                            {stage.inputs.slice(0, 3).map((input: string) => (
-                                <li key={input} className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                                    {input}
+                            {stage.inputs.slice(0, 3).map((input: WorkflowVariable) => (
+                                <li key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                    {input.name}
                                 </li>
                             ))}
                             {stage.inputs.length > 3 && (
@@ -113,9 +114,9 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                     <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
                         <ul className="mt-1 space-y-0.5">
-                            {stage.outputs.slice(0, 3).map((output: string) => (
-                                <li key={output} className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                                    {output}
+                            {stage.outputs.slice(0, 3).map((output: WorkflowVariable) => (
+                                <li key={output.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                    {output.name}
                                 </li>
                             ))}
                             {stage.outputs.length > 3 && (

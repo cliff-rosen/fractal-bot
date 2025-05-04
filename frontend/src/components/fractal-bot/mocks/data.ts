@@ -1,4 +1,4 @@
-import { Mission, Stage, Step, Asset, ChatMessage, Workspace, Workflow, WorkspaceState } from '../types/index';
+import { Mission, Stage, Step, Asset, ChatMessage, Workspace, Workflow, WorkspaceState, Tool, WorkflowVariable } from '../types/index';
 import { mockDataSnapshot0 } from './mockDataSnapshot0';
 import { mockDataSnapshot1 } from './mockDataSnapshot1';
 import { mockDataSnapshot2 } from './mockDataSnapshot2';
@@ -60,130 +60,190 @@ export const mockAssets: Asset[] = [
     }
 ];
 
-export const mockSteps: Step[] = [
+export const mockTools: Tool[] = [
     {
-        id: 'step-1-1',
-        name: 'Query Database',
-        description: 'Fetch customer feedback data from the database',
-        status: 'completed',
-        assets: {
-            inputs: [],
-            outputs: ['asset-1']
-        },
-        tool: {
-            name: 'DatabaseQueryTool',
-            configuration: { query: 'SELECT * FROM feedback' }
-        },
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T01:00:00Z'
+        id: 'tool1',
+        name: 'Search Tool',
+        description: 'Search for information',
+        category: 'search',
+        inputs: [{
+            variable_id: 'query',
+            name: 'query',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'Search query'
+            },
+            io_type: 'input',
+            required: true
+        }],
+        outputs: [{
+            variable_id: 'results',
+            name: 'results',
+            schema: {
+                type: 'object',
+                is_array: true,
+                description: 'Search results'
+            },
+            io_type: 'output'
+        }]
     },
     {
-        id: 'step-1-2',
-        name: 'Filter Results',
-        description: 'Filter relevant feedback entries',
-        status: 'completed',
-        assets: {
-            inputs: ['asset-1'],
-            outputs: ['asset-1']
-        },
-        tool: {
-            name: 'DataFilterTool',
-            configuration: { criteria: 'relevance > 0.8' }
-        },
-        createdAt: '2024-01-01T01:00:00Z',
-        updatedAt: '2024-01-01T02:00:00Z'
+        id: 'tool2',
+        name: 'File Tool',
+        description: 'File operations',
+        category: 'file',
+        inputs: [{
+            variable_id: 'file',
+            name: 'file',
+            schema: {
+                type: 'file',
+                is_array: false,
+                description: 'File to process'
+            },
+            io_type: 'input',
+            required: true
+        }],
+        outputs: [{
+            variable_id: 'processed_file',
+            name: 'processed_file',
+            schema: {
+                type: 'file',
+                is_array: false,
+                description: 'Processed file'
+            },
+            io_type: 'output'
+        }]
+    }
+];
+
+export const mockSteps: Step[] = [
+    {
+        id: 'step1',
+        name: 'Search Step',
+        description: 'Search for information',
+        status: 'pending',
+        type: 'atomic',
+        tool: mockTools[0],
+        inputs: [{
+            variable_id: 'search_query',
+            name: 'search_query',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'Search query'
+            },
+            io_type: 'input',
+            required: true
+        }],
+        outputs: [{
+            variable_id: 'search_results',
+            name: 'search_results',
+            schema: {
+                type: 'object',
+                is_array: true,
+                description: 'Search results'
+            },
+            io_type: 'output'
+        }],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: 'step2',
+        name: 'File Step',
+        description: 'Process file',
+        status: 'pending',
+        type: 'atomic',
+        tool: mockTools[1],
+        inputs: [{
+            variable_id: 'input_file',
+            name: 'input_file',
+            schema: {
+                type: 'file',
+                is_array: false,
+                description: 'File to process'
+            },
+            io_type: 'input',
+            required: true
+        }],
+        outputs: [{
+            variable_id: 'output_file',
+            name: 'output_file',
+            schema: {
+                type: 'file',
+                is_array: false,
+                description: 'Processed file'
+            },
+            io_type: 'output'
+        }],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
     }
 ];
 
 export const mockStages: Stage[] = [
     {
-        id: 'stage-1',
-        name: 'Search',
-        description: 'Search and filter customer feedback',
-        status: 'completed',
-        steps: mockSteps.slice(0, 2),
-        assets: {
-            inputs: [],
-            outputs: ['asset-1']
-        },
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T02:00:00Z'
-    },
-    {
-        id: 'stage-2',
-        name: 'Extract',
-        description: 'Extract and analyze feedback data',
-        status: 'current',
-        steps: [
-            {
-                id: 'step-2-1',
-                name: 'Parse Data',
-                description: 'Parse the feedback data',
-                status: 'completed',
-                assets: {
-                    inputs: ['asset-1'],
-                    outputs: ['asset-1']
-                },
-                tool: {
-                    name: 'DataParserTool',
-                    configuration: { format: 'json' }
-                },
-                createdAt: '2024-01-02T00:00:00Z',
-                updatedAt: '2024-01-02T01:00:00Z'
-            },
-            {
-                id: 'step-2-2',
-                name: 'Validate Format',
-                description: 'Validate the parsed data',
-                status: 'current',
-                assets: {
-                    inputs: ['asset-1'],
-                    outputs: ['asset-1']
-                },
-                tool: {
-                    name: 'DataValidatorTool',
-                    configuration: { schema: 'feedback_schema' }
-                },
-                createdAt: '2024-01-02T01:00:00Z',
-                updatedAt: '2024-01-02T02:00:00Z'
-            }
-        ],
-        assets: {
-            inputs: ['asset-1'],
-            outputs: ['asset-1']
-        },
-        createdAt: '2024-01-02T00:00:00Z',
-        updatedAt: '2024-01-02T02:00:00Z'
-    },
-    {
-        id: 'stage-3',
-        name: 'Generate',
-        description: 'Generate insights from the analyzed data',
+        id: 'stage1',
+        name: 'Search Stage',
+        description: 'Stage for searching',
         status: 'pending',
-        steps: [
-            {
-                id: 'step-3-1',
-                name: 'Generate Insights',
-                description: 'Generate key insights from the data',
-                status: 'pending',
-                assets: {
-                    inputs: ['asset-1'],
-                    outputs: ['asset-2']
-                },
-                tool: {
-                    name: 'InsightGeneratorTool',
-                    configuration: { threshold: 0.7 }
-                },
-                createdAt: '2024-01-03T00:00:00Z',
-                updatedAt: '2024-01-03T00:00:00Z'
-            }
-        ],
-        assets: {
-            inputs: ['asset-1'],
-            outputs: ['asset-2']
-        },
-        createdAt: '2024-01-03T00:00:00Z',
-        updatedAt: '2024-01-03T00:00:00Z'
+        steps: [mockSteps[0]],
+        inputs: [{
+            variable_id: 'stage_query',
+            name: 'stage_query',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'Stage search query'
+            },
+            io_type: 'input',
+            required: true
+        }],
+        outputs: [{
+            variable_id: 'stage_results',
+            name: 'stage_results',
+            schema: {
+                type: 'object',
+                is_array: true,
+                description: 'Stage search results'
+            },
+            io_type: 'output'
+        }],
+        success_criteria: ['Found relevant results'],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: 'stage2',
+        name: 'File Stage',
+        description: 'Stage for file processing',
+        status: 'pending',
+        steps: [mockSteps[1]],
+        inputs: [{
+            variable_id: 'stage_file',
+            name: 'stage_file',
+            schema: {
+                type: 'file',
+                is_array: false,
+                description: 'Stage input file'
+            },
+            io_type: 'input',
+            required: true
+        }],
+        outputs: [{
+            variable_id: 'stage_processed_file',
+            name: 'stage_processed_file',
+            schema: {
+                type: 'file',
+                is_array: false,
+                description: 'Stage processed file'
+            },
+            io_type: 'output'
+        }],
+        success_criteria: ['File processed successfully'],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
     }
 ];
 

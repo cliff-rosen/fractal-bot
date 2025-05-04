@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult, Step } from '@/components/fractal-bot/types/index';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult, Step, WorkflowVariable } from '@/components/fractal-bot/types/index';
 import { assetsTemplate, missionExample, workflowExample, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from '@/components/fractal-bot/types/type-defaults';
 import { botApi } from '@/lib/api/botApi';
 import { Message, MessageRole } from '@/types/message';
@@ -43,8 +43,8 @@ type FractalBotAction =
     | { type: 'DELETE_STEP'; payload: { stageId: string; stepId: string } }
     | { type: 'UPDATE_STEP_TYPE'; payload: { stageId: string; stepId: string; type: 'atomic' | 'composite' } }
     | { type: 'UPDATE_STEP_TOOL'; payload: { stageId: string; stepId: string; tool: Tool } }
-    | { type: 'UPDATE_STEP_INPUT'; payload: { stageId: string; stepId: string; input: string } }
-    | { type: 'UPDATE_STEP_OUTPUT'; payload: { stageId: string; stepId: string; output: string } };
+    | { type: 'UPDATE_STEP_INPUT'; payload: { stageId: string; stepId: string; input: WorkflowVariable } }
+    | { type: 'UPDATE_STEP_OUTPUT'; payload: { stageId: string; stepId: string; output: WorkflowVariable } };
 
 // Initial state
 const initialState: FractalBotState = {
@@ -101,8 +101,8 @@ const FractalBotContext = createContext<{
     deleteStep: (stageId: string, stepId: string) => void;
     updateStepType: (stageId: string, stepId: string, type: 'atomic' | 'composite') => void;
     updateStepTool: (stageId: string, stepId: string, tool: Tool) => void;
-    updateStepInput: (stageId: string, stepId: string, input: string) => void;
-    updateStepOutput: (stageId: string, stepId: string, output: string) => void;
+    updateStepInput: (stageId: string, stepId: string, input: WorkflowVariable) => void;
+    updateStepOutput: (stageId: string, stepId: string, output: WorkflowVariable) => void;
 } | undefined>(undefined);
 
 // Reducer function
@@ -674,11 +674,11 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'UPDATE_STEP_TOOL', payload: { stageId, stepId, tool } });
     }, []);
 
-    const updateStepInput = useCallback((stageId: string, stepId: string, input: string) => {
+    const updateStepInput = useCallback((stageId: string, stepId: string, input: WorkflowVariable) => {
         dispatch({ type: 'UPDATE_STEP_INPUT', payload: { stageId, stepId, input } });
     }, []);
 
-    const updateStepOutput = useCallback((stageId: string, stepId: string, output: string) => {
+    const updateStepOutput = useCallback((stageId: string, stepId: string, output: WorkflowVariable) => {
         dispatch({ type: 'UPDATE_STEP_OUTPUT', payload: { stageId, stepId, output } });
     }, []);
 

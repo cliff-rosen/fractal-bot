@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { LayoutGrid, List } from 'lucide-react';
+import { WorkflowVariable } from '@/components/fractal-bot/types/index';
 
 interface MissionProps {
     className?: string;
@@ -104,10 +105,10 @@ export default function Mission({
                                     <div>
                                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Required Inputs</h4>
                                         <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                            {mission.inputs.map((input: string) => (
-                                                <li key={input} className="flex items-center">
+                                            {mission.inputs.map((input: WorkflowVariable) => (
+                                                <li key={input.variable_id} className="flex items-center">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                                    {input}
+                                                    {input.name}
                                                 </li>
                                             ))}
                                         </ul>
@@ -129,10 +130,10 @@ export default function Mission({
                             <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
                                 <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
                                 <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                    {mission.outputs.map((output: string) => (
-                                        <li key={output} className="flex items-center">
+                                    {mission.outputs.map((output: WorkflowVariable) => (
+                                        <li key={output.variable_id} className="flex items-center">
                                             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                            {output}
+                                            {output.name}
                                         </li>
                                     ))}
                                 </ul>
@@ -170,9 +171,9 @@ export default function Mission({
                         <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
                             <ul className="mt-1 space-y-0.5">
-                                {mission.inputs.slice(0, 3).map((input: string) => (
-                                    <li key={input} className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                                        {input}
+                                {mission.inputs.slice(0, 3).map((input: WorkflowVariable) => (
+                                    <li key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                        {input.name}
                                     </li>
                                 ))}
                                 {mission.inputs.length > 3 && (
@@ -185,9 +186,9 @@ export default function Mission({
                         <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
                             <ul className="mt-1 space-y-0.5">
-                                {mission.outputs.slice(0, 3).map((output: string) => (
-                                    <li key={output} className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                                        {output}
+                                {mission.outputs.slice(0, 3).map((output: WorkflowVariable) => (
+                                    <li key={output.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                        {output.name}
                                     </li>
                                 ))}
                                 {mission.outputs.length > 3 && (
