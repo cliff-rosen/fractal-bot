@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import type { Stage, Step } from '../../types/index';
-import { getStatusClass } from './types';
 import type { WorkspaceState } from '../../types/index';
-import StepRenderer from './StepRenderer';
 
 interface FullWorkflowProps {
     className?: string;
@@ -47,7 +45,7 @@ export default function FullWorkflow({ className = '', stages, workspaceState, o
                                 className={`w-5 h-5 mr-2 transform transition-transform text-gray-400 dark:text-gray-500 ${expandedStages.includes(stage.id) ? 'rotate-90' : ''
                                     }`}
                             />
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${getStatusClass(stage.status)} dark:bg-opacity-20`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium } dark:bg-opacity-20`}>
                                 {stage.id.split('-')[1]}
                             </div>
                             <span className="ml-2 font-medium text-gray-900 dark:text-gray-200">{stage.name}</span>
@@ -67,32 +65,12 @@ export default function FullWorkflow({ className = '', stages, workspaceState, o
                                 <div className="grid grid-cols-2 gap-4 p-3 pl-8 border-t border-gray-100 dark:border-gray-700">
                                     <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
                                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Inputs</h4>
-                                        {stage.inputs && stage.inputs.length > 0 ? (
-                                            <ul className="space-y-1">
-                                                {stage.inputs.map((input) => (
-                                                    <li key={input} className="text-sm text-gray-600 dark:text-gray-300">
-                                                        {input}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm text-gray-400 dark:text-gray-500">No inputs</p>
-                                        )}
+                                        <p className="text-sm text-gray-400 dark:text-gray-500">inputs</p>
                                     </div>
 
                                     <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
                                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Outputs</h4>
-                                        {stage.outputs && stage.outputs.length > 0 ? (
-                                            <ul className="space-y-1">
-                                                {stage.outputs.map((output) => (
-                                                    <li key={output} className="text-sm text-gray-600 dark:text-gray-300">
-                                                        {output}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm text-gray-400 dark:text-gray-500">No outputs</p>
-                                        )}
+                                        <p className="text-sm text-gray-400 dark:text-gray-500">outputs</p>
                                     </div>
                                 </div>
 
@@ -100,12 +78,9 @@ export default function FullWorkflow({ className = '', stages, workspaceState, o
                                 {stage.steps && stage.steps.length > 0 && (
                                     <div className="border-t border-gray-100 dark:border-gray-700 p-3 pl-8">
                                         {stage.steps.map((step) => (
-                                            <StepRenderer
-                                                key={step.id}
-                                                step={step}
-                                                isCurrent={workspaceState.currentStepPath?.includes(step.id)}
-                                                onStepClick={onStepClick}
-                                            />
+                                            <div key={step.id}>
+                                                <p>{step.name}</p>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
