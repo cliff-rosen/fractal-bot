@@ -252,6 +252,7 @@ export type ChatMessage = {
         stageId?: string;
         stepId?: string;
         assetId?: string;
+        type?: 'status' | 'error' | 'info';
     };
 }
 

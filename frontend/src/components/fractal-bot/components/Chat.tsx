@@ -70,10 +70,17 @@ export default function Chat({ messages, onNewMessage, streamingMessage }: ChatP
                         <div
                             className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
                                 ? 'bg-blue-500 text-white'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                                : message.role === 'system'
+                                    ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-500'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                                 }`}
                         >
                             {message.content}
+                            {message.metadata?.type && (
+                                <div className="text-xs mt-1 opacity-75">
+                                    {message.metadata.type}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

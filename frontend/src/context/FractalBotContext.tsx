@@ -421,9 +421,25 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
     const addStatusRecord = useCallback((status: string) => {
         console.log(status);
+        // Add to status history
         dispatch({
             type: 'SET_STATUS_HISTORY',
             payload: (prevState: FractalBotState) => [...prevState.statusHistory, status]
+        });
+
+        // Add to chat history as a system message
+        const statusMessage: ChatMessage = {
+            id: Date.now().toString(),
+            role: 'system',
+            content: status,
+            timestamp: new Date().toISOString(),
+            metadata: {
+                type: 'status'
+            }
+        };
+        dispatch({
+            type: 'SET_MESSAGES',
+            payload: (prevState: FractalBotState) => [...prevState.currentMessages, statusMessage]
         });
     }, []);
 
