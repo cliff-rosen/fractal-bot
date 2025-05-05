@@ -97,7 +97,10 @@ export default function FractalBot() {
                   />
                 </div>
                 <div className="h-1/2 overflow-y-auto border-t dark:border-gray-700 mt-2">
-                  <WorkflowVariableBrowser stages={currentMission?.workflow?.stages || []} />
+                  <WorkflowVariableBrowser
+                    stages={currentMission?.workflow?.stages || []}
+                    mission={currentMission}
+                  />
                 </div>
 
                 {/* Collapse Button */}

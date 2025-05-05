@@ -80,6 +80,7 @@ export interface WorkflowVariable {
     required?: boolean;
     status: VariableStatus;  // Current status of the variable
     error_message?: string;  // Optional error message when status is 'error'
+    createdBy: string;       // ID of the node that created this variable
 }
 
 // Common status types
@@ -176,83 +177,82 @@ export type Asset = {
     version: number;
 }
 
-// Step types
+// Variable container at each level
+export interface VariableContainer {
+    variables: WorkflowVariable[];  // The actual variables stored at this level
+    createdBy: string;             // ID of the node that created these variables
+}
+
+// Node-level variable management
+export interface NodeVariables {
+    container: VariableContainer;   // Container for variables created by this node's children
+    availableInputs: string[];     // IDs of variables available as inputs to this node
+    usedInputs: string[];          // IDs of variables actually used by this node
+}
+
+// Updated Step interface
 export interface Step {
     id: string;
     name: string;
     description: string;
     tool_id: string;
-    inputs: WorkflowVariable[];
-    outputs: WorkflowVariable[];
-    inputMappings: VariableMapping[];  // Maps inputs to tool parameters
-    outputMappings: VariableMapping[]; // Maps tool outputs to step outputs
-    substeps?: Step[];
+    type?: 'atomic' | 'composite';
     status: StepStatus;
     assets: Record<string, string[]>;
     createdAt: string;
     updatedAt: string;
-    type?: 'atomic' | 'composite';
-    tool?: Tool;
     isSubstep?: boolean;
+
+    // Variable management
+    variables: NodeVariables;
+
+    // Mappings
+    inputMappings: VariableMapping[];  // Maps available inputs to tool parameters
+    outputMappings: VariableMapping[]; // Maps tool outputs to new variables
+
+    // Substeps
+    substeps?: Step[];
 }
 
-// Helper function to create a new step with default values
-export function createStep(overrides: Partial<Step> = {}): Step {
-    return {
-        id: uuidv4(),
-        name: '',
-        description: '',
-        tool_id: '',
-        inputs: [],
-        outputs: [],
-        inputMappings: [],
-        outputMappings: [],
-        status: 'unresolved',
-        assets: {},
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        type: 'atomic',
-        ...overrides
-    };
-}
-
-// Stage types
+// Updated Stage interface
 export interface Stage {
     id: string;
     name: string;
     description: string;
-    steps: Step[];
-    inputs: WorkflowVariable[];
-    outputs: WorkflowVariable[];
     status: string;
+    steps: Step[];
     success_criteria: string[];
     createdAt: string;
     updatedAt: string;
+
+    // Variable management
+    variables: NodeVariables;
 }
 
-// Workflow types
+// Updated Workflow interface
 export interface Workflow {
     id: string;
     name: string;
     description: string;
     status: string;
     stages: Stage[];
-    inputs: WorkflowVariable[];
-    outputs: WorkflowVariable[];
     createdAt: string;
     updatedAt: string;
+
+    // Variable management
+    variables: NodeVariables;
 }
 
-// Mission types
+// Updated Mission interface
 export interface Mission {
     id: string;
     title: string;
     goal: string;
     status: string;
     workflow: Workflow;
-    inputs: WorkflowVariable[];
-    resources: string[];  // General resources needed but not specific data objects
-    outputs: WorkflowVariable[];
+    inputs: WorkflowVariable[];  // Initial inputs
+    outputs: WorkflowVariable[]; // Final outputs
+    resources: string[];
     success_criteria: string[];
     selectedTools: Tool[];
     createdAt: string;
@@ -452,4 +452,38 @@ export function isStepReady(step: Step): boolean {
     }
 
     return false;
+}
+
+// Helper function to create a new variable
+export function createWorkflowVariable(
+    name: string,
+    schema: Schema,
+    io_type: 'input' | 'output' | 'evaluation',
+    createdBy: string
+): WorkflowVariable {
+    return {
+        variable_id: uuidv4(),
+        name,
+        schema,
+        io_type,
+        status: 'pending',
+        createdBy
+    };
+}
+
+// Helper function to create a new variable container
+export function createVariableContainer(createdBy: string): VariableContainer {
+    return {
+        variables: [],
+        createdBy
+    };
+}
+
+// Helper function to create new node variables
+export function createNodeVariables(nodeId: string): NodeVariables {
+    return {
+        container: createVariableContainer(nodeId),
+        availableInputs: [],
+        usedInputs: []
+    };
 }
