@@ -1,5 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 
+
+// SCHEMA AND VARIABLE TYPES
+
 // Basic type definitions
 export type PrimitiveType = 'string' | 'number' | 'boolean';
 export type ComplexType = 'object' | 'file';
@@ -83,6 +86,30 @@ export interface WorkflowVariable {
     createdBy: string;       // ID of the node that created this variable
 }
 
+// Mapping target can be either a variable or a parameter
+export interface VariableTarget {
+    type: 'variable';
+    variableId: string;  // Just store the ID
+}
+
+export interface ParameterTarget {
+    type: 'parameter';
+    name: string;
+    schema: Schema;
+    required?: boolean;
+}
+
+export type MappingTarget = VariableTarget | ParameterTarget;
+
+// Updated mapping interface
+export interface VariableMapping {
+    sourceVariableId: string;  // Just store the ID
+    target: MappingTarget;     // Either a variable ID or parameter
+    isParentOutput?: boolean;  // Whether this maps to a parent's output
+}
+
+
+// PRIMARY TYPES FOR TASK EXECUTION
 // Common status types
 export type Status = 'completed' | 'current' | 'pending' | 'failed' | 'in_progress' | 'ready';
 export type AssetStatus = 'pendingCompletion' | 'pendingApproval' | 'ready' | 'archived' | 'error';
@@ -96,122 +123,41 @@ export type StepConfigState = 'unconfigured' | 'configuring' | 'resolved' | 'inp
 // Step status type
 export type StepStatus = 'unresolved' | 'pending_inputs_ready' | 'ready' | 'in_progress' | 'completed' | 'failed';
 
-// Workspace types
-export type WorkspaceType = 'proposedMission' | 'proposedWorkflowDesign' | 'workflowStepStatus' | 'stepDetails' | 'thinking' | 'progressUpdate' | 'text';
 
-export type ProgressUpdate = {
-    id: string;
-    timestamp: string;
-    title: string;
-    details: string;
-    status?: Status;
-    progress?: number; // Optional progress percentage (0-100)
-    icon?: string; // Optional icon name
-};
-
-export type Workspace = {
-    id: string;
-    type: WorkspaceType;
-    title: string;
-    status: Status;
-    content?: {
-        text?: string;
-        step?: Step;
-        mission?: Mission;
-        workflow?: Workflow;
-        assets?: Asset[];
-        progressUpdates?: ProgressUpdate[]; // Array of progress updates
-    };
-    actionButtons?: {
-        label: string;
-        onClick: () => void;
-        variant?: 'primary' | 'secondary' | 'danger';
-        disabled?: boolean;
-    }[];
-    createdAt: string;
-    updatedAt: string;
-}
-
-export type StageGeneratorResult = {
-    stages: Stage[];
-    inputs: WorkflowVariable[];
-    outputs: WorkflowVariable[];
-    success_criteria: string[];
-    explanation: string;
-}
-
-export interface SchemaType {
-    type: 'string' | 'file' | 'object';
-    is_array: boolean;
+// Tool input/output definition
+export interface ToolIO {
     name: string;
-    description: string;
+    description?: string;
+    schema: Schema;
+    required?: boolean;
 }
 
-export interface ToolStep {
-    name: string;
-    description: string;
-    tool_id: string;
-    inputs: WorkflowVariable[];
-    outputs: WorkflowVariable[];
-}
-
+// Updated Tool interface
 export interface Tool {
     id: string;
     name: string;
     description: string;
     category: string;
-    inputs: WorkflowVariable[];
-    outputs: WorkflowVariable[];
-    steps?: ToolStep[];
+    inputs: ToolIO[];    // Just the schema definitions
+    outputs: ToolIO[];   // Just the schema definitions
 }
 
-// Asset types
-export type Asset = {
-    id: string;
-    name: string;
-    type: string;
-    status: AssetStatus;
-    content: any;
-    createdAt: string;
-    updatedAt: string;
-    version: number;
-}
-
-// Variable container at each level
-export interface VariableContainer {
-    variables: WorkflowVariable[];  // The actual variables stored at this level
-    createdBy: string;             // ID of the node that created these variables
-}
-
-// Node-level variable management
-export interface NodeVariables {
-    container: VariableContainer;   // Container for variables created by this node's children
-    availableInputs: string[];     // IDs of variables available as inputs to this node
-    usedInputs: string[];          // IDs of variables actually used by this node
-}
 
 // Updated Step interface
 export interface Step {
     id: string;
     name: string;
     description: string;
-    tool_id: string;
     type?: 'atomic' | 'composite';
-    status: StepStatus;
-    assets: Record<string, string[]>;
-    createdAt: string;
-    updatedAt: string;
-    isSubstep?: boolean;
-
-    // Variable management
-    variables: NodeVariables;
-
-    // Mappings
+    childVariables: WorkflowVariable[];
     inputMappings: VariableMapping[];  // Maps available inputs to tool parameters
     outputMappings: VariableMapping[]; // Maps tool outputs to new variables
-
-    // Substeps
+    tool_id: string;
     substeps?: Step[];
+    isSubstep?: boolean;
+    status: StepStatus;
+    createdAt: string;
+    updatedAt: string;
 }
 
 // Updated Stage interface
@@ -221,12 +167,12 @@ export interface Stage {
     description: string;
     status: string;
     steps: Step[];
+    childVariables: WorkflowVariable[];
+    inputMappings: VariableMapping[];  // Maps available inputs to stage inputs
+    outputMappings: VariableMapping[]; // Maps step outputs to stage outputs
     success_criteria: string[];
     createdAt: string;
     updatedAt: string;
-
-    // Variable management
-    variables: NodeVariables;
 }
 
 // Updated Workflow interface
@@ -236,11 +182,11 @@ export interface Workflow {
     description: string;
     status: string;
     stages: Stage[];
+    childVariables: WorkflowVariable[];
+    inputMappings: VariableMapping[];  // Maps mission inputs to workflow inputs
+    outputMappings: VariableMapping[]; // Maps stage outputs to workflow outputs
     createdAt: string;
     updatedAt: string;
-
-    // Variable management
-    variables: NodeVariables;
 }
 
 // Updated Mission interface
@@ -271,57 +217,14 @@ export type MissionProposal = {
     missing_info_explanation: string;
 }
 
-// Chat message types
-export type DataFromLine = {
-    token: string | null;
-    status: string | null;
-    mission_proposal: MissionProposal | null;
-    error: string | null;
-    message: string | null;
-}
-
-export type ChatMessage = {
-    id: string;
-    role: 'user' | 'assistant' | 'system';
-    content: string;
-    timestamp: string;
-    metadata?: {
-        missionId?: string;
-        stageId?: string;
-        stepId?: string;
-        assetId?: string;
-        type?: 'status' | 'error' | 'info';
-    };
-}
-
-// Workspace types
-export type WorkspaceState = {
-    currentMissionId: string | null;
-    currentStageId: string | null;
-    // Array of step IDs representing the path through the step hierarchy
-    // First element is the top-level step, last element is the current step
-    currentStepPath: string[];
-    viewMode: 'compact' | 'expanded';
-}
-
-export interface ItemView {
-    title: string;
-    type: 'tools' | 'assets' | 'proposedMission' | 'proposedWorkflowDesign' | 'thinking' | 'progressUpdate' | 'text' | 'none';
-    isOpen: boolean;
-}
-
 // Schema matching rules
 export interface SchemaMatch {
     isMatch: boolean;
     reason?: string;
 }
 
-// Input/Output mapping
-export interface VariableMapping {
-    sourceVariable: WorkflowVariable;
-    targetVariable: WorkflowVariable;
-    isParentOutput: boolean;  // Whether this maps to a parent's output
-}
+
+// SCHEMA AND VARIABLE SUPPORT FUNCTIONS
 
 // Helper function to check if schemas match
 export function doSchemasMatch(source: Schema, target: Schema): SchemaMatch {
@@ -471,19 +374,108 @@ export function createWorkflowVariable(
     };
 }
 
-// Helper function to create a new variable container
-export function createVariableContainer(createdBy: string): VariableContainer {
-    return {
-        variables: [],
-        createdBy
+// NON PRIMARY TYPES
+
+// Chat message types
+export type DataFromLine = {
+    token: string | null;
+    status: string | null;
+    mission_proposal: MissionProposal | null;
+    error: string | null;
+    message: string | null;
+}
+
+export type ChatMessage = {
+    id: string;
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    timestamp: string;
+    metadata?: {
+        missionId?: string;
+        stageId?: string;
+        stepId?: string;
+        assetId?: string;
+        type?: 'status' | 'error' | 'info';
     };
 }
 
-// Helper function to create new node variables
-export function createNodeVariables(nodeId: string): NodeVariables {
-    return {
-        container: createVariableContainer(nodeId),
-        availableInputs: [],
-        usedInputs: []
-    };
+// Workspace types
+export type WorkspaceState = {
+    currentMissionId: string | null;
+    currentStageId: string | null;
+    // Array of step IDs representing the path through the step hierarchy
+    // First element is the top-level step, last element is the current step
+    currentStepPath: string[];
+    viewMode: 'compact' | 'expanded';
 }
+
+export interface ItemView {
+    title: string;
+    type: 'tools' | 'assets' | 'proposedMission' | 'proposedWorkflowDesign' | 'thinking' | 'progressUpdate' | 'text' | 'none';
+    isOpen: boolean;
+}
+
+
+// Asset types
+export type Asset = {
+    id: string;
+    name: string;
+    type: string;
+    status: AssetStatus;
+    content: any;
+    createdAt: string;
+    updatedAt: string;
+    version: number;
+}
+
+// Workspace types
+export type WorkspaceType = 'proposedMission' | 'proposedWorkflowDesign' | 'workflowStepStatus' | 'stepDetails' | 'thinking' | 'progressUpdate' | 'text';
+
+export type ProgressUpdate = {
+    id: string;
+    timestamp: string;
+    title: string;
+    details: string;
+    status?: Status;
+    progress?: number; // Optional progress percentage (0-100)
+    icon?: string; // Optional icon name
+};
+
+export type Workspace = {
+    id: string;
+    type: WorkspaceType;
+    title: string;
+    status: Status;
+    content?: {
+        text?: string;
+        step?: Step;
+        mission?: Mission;
+        workflow?: Workflow;
+        assets?: Asset[];
+        progressUpdates?: ProgressUpdate[]; // Array of progress updates
+    };
+    actionButtons?: {
+        label: string;
+        onClick: () => void;
+        variant?: 'primary' | 'secondary' | 'danger';
+        disabled?: boolean;
+    }[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type StageGeneratorResult = {
+    stages: Stage[];
+    inputs: WorkflowVariable[];
+    outputs: WorkflowVariable[];
+    success_criteria: string[];
+    explanation: string;
+}
+
+export interface SchemaType {
+    type: 'string' | 'file' | 'object';
+    is_array: boolean;
+    name: string;
+    description: string;
+}
+
