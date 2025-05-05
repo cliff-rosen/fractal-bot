@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Chat from './components/Chat';
 import Mission from './components/Mission';
 import Workflow from './components/Workflow';
-import Assets from './components/Assets';
+import WorkflowVariableBrowser from './components/WorkflowVariableBrowser';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
 import StatusHistory from './components/StatusHistory';
@@ -27,19 +27,17 @@ export default function FractalBot() {
     currentMessages,
     currentStreamingMessage,
     currentTools,
-    currentAssets,
     selectedToolIds,
     currentItemView,
-    statusHistory
+    currentMission
   } = state;
-
 
   return (
     <div className="h-screen flex flex-col">
       <div className="flex-1 min-h-0">
-        <div className="flex h-full gap-6">
+        <div className="flex h-full gap-4 px-4">
           {/* Left Chat Rail */}
-          <div key="chat-rail" className="w-1/3 h-full">
+          <div key="chat-rail" className="w-[400px] h-full flex-shrink-0">
             <Chat
               messages={currentMessages}
               streamingMessage={currentStreamingMessage}
@@ -49,7 +47,7 @@ export default function FractalBot() {
 
           {/* Main Content Area */}
           {currentItemView.isOpen ? (
-            <div key="item-view" className="w-2/3 h-full">
+            <div key="item-view" className="flex-1 h-full">
               <ItemView
                 itemView={currentItemView}
                 tools={currentTools}
@@ -60,7 +58,7 @@ export default function FractalBot() {
           ) : (
             <>
               {/* Main Content Area */}
-              <div key="main-content" className={`h-full flex flex-col ${isRightColumnCollapsed ? 'w-2/3' : 'w-5/12'}`}>
+              <div key="main-content" className={`h-full flex flex-col flex-1 ${isRightColumnCollapsed ? 'w-full' : ''}`}>
                 {/* Mission Header */}
                 <div className="mb-6 pt-4">
                   <Mission />
@@ -85,8 +83,7 @@ export default function FractalBot() {
               {/* Right Rail */}
               <div
                 key="right-rail"
-                className={`h-full overflow-hidden flex flex-col transition-all duration-300 ease-in-out ${isRightColumnCollapsed ? 'w-0' : 'w-3/12'
-                  }`}
+                className={`h-full overflow-hidden flex flex-col transition-all duration-300 ease-in-out ${isRightColumnCollapsed ? 'w-0' : 'w-[300px] flex-shrink-0'}`}
               >
                 <div className="h-1/2 overflow-y-auto">
                   <Tools
@@ -100,7 +97,7 @@ export default function FractalBot() {
                   />
                 </div>
                 <div className="h-1/2 overflow-y-auto border-t dark:border-gray-700 mt-2">
-                  <Assets assets={currentAssets} />
+                  <WorkflowVariableBrowser stages={currentMission?.workflow?.stages || []} />
                 </div>
 
                 {/* Collapse Button */}

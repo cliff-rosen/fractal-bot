@@ -235,7 +235,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The question to improve'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: 'improved_question',
@@ -245,7 +246,8 @@ export const toolsTemplate: Tool[] = [
                 is_array: false,
                 description: 'Enhanced and clarified version of the question'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }]
     },
     {
@@ -262,7 +264,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The question to retrieve information for'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: 'retrieved_info',
@@ -272,7 +275,8 @@ export const toolsTemplate: Tool[] = [
                 is_array: true,
                 description: 'List of relevant information retrieved for the question'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }],
         steps: [
             {
@@ -288,7 +292,8 @@ export const toolsTemplate: Tool[] = [
                         description: 'The question to generate a search query for'
                     },
                     io_type: 'input',
-                    required: true
+                    required: true,
+                    status: 'pending'
                 }],
                 outputs: [{
                     variable_id: 'search_query',
@@ -298,7 +303,8 @@ export const toolsTemplate: Tool[] = [
                         is_array: false,
                         description: 'Optimized search query for the question'
                     },
-                    io_type: 'output'
+                    io_type: 'output',
+                    status: 'pending'
                 }]
             },
             {
@@ -314,7 +320,8 @@ export const toolsTemplate: Tool[] = [
                         description: 'The search terms to look for on the web'
                     },
                     io_type: 'input',
-                    required: true
+                    required: true,
+                    status: 'pending'
                 }],
                 outputs: [{
                     variable_id: 'search_results',
@@ -324,7 +331,8 @@ export const toolsTemplate: Tool[] = [
                         is_array: true,
                         description: 'List of relevant web search results'
                     },
-                    io_type: 'output'
+                    io_type: 'output',
+                    status: 'pending'
                 }]
             },
             {
@@ -340,7 +348,8 @@ export const toolsTemplate: Tool[] = [
                         description: 'The search results to extract information from'
                     },
                     io_type: 'input',
-                    required: true
+                    required: true,
+                    status: 'pending'
                 }],
                 outputs: [{
                     variable_id: 'extracted_info',
@@ -350,7 +359,8 @@ export const toolsTemplate: Tool[] = [
                         is_array: true,
                         description: 'Structured information extracted from search results'
                     },
-                    io_type: 'output'
+                    io_type: 'output',
+                    status: 'pending'
                 }]
             }
         ]
@@ -367,70 +377,7 @@ export const workflowExample: Workflow = {
             id: 'stage-1',
             name: 'Data Collection',
             description: 'Gather information about colleges and programs',
-            steps: [
-                {
-                    id: 'step-1',
-                    name: 'Search for Colleges',
-                    description: 'Find colleges with dance programs',
-                    tool_id: 'web-search',
-                    inputs: [{
-                        variable_id: 'search_query',
-                        name: 'search_query',
-                        schema: {
-                            type: 'string',
-                            is_array: false,
-                            description: 'Search query for colleges with dance programs'
-                        },
-                        io_type: 'input',
-                        required: true
-                    }],
-                    outputs: [{
-                        variable_id: 'college_list',
-                        name: 'college_list',
-                        schema: {
-                            type: 'object',
-                            is_array: true,
-                            description: 'List of colleges with dance programs'
-                        },
-                        io_type: 'output'
-                    }],
-                    status: 'pending',
-                    assets: {},
-                    createdAt: '2024-03-20T10:00:00Z',
-                    updatedAt: '2024-03-20T10:00:00Z'
-                },
-                {
-                    id: 'step-2',
-                    name: 'Extract Program Details',
-                    description: 'Extract specific program information',
-                    tool_id: 'extract-info',
-                    inputs: [{
-                        variable_id: 'college_list',
-                        name: 'college_list',
-                        schema: {
-                            type: 'object',
-                            is_array: true,
-                            description: 'List of colleges to extract program details from'
-                        },
-                        io_type: 'input',
-                        required: true
-                    }],
-                    outputs: [{
-                        variable_id: 'program_details',
-                        name: 'program_details',
-                        schema: {
-                            type: 'object',
-                            is_array: true,
-                            description: 'Detailed information about dance programs'
-                        },
-                        io_type: 'output'
-                    }],
-                    status: 'pending',
-                    assets: {},
-                    createdAt: '2024-03-20T10:00:00Z',
-                    updatedAt: '2024-03-20T10:00:00Z'
-                }
-            ],
+            steps: [],
             inputs: [{
                 variable_id: 'search_query',
                 name: 'search_query',
@@ -440,7 +387,8 @@ export const workflowExample: Workflow = {
                     description: 'Search query for colleges with dance programs'
                 },
                 io_type: 'input',
-                required: true
+                required: true,
+                status: 'pending'
             }],
             outputs: [{
                 variable_id: 'program_details',
@@ -450,7 +398,8 @@ export const workflowExample: Workflow = {
                     is_array: true,
                     description: 'Detailed information about dance programs'
                 },
-                io_type: 'output'
+                io_type: 'output',
+                status: 'pending'
             }],
             status: 'pending',
             success_criteria: ['Gather information from at least 10 colleges'],
@@ -461,39 +410,7 @@ export const workflowExample: Workflow = {
             id: 'stage-2',
             name: 'Analysis',
             description: 'Analyze and compare programs',
-            steps: [
-                {
-                    id: 'step-3',
-                    name: 'Compare Programs',
-                    description: 'Compare dance programs across colleges',
-                    tool_id: 'search-kb',
-                    inputs: [{
-                        variable_id: 'program_details',
-                        name: 'program_details',
-                        schema: {
-                            type: 'object',
-                            is_array: true,
-                            description: 'Program details to compare'
-                        },
-                        io_type: 'input',
-                        required: true
-                    }],
-                    outputs: [{
-                        variable_id: 'comparison_results',
-                        name: 'comparison_results',
-                        schema: {
-                            type: 'object',
-                            is_array: true,
-                            description: 'Comparison of dance programs'
-                        },
-                        io_type: 'output'
-                    }],
-                    status: 'pending',
-                    assets: {},
-                    createdAt: '2024-03-20T10:00:00Z',
-                    updatedAt: '2024-03-20T10:00:00Z'
-                }
-            ],
+            steps: [],
             inputs: [{
                 variable_id: 'program_details',
                 name: 'program_details',
@@ -503,7 +420,8 @@ export const workflowExample: Workflow = {
                     description: 'Program details to analyze'
                 },
                 io_type: 'input',
-                required: true
+                required: true,
+                status: 'pending'
             }],
             outputs: [{
                 variable_id: 'comparison_results',
@@ -513,7 +431,8 @@ export const workflowExample: Workflow = {
                     is_array: true,
                     description: 'Analysis results of dance programs'
                 },
-                io_type: 'output'
+                io_type: 'output',
+                status: 'pending'
             }],
             status: 'pending',
             success_criteria: ['Complete comparison of all programs'],
@@ -530,7 +449,8 @@ export const workflowExample: Workflow = {
             description: 'Search query for colleges with dance programs'
         },
         io_type: 'input',
-        required: true
+        required: true,
+        status: 'pending'
     }],
     outputs: [{
         variable_id: 'comparison_results',
@@ -540,7 +460,8 @@ export const workflowExample: Workflow = {
             is_array: true,
             description: 'Analysis results of dance programs'
         },
-        io_type: 'output'
+        io_type: 'output',
+        status: 'pending'
     }],
     createdAt: '2024-03-20T10:00:00Z',
     updatedAt: '2024-03-20T10:00:00Z'
@@ -574,7 +495,8 @@ export const missionProposalTemplate: MissionProposal = {
             description: "List of potential criteria (faculty quality, facilities, alumni success)"
         },
         io_type: "input",
-        required: true
+        required: true,
+        status: 'pending'
     }, {
         variable_id: "geographic_scope",
         name: "geographic_scope",
@@ -584,7 +506,8 @@ export const missionProposalTemplate: MissionProposal = {
             description: "Geographic scope (United States)"
         },
         io_type: "input",
-        required: true
+        required: true,
+        status: 'pending'
     }],
     resources: ["College databases", "Dance program directories", "Ranking methodologies"],
     outputs: [{
@@ -595,7 +518,8 @@ export const missionProposalTemplate: MissionProposal = {
             is_array: true,
             description: "Ranked list of top 10 colleges with justification for each ranking"
         },
-        io_type: "output"
+        io_type: "output",
+        status: 'pending'
     }],
     success_criteria: ["The list includes 10 colleges", "Each college ranking is justified with data", "Criteria for ranking are consistently applied"],
     selectedTools: [{
@@ -612,7 +536,8 @@ export const missionProposalTemplate: MissionProposal = {
                 description: "The search query to find colleges offering dance programs."
             },
             io_type: "input",
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: "college_list",
@@ -622,7 +547,8 @@ export const missionProposalTemplate: MissionProposal = {
                 is_array: true,
                 description: "A list of colleges retrieved from the database."
             },
-            io_type: "output"
+            io_type: "output",
+            status: 'pending'
         }]
     }, {
         id: "tool2",
@@ -638,7 +564,8 @@ export const missionProposalTemplate: MissionProposal = {
                 description: "The list of colleges to be ranked."
             },
             io_type: "input",
-            required: true
+            required: true,
+            status: 'pending'
         }, {
             variable_id: "ranking_criteria",
             name: "ranking_criteria",
@@ -648,7 +575,8 @@ export const missionProposalTemplate: MissionProposal = {
                 description: "The criteria used to rank the colleges."
             },
             io_type: "input",
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: "ranked_college_list",
@@ -658,7 +586,8 @@ export const missionProposalTemplate: MissionProposal = {
                 is_array: true,
                 description: "A list of colleges ranked according to the specified criteria."
             },
-            io_type: "output"
+            io_type: "output",
+            status: 'pending'
         }]
     }],
     has_sufficient_info: true,
@@ -680,7 +609,8 @@ export const missionExample: Mission = {
             description: 'Search query for colleges with dance programs'
         },
         io_type: 'input',
-        required: true
+        required: true,
+        status: 'pending'
     }],
     resources: [
         'College databases',
@@ -695,7 +625,8 @@ export const missionExample: Mission = {
             is_array: true,
             description: 'Analysis results of dance programs'
         },
-        io_type: 'output'
+        io_type: 'output',
+        status: 'pending'
     }],
     success_criteria: [
         'Identify top 10 dance programs',

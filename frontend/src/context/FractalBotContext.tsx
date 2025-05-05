@@ -20,6 +20,7 @@ interface FractalBotState {
     currentItemView: ItemViewType;
     activeView: 'workspace' | 'history';
     statusHistory: string[];
+    selectedStepId: string | null;
 }
 
 // Define action types
@@ -37,6 +38,7 @@ type FractalBotAction =
     | { type: 'SET_ITEM_VIEW'; payload: ItemViewType }
     | { type: 'SET_ACTIVE_VIEW'; payload: 'workspace' | 'history' }
     | { type: 'SET_STATUS_HISTORY'; payload: string[] | ((prevState: FractalBotState) => string[]) }
+    | { type: 'SET_SELECTED_STEP'; payload: string | null }
     | { type: 'RESET_STATE' }
     | { type: 'ADD_STEP'; payload: { stageId: string; step: Step } }
     | { type: 'ADD_SUBSTEP'; payload: { stageId: string; parentStepId: string; step: Step } }
@@ -64,7 +66,8 @@ const initialState: FractalBotState = {
         isOpen: false
     },
     activeView: 'history',
-    statusHistory: []
+    statusHistory: [],
+    selectedStepId: null
 };
 
 // Create context
@@ -103,6 +106,7 @@ const FractalBotContext = createContext<{
     updateStepTool: (stageId: string, stepId: string, tool: Tool) => void;
     updateStepInput: (stageId: string, stepId: string, input: WorkflowVariable) => void;
     updateStepOutput: (stageId: string, stepId: string, output: WorkflowVariable) => void;
+    setSelectedStep: (stepId: string | null) => void;
 } | undefined>(undefined);
 
 // Reducer function
@@ -144,6 +148,8 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
                     ? action.payload(state)
                     : action.payload
             };
+        case 'SET_SELECTED_STEP':
+            return { ...state, selectedStepId: action.payload };
         case 'RESET_STATE':
             return initialState;
         case 'ADD_STEP': {
@@ -698,6 +704,10 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'UPDATE_STEP_OUTPUT', payload: { stageId, stepId, output } });
     }, []);
 
+    const setSelectedStep = useCallback((stepId: string | null) => {
+        dispatch({ type: 'SET_SELECTED_STEP', payload: stepId });
+    }, []);
+
     return (
         <FractalBotContext.Provider value={{
             state,
@@ -734,6 +744,7 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             updateStepTool,
             updateStepInput,
             updateStepOutput,
+            setSelectedStep,
         }}>
             {children}
         </FractalBotContext.Provider>

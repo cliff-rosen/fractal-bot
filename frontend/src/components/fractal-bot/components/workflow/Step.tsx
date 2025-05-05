@@ -3,6 +3,7 @@ import type { Step, Tool, WorkflowVariable, StepStatus, VariableStatus, Variable
 import { Pencil, Sparkles, Plus, Trash2, AlertCircle, CheckCircle2, Clock, Settings, ArrowRight, XCircle, HelpCircle } from 'lucide-react';
 import { getFilteredInputs, getStepStatus, getAvailableInputs } from '../../utils/utils';
 import { doSchemasMatch } from '../../types';
+import { useFractalBot } from '@/context/FractalBotContext';
 
 interface StepProps {
     step: Step;
@@ -143,6 +144,62 @@ const VariableList = ({
     );
 };
 
+// Helper function to create a new step with proper defaults
+const createNewStep = (parentStep?: Step, priorSibling?: Step, stageInputs: WorkflowVariable[] = []): Step => {
+    const newStep: Step = {
+        id: crypto.randomUUID(),
+        name: 'New Step',
+        description: '',
+        type: 'atomic',
+        tool_id: '',
+        inputs: [],
+        outputs: [],
+        inputMappings: [],
+        outputMappings: [],
+        status: 'unresolved',
+        assets: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    // Initialize inputs based on position
+    if (parentStep) {
+        if (priorSibling) {
+            // For subsequent siblings, use prior sibling's outputs
+            newStep.inputs = priorSibling.outputs.map(output => ({
+                ...output,
+                variable_id: crypto.randomUUID(),
+                io_type: 'input'
+            }));
+        } else {
+            // For first child, use parent's inputs
+            newStep.inputs = parentStep.inputs.map(input => ({
+                ...input,
+                variable_id: crypto.randomUUID(),
+                io_type: 'input'
+            }));
+        }
+    } else {
+        // For top-level steps, use stage inputs
+        newStep.inputs = stageInputs.map(input => ({
+            ...input,
+            variable_id: crypto.randomUUID(),
+            io_type: 'input'
+        }));
+    }
+
+    // Initialize outputs to parent's output
+    if (parentStep && parentStep.outputs && parentStep.outputs.length > 0) {
+        newStep.outputs = parentStep.outputs.map(output => ({
+            ...output,
+            variable_id: crypto.randomUUID(),
+            io_type: 'output'
+        }));
+    }
+
+    return newStep;
+};
+
 export default function Step({
     step,
     parentStep,
@@ -158,6 +215,8 @@ export default function Step({
     availableInputs = [],
     depth = 0
 }: StepProps) {
+    const { setSelectedStep } = useFractalBot();
+
     // Initialize mappings if they don't exist
     const stepWithMappings = useMemo(() => ({
         ...step,
@@ -173,10 +232,43 @@ export default function Step({
         return getFilteredInputs(availableInputs, [selectedTool]);
     }, [stepWithMappings.tool_id, availableTools, availableInputs]);
 
-    // Get available inputs for this step
+    // Get available inputs based on step position
     const stepAvailableInputs = useMemo(() => {
-        return getAvailableInputs(stepWithMappings, parentStep);
-    }, [stepWithMappings, parentStep]);
+        const inputs: WorkflowVariable[] = [];
+
+        // Add stage-level available inputs
+        inputs.push(...availableInputs);
+
+        // Add parent's inputs
+        if (parentStep) {
+            inputs.push(...parentStep.inputs);
+        }
+
+        // Add outputs from prior siblings
+        if (parentStep?.substeps) {
+            const currentIndex = parentStep.substeps.findIndex(s => s.id === step.id);
+            if (currentIndex > 0) {
+                for (let i = 0; i < currentIndex; i++) {
+                    const sibling = parentStep.substeps[i];
+                    inputs.push(...sibling.outputs);
+                }
+            }
+        }
+
+        return inputs;
+    }, [step.id, parentStep, availableInputs]);
+
+    // Get filtered tools based on available inputs
+    const filteredTools = useMemo(() => {
+        if (!stepAvailableInputs.length) return availableTools;
+
+        return availableTools.filter(tool => {
+            return tool.inputs.every((toolInput, index) => {
+                const availableInput = stepAvailableInputs[index];
+                return availableInput && doSchemasMatch(availableInput.schema, toolInput.schema);
+            });
+        });
+    }, [availableTools, stepAvailableInputs]);
 
     // Get step status
     const stepStatus = useMemo(() => {
@@ -185,6 +277,7 @@ export default function Step({
 
     const handleEditClick = (e: React.MouseEvent) => {
         e.stopPropagation();
+        setSelectedStep(stepWithMappings.id);
         onEditStep?.(stepWithMappings);
     };
 
@@ -219,9 +312,16 @@ export default function Step({
         onOutputSelect?.(stepWithMappings, output);
     };
 
+    const handleAddSubstep = () => {
+        // Find the last sibling to get its outputs
+        const lastSibling = stepWithMappings.substeps?.[stepWithMappings.substeps.length - 1];
+        const newStep = createNewStep(stepWithMappings, lastSibling, stepAvailableInputs);
+        onAddSubstep(newStep);
+    };
+
     return (
         <div className="w-full">
-            <div className="grid grid-cols-[100px_200px_200px_1fr_1fr_100px] gap-4 items-start">
+            <div className="grid grid-cols-[100px_200px_200px_1fr_100px] gap-4 items-start">
                 {/* Status Column */}
                 <div className="flex items-center">
                     <StepStatusDisplay status={stepStatus} />
@@ -231,73 +331,44 @@ export default function Step({
                 <div className="flex items-center gap-2 min-w-0">
                     <div style={{ marginLeft: `${depth * 20}px` }} className="flex items-center gap-2 min-w-0">
                         <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{stepWithMappings.name}</h3>
-                        {stepWithMappings.type === 'composite' && (
-                            <button
-                                onClick={() => onAddSubstep(stepWithMappings)}
-                                className="flex items-center gap-1 p-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                <Plus className="w-3 h-3" />
-                                <span>Add Substep</span>
-                            </button>
-                        )}
                     </div>
                 </div>
 
-                {/* Action Column */}
-                <div className="flex items-center gap-2">
-                    <div className="flex flex-col gap-2 w-full">
+                {/* Type Selection Column */}
+                <div className="flex items-center">
+                    <select
+                        value={stepWithMappings.type || 'atomic'}
+                        onChange={handleStepTypeChange}
+                        className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    >
+                        <option value="atomic">Atomic</option>
+                        <option value="composite">Composite</option>
+                    </select>
+                </div>
+
+                {/* Additional Space Column */}
+                <div className="flex items-center">
+                    {stepWithMappings.type === 'atomic' ? (
                         <select
-                            value={stepWithMappings.type || 'atomic'}
-                            onChange={handleStepTypeChange}
+                            value={stepWithMappings.tool_id || ''}
+                            onChange={handleToolSelect}
                             className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         >
-                            <option value="atomic">Atomic</option>
-                            <option value="composite">Composite</option>
+                            <option value="">Select a tool</option>
+                            {filteredTools.map((tool) => (
+                                <option key={tool.id} value={tool.id}>
+                                    {tool.name}
+                                </option>
+                            ))}
                         </select>
-                        {stepWithMappings.type === 'atomic' && (
-                            <select
-                                value={stepWithMappings.tool_id || ''}
-                                onChange={handleToolSelect}
-                                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                            >
-                                <option value="">Select a tool</option>
-                                {availableTools.map((tool) => (
-                                    <option key={tool.id} value={tool.id}>
-                                        {tool.name}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-                    </div>
-                </div>
-
-                {/* Inputs Column */}
-                <div className="flex items-start min-w-[200px]">
-                    {stepWithMappings.type === 'atomic' && stepWithMappings.tool_id && (
-                        <div className="w-full bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
-                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Inputs</h4>
-                            <VariableList
-                                variables={stepWithMappings.inputs}
-                                onSelect={handleInputSelect}
-                                availableVariables={filteredInputs}
-                                isInput={true}
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* Outputs Column */}
-                <div className="flex items-start min-w-[200px]">
-                    {stepWithMappings.type === 'atomic' && stepWithMappings.tool_id && (
-                        <div className="w-full bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
-                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Outputs</h4>
-                            <VariableList
-                                variables={stepWithMappings.outputs}
-                                onSelect={handleOutputSelect}
-                                availableVariables={stepAvailableInputs}
-                                isInput={false}
-                            />
-                        </div>
+                    ) : (
+                        <button
+                            onClick={handleAddSubstep}
+                            className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
+                        >
+                            <Plus className="w-3 h-3" />
+                            <span>Add Substep</span>
+                        </button>
                     )}
                 </div>
 
@@ -321,6 +392,28 @@ export default function Step({
                     >
                         <Trash2 className="w-3 h-3" />
                     </button>
+                </div>
+            </div>
+
+            {/* Inputs and Outputs - Always shown */}
+            <div className="mt-2 grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Inputs</h4>
+                    <VariableList
+                        variables={stepWithMappings.inputs}
+                        onSelect={handleInputSelect}
+                        availableVariables={stepAvailableInputs}
+                        isInput={true}
+                    />
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Outputs</h4>
+                    <VariableList
+                        variables={stepWithMappings.outputs}
+                        onSelect={handleOutputSelect}
+                        availableVariables={stepAvailableInputs}
+                        isInput={false}
+                    />
                 </div>
             </div>
 

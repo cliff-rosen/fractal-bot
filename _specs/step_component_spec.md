@@ -123,24 +123,27 @@
    - `ready`: Value is available and valid
    - `error`: Failed to generate or invalid value
 
-## Input/Output Rules
+## Variable Rules
 
-### Input Rules
+### Input Variables
 1. Available Inputs:
    - Parent step's inputs
    - All prior sibling outputs
    - These options are fixed based on step's position
+   - Shows readiness status for each option
 
-2. Tool Selection:
+2. Tool Selection Impact:
    - Tools are filtered based on available inputs
    - Only tools whose input requirements can be satisfied by available inputs are shown
    - Tool selection may further filter down available inputs to those matching tool requirements
+   - Must respect schema compatibility with selected tool
 
-### Output Rules
+### Output Variables
 1. Output Options:
    - Use parent's output
    - Create new output
    - Only these two choices are available
+   - Shows generation status for each option
 
 2. New Output Behavior:
    - Scoped to parent step
@@ -151,24 +154,12 @@
      - Parent step
      - Prior siblings
      - Children of prior siblings
+   - Shows readiness status
 
 3. Tool Selection Impact:
    - Tool selection does not filter available output options
    - Tool selection may filter which outputs can be linked to tool outputs
    - For atomic steps, output schema must match tool output requirements
-
-### Variable Availability
-1. Input Variables:
-   - Parent inputs always available
-   - Prior sibling outputs available
-   - Must respect schema compatibility
-   - Shows readiness status
-
-2. Output Variables:
-   - All outputs scoped to parent step
-   - Available to subsequent siblings and their children
-   - Shows generation status
-   - Indicates readiness state
 
 ## UX Rules
 
