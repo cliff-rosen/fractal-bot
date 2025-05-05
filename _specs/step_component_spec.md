@@ -109,30 +109,8 @@
    - Show inputs and outputs at all times
    - "Add Substep" action in the actions column
 
-### Input/Output Rules
-1. Input Defaults:
-   - For first child: Defaults to parent's input
-   - For subsequent children: Defaults to prior sibling's output
-   - Can be manually changed to any available input
-   - Must match schema requirements of tool inputs
-
-2. Output Rules:
-   - For atomic steps: Determined by selected tool
-   - For composite steps: Aggregated from substeps
-   - Available to child steps and siblings
-   - Shows status of generated outputs
-   - Can create custom outputs via Add Output button
-   - Custom outputs are scoped to current step level
-
-3. Variable Availability:
-   - Parent inputs are always available
-   - Prior sibling outputs are available
-   - Must respect schema compatibility
-   - Shows clear status of variable readiness
-   - Custom outputs are available to subsequent siblings
-
-### Status Progression
-1. Status States:
+## Status Values
+1. Step Status:
    - `unresolved`: Initial state, needs configuration
    - `pending_inputs_ready`: Tool selected, waiting for inputs
    - `ready`: All required inputs mapped and ready
@@ -140,10 +118,57 @@
    - `completed`: Step finished successfully
    - `failed`: Step execution failed
 
-2. Status Dependencies:
-   - Atomic steps depend on tool selection and input mapping
-   - Composite steps depend on substep statuses
-   - Parent steps reflect child step statuses
+2. Variable Status:
+   - `pending`: Initial state, not yet configured
+   - `ready`: Value is available and valid
+   - `error`: Failed to generate or invalid value
+
+## Input/Output Rules
+
+### Input Rules
+1. Available Inputs:
+   - Parent step's inputs
+   - All prior sibling outputs
+   - These options are fixed based on step's position
+
+2. Tool Selection:
+   - Tools are filtered based on available inputs
+   - Only tools whose input requirements can be satisfied by available inputs are shown
+   - Tool selection may further filter down available inputs to those matching tool requirements
+
+### Output Rules
+1. Output Options:
+   - Use parent's output
+   - Create new output
+   - Only these two choices are available
+
+2. New Output Behavior:
+   - Scoped to parent step
+   - Available as input to:
+     - Subsequent siblings
+     - Children of subsequent siblings
+   - Not available to:
+     - Parent step
+     - Prior siblings
+     - Children of prior siblings
+
+3. Tool Selection Impact:
+   - Tool selection does not filter available output options
+   - Tool selection may filter which outputs can be linked to tool outputs
+   - For atomic steps, output schema must match tool output requirements
+
+### Variable Availability
+1. Input Variables:
+   - Parent inputs always available
+   - Prior sibling outputs available
+   - Must respect schema compatibility
+   - Shows readiness status
+
+2. Output Variables:
+   - All outputs scoped to parent step
+   - Available to subsequent siblings and their children
+   - Shows generation status
+   - Indicates readiness state
 
 ## UX Rules
 
@@ -255,7 +280,7 @@ interface WorkflowVariable {
     required?: boolean;
     status: VariableStatus;
     error_message?: string;
-    scope: string; // Added to track variable scope
+    parent_scope: string; // ID of the parent step that owns this variable
 }
 ```
 
@@ -308,14 +333,14 @@ function getFilteredTools(availableTools: Tool[], selectedInputs: WorkflowVariab
 
 ### Output Creation Logic
 ```typescript
-function createNewOutput(step: Step, schema: Schema): WorkflowVariable {
+function createNewOutput(parentStep: Step, schema: Schema): WorkflowVariable {
     return {
         variable_id: uuidv4(),
-        name: `output_${step.id}_${Date.now()}`,
+        name: `output_${parentStep.id}_${Date.now()}`,
         schema,
         io_type: 'output',
         status: 'pending',
-        scope: step.id,
+        parent_scope: parentStep.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };
