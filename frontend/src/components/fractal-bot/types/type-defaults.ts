@@ -50,7 +50,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The search terms to look for on the web'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: 'search_results',
@@ -60,7 +61,8 @@ export const toolsTemplate: Tool[] = [
                 is_array: true,
                 description: 'List of relevant web search results'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }]
     },
     {
@@ -77,7 +79,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The search terms to look for in emails'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: 'email_results',
@@ -87,7 +90,8 @@ export const toolsTemplate: Tool[] = [
                 is_array: true,
                 description: 'List of matching email content'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }]
     },
     {
@@ -104,7 +108,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The document to extract information from'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: 'extracted_info',
@@ -114,7 +119,8 @@ export const toolsTemplate: Tool[] = [
                 is_array: false,
                 description: 'Structured data extracted from the document'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }]
     },
     {
@@ -131,7 +137,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The information to add to the knowledge base'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }, {
             variable_id: 'knowledge_base',
             name: 'knowledge_base',
@@ -141,7 +148,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The knowledge base to add the information to'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: 'updated_kb',
@@ -151,7 +159,8 @@ export const toolsTemplate: Tool[] = [
                 is_array: false,
                 description: 'The updated knowledge base'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }]
     },
     {
@@ -168,7 +177,8 @@ export const toolsTemplate: Tool[] = [
                 description: 'The search terms to look for in the knowledge base'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
             variable_id: 'kb_results',
@@ -178,7 +188,8 @@ export const toolsTemplate: Tool[] = [
                 is_array: true,
                 description: 'List of matching knowledge base entries'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }]
     },
     {
@@ -195,17 +206,19 @@ export const toolsTemplate: Tool[] = [
                 description: 'The question to generate a search query for'
             },
             io_type: 'input',
-            required: true
+            required: true,
+            status: 'pending'
         }],
         outputs: [{
-            variable_id: 'search_query',
-            name: 'search_query',
+            variable_id: 'generated_query',
+            name: 'generated_query',
             schema: {
                 type: 'string',
                 is_array: false,
-                description: 'Optimized search query for the question'
+                description: 'The generated search query'
             },
-            io_type: 'output'
+            io_type: 'output',
+            status: 'pending'
         }]
     },
     {

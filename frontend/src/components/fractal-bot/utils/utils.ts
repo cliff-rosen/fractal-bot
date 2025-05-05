@@ -1,4 +1,4 @@
-import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult, Stage, Step, WorkflowVariable } from "../types";
+import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult, Stage, Step, WorkflowVariable, StepStatus, StepConfigState, StepExecutionState, VariableMapping, doSchemasMatch, Tool, Schema } from "../types";
 import { v4 as uuidv4 } from 'uuid';
 
 interface DataFromLine {
@@ -87,33 +87,204 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
     };
 }
 
-export function getAvailableInputs(workflow: Workflow, currentStageId: string): WorkflowVariable[] {
-    const inputs: WorkflowVariable[] = [];
+// Helper function to get available inputs for a step or workflow
+export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?: Step): WorkflowVariable[] {
+    const availableInputs: WorkflowVariable[] = [];
 
-    // Add workflow inputs if they exist
-    if (workflow.inputs) {
-        inputs.push(...workflow.inputs);
-    }
+    if ('stages' in stepOrWorkflow) {
+        // This is a Workflow
+        // Add workflow inputs
+        if (stepOrWorkflow.inputs) {
+            availableInputs.push(...stepOrWorkflow.inputs);
+        }
 
-    // Add outputs from previous steps
-    const currentStageIndex = workflow.stages.findIndex(s => s.id === currentStageId);
-    if (currentStageIndex > 0) {
-        workflow.stages.slice(0, currentStageIndex).forEach(prevStage => {
-            prevStage.steps.forEach(step => {
-                if (step.outputs) {
-                    inputs.push(...step.outputs);
+        // Add outputs from previous stages
+        const currentStageId = (stepOrWorkflow as any).currentStageId;
+        if (currentStageId) {
+            const currentStageIndex = stepOrWorkflow.stages.findIndex(s => s.id === currentStageId);
+            if (currentStageIndex > 0) {
+                stepOrWorkflow.stages.slice(0, currentStageIndex).forEach(prevStage => {
+                    prevStage.steps.forEach(step => {
+                        if (step.outputs) {
+                            availableInputs.push(...step.outputs);
+                        }
+                    });
+                });
+            }
+        }
+    } else {
+        // This is a Step
+        // Add parent inputs
+        if (parentStep) {
+            availableInputs.push(...parentStep.inputs);
+        }
+
+        // Add outputs from prior siblings
+        if (parentStep?.substeps) {
+            const currentIndex = parentStep.substeps.findIndex(s => s.id === stepOrWorkflow.id);
+            if (currentIndex > 0) {
+                for (let i = 0; i < currentIndex; i++) {
+                    const sibling = parentStep.substeps[i];
+                    availableInputs.push(...sibling.outputs);
                 }
-            });
-        });
+            }
+        }
     }
 
-    return inputs;
+    return availableInputs;
 }
 
-export function getFilteredInputs(availableInputs: WorkflowVariable[], toolInputTypes: string[]): WorkflowVariable[] {
-    // TODO: Implement proper type matching logic based on your schema types
-    // This is a placeholder - you'll need to implement the actual type matching
+export function getFilteredInputs(
+    availableInputs: WorkflowVariable[],
+    availableTools: Tool[]
+): WorkflowVariable[] {
+    // Get all required input types from tools
+    const requiredInputTypes = availableTools.flatMap(tool =>
+        tool.inputs.map(input => ({
+            type: input.schema.type,
+            is_array: input.schema.is_array,
+            fields: input.schema.fields,
+            required: input.required
+        }))
+    );
+
+    // Filter inputs that match any of the required types
     return availableInputs.filter(input => {
-        return toolInputTypes.some(type => type === input.schema.type);
+        return requiredInputTypes.some(requiredType => {
+            // Basic type matching
+            if (input.schema.type !== requiredType.type) {
+                return false;
+            }
+
+            // Array type matching
+            if (input.schema.is_array !== requiredType.is_array) {
+                return false;
+            }
+
+            // For object types, check fields
+            if (input.schema.type === 'object' && requiredType.type === 'object') {
+                if (!input.schema.fields || !requiredType.fields) {
+                    return false;
+                }
+
+                // Check if all required fields exist in the input
+                for (const [fieldName, requiredField] of Object.entries(requiredType.fields)) {
+                    const inputField = input.schema.fields[fieldName];
+                    if (!inputField) {
+                        return false;
+                    }
+
+                    // Recursively check field types
+                    if (inputField.type !== requiredField.type ||
+                        inputField.is_array !== requiredField.is_array) {
+                        return false;
+                    }
+                }
+            }
+
+            // Check if the input is required
+            if (requiredType.required && !input.required) {
+                return false;
+            }
+
+            return true;
+        });
     });
+}
+
+export function getStepStatus(step: Step): StepStatus {
+    // Initialize mappings if they don't exist
+    const stepWithMappings = {
+        ...step,
+        inputMappings: step.inputMappings || [],
+        outputMappings: step.outputMappings || []
+    };
+
+    // For atomic steps
+    if (stepWithMappings.type === 'atomic') {
+        // Check if tool is assigned
+        if (!stepWithMappings.tool_id) {
+            return 'unresolved';
+        }
+
+        // Check if all required inputs are mapped
+        const requiredInputs = stepWithMappings.inputs.filter(input => input.required);
+        const mappedInputs = stepWithMappings.inputMappings.map(mapping => mapping.targetVariable.variable_id);
+        const allRequiredInputsMapped = requiredInputs.every(input =>
+            mappedInputs.includes(input.variable_id)
+        );
+
+        if (!allRequiredInputsMapped) {
+            return 'unresolved';
+        }
+
+        // Check if all mapped inputs are ready
+        const allMappedInputsReady = stepWithMappings.inputMappings.every(mapping =>
+            mapping.sourceVariable.status === 'ready'
+        );
+
+        if (!allMappedInputsReady) {
+            return 'pending_inputs_ready';
+        }
+
+        // Return current status if all checks pass
+        return stepWithMappings.status;
+    }
+
+    // For composite steps
+    if (stepWithMappings.type === 'composite') {
+        // Check if there are at least 2 substeps
+        if (!stepWithMappings.substeps || stepWithMappings.substeps.length < 2) {
+            return 'unresolved';
+        }
+
+        // Check if all substeps are resolved
+        const allSubstepsResolved = stepWithMappings.substeps.every(substep =>
+            getStepStatus(substep) !== 'unresolved'
+        );
+
+        if (!allSubstepsResolved) {
+            return 'unresolved';
+        }
+
+        // Check if all substeps are ready
+        const allSubstepsReady = stepWithMappings.substeps.every(substep =>
+            getStepStatus(substep) === 'ready'
+        );
+
+        if (!allSubstepsReady) {
+            return 'pending_inputs_ready';
+        }
+
+        // Return current status if all checks pass
+        return stepWithMappings.status;
+    }
+
+    // Default to unresolved for unknown step types
+    return 'unresolved';
+}
+
+// Helper function to validate input mapping
+export function validateInputMapping(
+    sourceVariable: WorkflowVariable,
+    targetVariable: WorkflowVariable
+): boolean {
+    const match = doSchemasMatch(sourceVariable.schema, targetVariable.schema);
+    return match.isMatch;
+}
+
+// Helper function to validate output mapping
+export function validateOutputMapping(
+    sourceVariable: WorkflowVariable,
+    targetVariable: WorkflowVariable,
+    isParentOutput: boolean
+): boolean {
+    // For parent outputs, we need exact schema match
+    if (isParentOutput) {
+        const match = doSchemasMatch(sourceVariable.schema, targetVariable.schema);
+        return match.isMatch;
+    }
+
+    // For intermediate outputs, we just need compatible types
+    return sourceVariable.schema.type === targetVariable.schema.type;
 } 

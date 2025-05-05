@@ -49,7 +49,7 @@ function App() {
 
     // Handle navigation and workflow state
     useEffect(() => {
-      console.log("location.pathname", location.pathname);
+      console.log("App.tsx: location.pathname", location.pathname);
       const match = location.pathname.match(/^\/workflow\/([^/]+)/);
       if (match) {
         const workflowId = match[1];
