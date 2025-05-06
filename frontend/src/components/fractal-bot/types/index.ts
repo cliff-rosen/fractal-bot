@@ -158,6 +158,7 @@ export interface Step {
     status: StepStatus;
     createdAt: string;
     updatedAt: string;
+    availableInputs?: WorkflowVariable[]; // Read-only field showing all available inputs
 }
 
 // Updated Stage interface
@@ -196,8 +197,9 @@ export interface Mission {
     goal: string;
     status: string;
     workflow: Workflow;
-    inputs: WorkflowVariable[];  // Initial inputs
-    outputs: WorkflowVariable[]; // Final outputs
+    childVariables: WorkflowVariable[];
+    inputMappings: VariableMapping[];  // Maps available inputs to mission inputs
+    outputMappings: VariableMapping[]; // Maps workflow outputs to mission outputs
     resources: string[];
     success_criteria: string[];
     selectedTools: Tool[];
@@ -208,9 +210,10 @@ export interface Mission {
 export type MissionProposal = {
     title: string;
     goal: string;
-    inputs: WorkflowVariable[];
+    childVariables: WorkflowVariable[];
+    inputMappings: VariableMapping[];  // Maps available inputs to mission inputs
+    outputMappings: VariableMapping[]; // Maps workflow outputs to mission outputs
     resources: string[];  // General resources needed but not specific data objects
-    outputs: WorkflowVariable[];
     success_criteria: string[];
     selectedTools: Tool[];
     has_sufficient_info: boolean;
@@ -293,18 +296,23 @@ export function doSchemasMatch(source: Schema, target: Schema): SchemaMatch {
 
 // Helper function to get available inputs for a step or workflow
 export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?: Step): WorkflowVariable[] {
+    const availableInputs: WorkflowVariable[] = [];
+
     if ('stages' in stepOrWorkflow) {
-        // This is a Workflow
-        return stepOrWorkflow.inputs;
+        // This is a Workflow - get mission inputs
+        const mission = stepOrWorkflow as Workflow;
+        return mission.inputMappings
+            .filter(m => m.target.type === 'variable')
+            .map(m => mission.childVariables.find(v => v.variable_id === m.sourceVariableId))
+            .filter((v): v is WorkflowVariable => v !== undefined);
     }
 
     // This is a Step
     const step = stepOrWorkflow;
-    const availableInputs: WorkflowVariable[] = [];
 
-    // Add parent inputs
+    // Add parent's child variables (variables created by siblings)
     if (parentStep) {
-        availableInputs.push(...parentStep.inputs);
+        availableInputs.push(...parentStep.childVariables);
     }
 
     // Add outputs from prior siblings
@@ -313,7 +321,13 @@ export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?:
         if (currentIndex > 0) {
             for (let i = 0; i < currentIndex; i++) {
                 const sibling = parentStep.substeps[i];
-                availableInputs.push(...sibling.outputs);
+                // Get variables created by this sibling that aren't mapped to parent outputs
+                const siblingOutputs = sibling.childVariables.filter(v =>
+                    !sibling.outputMappings.some(m =>
+                        m.isParentOutput && m.target.type === 'variable' && m.target.variableId === v.variable_id
+                    )
+                );
+                availableInputs.push(...siblingOutputs);
             }
         }
     }
@@ -323,17 +337,20 @@ export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?:
 
 // Helper function to get available inputs for a workflow
 export function getWorkflowAvailableInputs(workflow: Workflow): WorkflowVariable[] {
-    return workflow.inputs;
+    return workflow.inputMappings
+        .filter(m => m.target.type === 'variable')
+        .map(m => workflow.childVariables.find(v => v.variable_id === m.sourceVariableId))
+        .filter((v): v is WorkflowVariable => v !== undefined);
 }
 
 // Helper function to check if a step is ready
 export function isStepReady(step: Step): boolean {
     // Check if all required inputs are mapped and ready
-    const allInputsReady = step.inputs
-        .filter(input => input.required)
-        .every(input => {
-            const mapping = step.inputMappings.find(m => m.targetVariable.variable_id === input.variable_id);
-            return mapping && input.status === 'ready';
+    const allInputsReady = step.inputMappings
+        .filter(m => m.target.type === 'parameter' && m.target.required)
+        .every(mapping => {
+            const sourceVar = step.childVariables.find(v => v.variable_id === mapping.sourceVariableId);
+            return sourceVar && sourceVar.status === 'ready';
         });
 
     if (!allInputsReady) {
@@ -342,9 +359,9 @@ export function isStepReady(step: Step): boolean {
 
     if (step.type === 'atomic') {
         // Atomic step is ready if:
-        // 1. Has a tool
+        // 1. Has a tool_id
         // 2. All required inputs are mapped and ready
-        return !!step.tool;
+        return !!step.tool_id;
     } else if (step.type === 'composite') {
         // Composite step is ready if:
         // 1. Has at least 2 substeps

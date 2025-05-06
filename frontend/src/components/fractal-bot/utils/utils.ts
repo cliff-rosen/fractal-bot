@@ -1,4 +1,4 @@
-import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult, Stage, Step, WorkflowVariable, StepStatus, StepConfigState, StepExecutionState, VariableMapping, doSchemasMatch, Tool, Schema } from "../types";
+import { MissionProposal, Mission, Workflow, Status, StageGeneratorResult, Stage, Step, WorkflowVariable, StepStatus, StepConfigState, StepExecutionState, VariableMapping, doSchemasMatch, Tool, Schema, ParameterTarget } from "../types";
 import { v4 as uuidv4 } from 'uuid';
 
 interface DataFromLine {
@@ -63,8 +63,9 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
         description: `Workflow for ${proposal.title}`,
         status: 'pending' as Status,
         stages: [],
-        inputs: [],
-        outputs: [],
+        childVariables: [],
+        inputMappings: [],
+        outputMappings: [],
         createdAt: now,
         updatedAt: now
     };
@@ -88,158 +89,152 @@ export function createMissionFromProposal(proposal: MissionProposal): Mission {
 }
 
 // Helper function to get available inputs for a step or workflow
-export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?: Step): WorkflowVariable[] {
+export function getAvailableInputs(workflow: Workflow, step?: Step): WorkflowVariable[] {
+    if (!workflow || !workflow.childVariables) {
+        return [];
+    }
+
     const availableInputs: WorkflowVariable[] = [];
 
-    if ('stages' in stepOrWorkflow) {
-        // This is a Workflow
-        // Add workflow inputs
-        if (stepOrWorkflow.inputs) {
-            availableInputs.push(...stepOrWorkflow.inputs);
-        }
+    // Add workflow inputs from childVariables
+    const workflowInputs = workflow.childVariables.filter(v =>
+        v.io_type === 'input'
+    );
+    availableInputs.push(...workflowInputs);
 
-        // Add outputs from previous stages
-        const currentStageId = (stepOrWorkflow as any).currentStageId;
-        if (currentStageId) {
-            const currentStageIndex = stepOrWorkflow.stages.findIndex(s => s.id === currentStageId);
-            if (currentStageIndex > 0) {
-                stepOrWorkflow.stages.slice(0, currentStageIndex).forEach(prevStage => {
-                    prevStage.steps.forEach(step => {
-                        if (step.outputs) {
-                            availableInputs.push(...step.outputs);
-                        }
-                    });
-                });
+    // Add outputs from previous stages
+    if (workflow.stages) {
+        const previousStages = workflow.stages.slice(0, workflow.stages.findIndex(s =>
+            s.steps.some(st => st.id === step?.id)
+        ));
+        previousStages.forEach(stage => {
+            if (stage.childVariables) {
+                const stageOutputs = stage.childVariables.filter(v =>
+                    v.io_type === 'output'
+                );
+                availableInputs.push(...stageOutputs);
             }
-        }
-    } else {
-        // This is a Step
-        // Add parent inputs
-        if (parentStep) {
-            availableInputs.push(...parentStep.inputs);
-        }
+        });
+    }
 
-        // Add outputs from prior siblings
-        if (parentStep?.substeps) {
-            const currentIndex = parentStep.substeps.findIndex(s => s.id === stepOrWorkflow.id);
-            if (currentIndex > 0) {
-                for (let i = 0; i < currentIndex; i++) {
-                    const sibling = parentStep.substeps[i];
-                    availableInputs.push(...sibling.outputs);
+    // If this is a step, add outputs from prior siblings
+    if (step) {
+        // Find the stage containing this step
+        const findStage = (stages: Stage[]): Stage | undefined => {
+            for (const stage of stages) {
+                // Check if step is directly in this stage
+                if (stage.steps.some(s => s.id === step.id)) {
+                    return stage;
+                }
+                // Check if step is in any substeps
+                const findInSubsteps = (steps: Step[]): boolean => {
+                    for (const s of steps) {
+                        if (s.id === step.id) return true;
+                        if (s.substeps && findInSubsteps(s.substeps)) return true;
+                    }
+                    return false;
+                };
+                if (findInSubsteps(stage.steps)) {
+                    return stage;
                 }
             }
+            return undefined;
+        };
+
+        const stage = findStage(workflow.stages || []);
+        if (stage) {
+            // Find all prior siblings in the stage
+            const findPriorSiblings = (steps: Step[], targetId: string): Step[] => {
+                const priorSiblings: Step[] = [];
+                for (const s of steps) {
+                    if (s.id === targetId) break;
+                    priorSiblings.push(s);
+                    if (s.substeps) {
+                        priorSiblings.push(...findPriorSiblings(s.substeps, targetId));
+                    }
+                }
+                return priorSiblings;
+            };
+
+            const priorSiblings = findPriorSiblings(stage.steps, step.id);
+            priorSiblings.forEach(sibling => {
+                if (sibling.childVariables) {
+                    const siblingOutputs = sibling.childVariables.filter(v =>
+                        v.io_type === 'output'
+                    );
+                    availableInputs.push(...siblingOutputs);
+                }
+            });
         }
     }
 
     return availableInputs;
 }
 
+// Helper function to get filtered inputs based on available tools
 export function getFilteredInputs(
     availableInputs: WorkflowVariable[],
-    availableTools: Tool[]
+    tools: Tool[]
 ): WorkflowVariable[] {
     // Get all required input types from tools
-    const requiredInputTypes = availableTools.flatMap(tool =>
+    const requiredTypes = tools.flatMap(tool =>
         tool.inputs.map(input => ({
             type: input.schema.type,
-            is_array: input.schema.is_array,
-            fields: input.schema.fields,
             required: input.required
         }))
     );
 
     // Filter inputs that match any of the required types
     return availableInputs.filter(input => {
-        return requiredInputTypes.some(requiredType => {
-            // Basic type matching
-            if (input.schema.type !== requiredType.type) {
-                return false;
-            }
-
-            // Array type matching
-            if (input.schema.is_array !== requiredType.is_array) {
-                return false;
-            }
-
-            // For object types, check fields
-            if (input.schema.type === 'object' && requiredType.type === 'object') {
-                if (!input.schema.fields || !requiredType.fields) {
-                    return false;
-                }
-
-                // Check if all required fields exist in the input
-                for (const [fieldName, requiredField] of Object.entries(requiredType.fields)) {
-                    const inputField = input.schema.fields[fieldName];
-                    if (!inputField) {
-                        return false;
-                    }
-
-                    // Recursively check field types
-                    if (inputField.type !== requiredField.type ||
-                        inputField.is_array !== requiredField.is_array) {
-                        return false;
-                    }
-                }
-            }
-
-            // Check if the input is required
-            if (requiredType.required && !input.required) {
-                return false;
-            }
-
-            return true;
-        });
+        return requiredTypes.some(required =>
+            required.type === input.schema.type
+        );
     });
 }
 
+// Helper function to get step status
 export function getStepStatus(step: Step): StepStatus {
-    // Initialize mappings if they don't exist
-    const stepWithMappings = {
-        ...step,
-        inputMappings: step.inputMappings || [],
-        outputMappings: step.outputMappings || []
-    };
-
     // For atomic steps
-    if (stepWithMappings.type === 'atomic') {
+    if (step.type === 'atomic') {
         // Check if tool is assigned
-        if (!stepWithMappings.tool_id) {
+        if (!step.tool_id) {
             return 'unresolved';
         }
 
         // Check if all required inputs are mapped
-        const requiredInputs = stepWithMappings.inputs.filter(input => input.required);
-        const mappedInputs = stepWithMappings.inputMappings.map(mapping => mapping.targetVariable.variable_id);
-        const allRequiredInputsMapped = requiredInputs.every(input =>
-            mappedInputs.includes(input.variable_id)
+        const requiredInputs = step.inputMappings.filter(m =>
+            m.target.type === 'parameter' &&
+            (m.target as ParameterTarget).required
         );
+        const allRequiredInputsMapped = requiredInputs.every(mapping => mapping.sourceVariableId);
 
         if (!allRequiredInputsMapped) {
             return 'unresolved';
         }
 
         // Check if all mapped inputs are ready
-        const allMappedInputsReady = stepWithMappings.inputMappings.every(mapping =>
-            mapping.sourceVariable.status === 'ready'
-        );
+        const allMappedInputsReady = step.inputMappings.every(mapping => {
+            const sourceVariable = step.childVariables.find(v => v.variable_id === mapping.sourceVariableId);
+            return sourceVariable?.status === 'ready';
+        });
 
         if (!allMappedInputsReady) {
             return 'pending_inputs_ready';
         }
 
         // Return current status if all checks pass
-        return stepWithMappings.status;
+        return step.status;
     }
 
     // For composite steps
-    if (stepWithMappings.type === 'composite') {
+    if (step.type === 'composite') {
         // Check if there are at least 2 substeps
-        if (!stepWithMappings.substeps || stepWithMappings.substeps.length < 2) {
+        if (!step.substeps || step.substeps.length < 2) {
             return 'unresolved';
         }
 
         // Check if all substeps are resolved
-        const allSubstepsResolved = stepWithMappings.substeps.every(substep =>
+        const allSubstepsResolved = step.substeps.every(substep =>
             getStepStatus(substep) !== 'unresolved'
         );
 
@@ -248,7 +243,7 @@ export function getStepStatus(step: Step): StepStatus {
         }
 
         // Check if all substeps are ready
-        const allSubstepsReady = stepWithMappings.substeps.every(substep =>
+        const allSubstepsReady = step.substeps.every(substep =>
             getStepStatus(substep) === 'ready'
         );
 
@@ -257,7 +252,7 @@ export function getStepStatus(step: Step): StepStatus {
         }
 
         // Return current status if all checks pass
-        return stepWithMappings.status;
+        return step.status;
     }
 
     // Default to unresolved for unknown step types

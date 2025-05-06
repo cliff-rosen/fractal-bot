@@ -16,7 +16,31 @@ export default function Mission({
     } = useFractalBot();
 
     const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('compact');
-    const mission = state.currentMission;
+    const mission = state.currentMission || {
+        title: '',
+        goal: '',
+        status: 'pending',
+        workflow: {
+            id: '',
+            name: '',
+            description: '',
+            status: 'pending',
+            stages: [],
+            childVariables: [],
+            inputMappings: [],
+            outputMappings: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        },
+        childVariables: [],
+        inputMappings: [],
+        outputMappings: [],
+        resources: [],
+        success_criteria: [],
+        selectedTools: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -56,9 +80,9 @@ export default function Mission({
                 <div className="flex justify-between items-start">
                     <div className="space-y-0.5">
                         <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Mission</h2>
-                        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-200">{mission.title}</h1>
+                        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-200">{mission.title || 'No Mission Selected'}</h1>
                         <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
-                            {mission.goal}
+                            {mission.goal || 'No mission goal defined'}
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -93,114 +117,99 @@ export default function Mission({
                         </button>
                     </div>
                 </div>
-            </div>
 
-            {viewMode === 'expanded' ? (
-                <>
-                    <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
-                        <div className="grid grid-cols-1 gap-6">
-                            <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Inputs & Resources</h3>
-                                <div className="mt-4 grid grid-cols-2 gap-6">
-                                    <div>
-                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Required Inputs</h4>
-                                        <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                            {mission.inputs.map((input: WorkflowVariable) => (
-                                                <li key={input.variable_id} className="flex items-center">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                                    {input.name}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Available Resources</h4>
-                                        <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                            {mission.resources.map((resource: string) => (
-                                                <li key={resource} className="flex items-center">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                                    {resource}
-                                                </li>
-                                            ))}
-                                        </ul>
+                {viewMode === 'expanded' ? (
+                    <>
+                        <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Inputs & Resources</h3>
+                                    <div className="mt-4 grid grid-cols-2 gap-6">
+                                        <div>
+                                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Required Inputs</h4>
+                                            <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                                {mission.childVariables?.filter(v => v.io_type === 'input').map((input: WorkflowVariable) => (
+                                                    <li key={input.variable_id} className="flex items-center">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                                        {input.name}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Available Resources</h4>
+                                            <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                                {mission.resources?.map((resource: string) => (
+                                                    <li key={resource} className="flex items-center">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                                        {resource}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
-                                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                    {mission.outputs.map((output: WorkflowVariable) => (
-                                        <li key={output.variable_id} className="flex items-center">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                            {output.name}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Outputs</h3>
+                                    <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                        {mission.childVariables?.filter(v => v.io_type === 'output').map((output: WorkflowVariable) => (
+                                            <li key={output.variable_id} className="flex items-center">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                                {output.name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
 
-                            <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
-                                <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Selected Tools</h3>
-                                <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                                    {(mission.selectedTools || []).map((tool) => (
-                                        <li key={tool.id} className="flex items-center">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                            {tool.name}
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Selected Tools</h3>
+                                    <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                        {mission.selectedTools?.map((tool) => (
+                                            <li key={tool.id} className="flex items-center">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                                {tool.name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
-                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Success Criteria</h3>
-                        <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
-                            {mission.success_criteria.map((criterion: string) => (
-                                <li key={criterion} className="flex items-center">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
-                                    {criterion}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </>
-            ) : (
-                <div className="mt-2 p-3 border-t border-gray-100 dark:border-gray-700">
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
-                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
-                            <ul className="mt-1 space-y-0.5">
-                                {mission.inputs.slice(0, 3).map((input: WorkflowVariable) => (
-                                    <li key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                                        {input.name}
+                        <div className="mt-6 p-6 border-t border-gray-100 dark:border-gray-700">
+                            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Success Criteria</h3>
+                            <ul className="mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+                                {mission.success_criteria?.map((criterion: string) => (
+                                    <li key={criterion} className="flex items-center">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 mr-2"></span>
+                                        {criterion}
                                     </li>
                                 ))}
-                                {mission.inputs.length > 3 && (
-                                    <li className="text-xs text-gray-500 dark:text-gray-400">
-                                        +{mission.inputs.length - 3} more
-                                    </li>
-                                )}
                             </ul>
                         </div>
-                        <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
-                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
-                            <ul className="mt-1 space-y-0.5">
-                                {mission.outputs.slice(0, 3).map((output: WorkflowVariable) => (
-                                    <li key={output.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
-                                        {output.name}
-                                    </li>
-                                ))}
-                                {mission.outputs.length > 3 && (
-                                    <li className="text-xs text-gray-500 dark:text-gray-400">
-                                        +{mission.outputs.length - 3} more
-                                    </li>
-                                )}
-                            </ul>
+                    </>
+                ) : (
+                    <div className="mt-2 p-3 border-t border-gray-100 dark:border-gray-700">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
+                                <ul className="mt-1 space-y-0.5">
+                                    {mission.childVariables?.filter(v => v.io_type === 'input').slice(0, 3).map((input: WorkflowVariable) => (
+                                        <li key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                            {input.name}
+                                        </li>
+                                    ))}
+                                    {mission.childVariables?.filter(v => v.io_type === 'input').length > 3 && (
+                                        <li className="text-xs text-gray-500 dark:text-gray-400">
+                                            +{mission.childVariables.filter(v => v.io_type === 'input').length - 3} more
+                                        </li>
+                                    )}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 } 

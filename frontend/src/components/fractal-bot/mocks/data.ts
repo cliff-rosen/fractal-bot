@@ -1,12 +1,4 @@
 import { Mission, Stage, Step, Asset, ChatMessage, Workspace, Workflow, WorkspaceState, Tool, WorkflowVariable } from '../types/index';
-import { mockDataSnapshot0 } from './mockDataSnapshot0';
-import { mockDataSnapshot1 } from './mockDataSnapshot1';
-import { mockDataSnapshot2 } from './mockDataSnapshot2';
-import { mockDataSnapshot2a } from './mockDataSnapshot2a';
-import { mockDataSnapshot2b } from './mockDataSnapshot2b';
-import { mockDataSnapshot3 } from './mockDataSnapshot3';
-import { mockDataSnapshot3a } from './mockDataSnapshot3a';
-import { mockDataSnapshot4 } from './mockDataSnapshot4';
 
 // Mock data snapshot type
 export type MockDataSnapshot = {
@@ -67,25 +59,21 @@ export const mockTools: Tool[] = [
         description: 'Search for information',
         category: 'search',
         inputs: [{
-            variable_id: 'query',
             name: 'query',
             schema: {
                 type: 'string',
                 is_array: false,
                 description: 'Search query'
             },
-            io_type: 'input',
             required: true
         }],
         outputs: [{
-            variable_id: 'results',
             name: 'results',
             schema: {
                 type: 'object',
                 is_array: true,
                 description: 'Search results'
-            },
-            io_type: 'output'
+            }
         }]
     },
     {
@@ -94,182 +82,390 @@ export const mockTools: Tool[] = [
         description: 'File operations',
         category: 'file',
         inputs: [{
-            variable_id: 'file',
             name: 'file',
             schema: {
                 type: 'file',
                 is_array: false,
                 description: 'File to process'
             },
-            io_type: 'input',
             required: true
         }],
         outputs: [{
-            variable_id: 'processed_file',
             name: 'processed_file',
             schema: {
                 type: 'file',
                 is_array: false,
                 description: 'Processed file'
-            },
-            io_type: 'output'
+            }
         }]
     }
 ];
 
 export const mockSteps: Step[] = [
     {
-        id: 'step1',
-        name: 'Search Step',
-        description: 'Search for information',
-        status: 'pending',
+        id: 'step-1',
+        name: 'Web Search',
+        description: 'Search the web for relevant information',
         type: 'atomic',
-        tool: mockTools[0],
-        inputs: [{
-            variable_id: 'search_query',
-            name: 'search_query',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'Search query'
+        childVariables: [
+            {
+                variable_id: 'step-1-input-1',
+                name: 'search_query',
+                schema: {
+                    type: 'string',
+                    is_array: false,
+                    description: 'The search terms to look for'
+                },
+                io_type: 'input',
+                required: true,
+                status: 'pending',
+                createdBy: 'step-1'
             },
-            io_type: 'input',
-            required: true
-        }],
-        outputs: [{
-            variable_id: 'search_results',
-            name: 'search_results',
-            schema: {
-                type: 'object',
-                is_array: true,
-                description: 'Search results'
-            },
-            io_type: 'output'
-        }],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+            {
+                variable_id: 'step-1-output-1',
+                name: 'search_results',
+                schema: {
+                    type: 'object',
+                    is_array: true,
+                    description: 'List of search results'
+                },
+                io_type: 'output',
+                status: 'pending',
+                createdBy: 'step-1'
+            }
+        ],
+        inputMappings: [
+            {
+                sourceVariableId: 'stage-1-input-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'step-1-input-1'
+                }
+            }
+        ],
+        outputMappings: [
+            {
+                sourceVariableId: 'step-1-output-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'stage-1-output-1'
+                }
+            }
+        ],
+        tool_id: 'web-search',
+        status: 'unresolved',
+        createdAt: '2024-03-20T10:00:00Z',
+        updatedAt: '2024-03-20T10:00:00Z'
     },
     {
-        id: 'step2',
-        name: 'File Step',
-        description: 'Process file',
-        status: 'pending',
+        id: 'step-2',
+        name: 'Email Search',
+        description: 'Search through email content',
         type: 'atomic',
-        tool: mockTools[1],
-        inputs: [{
-            variable_id: 'input_file',
-            name: 'input_file',
-            schema: {
-                type: 'file',
-                is_array: false,
-                description: 'File to process'
+        childVariables: [
+            {
+                variable_id: 'step-2-input-1',
+                name: 'email_query',
+                schema: {
+                    type: 'string',
+                    is_array: false,
+                    description: 'The search terms to look for in emails'
+                },
+                io_type: 'input',
+                required: true,
+                status: 'pending',
+                createdBy: 'step-2'
             },
-            io_type: 'input',
-            required: true
-        }],
-        outputs: [{
-            variable_id: 'output_file',
-            name: 'output_file',
-            schema: {
-                type: 'file',
-                is_array: false,
-                description: 'Processed file'
+            {
+                variable_id: 'step-2-output-1',
+                name: 'email_results',
+                schema: {
+                    type: 'object',
+                    is_array: true,
+                    description: 'List of matching email content'
+                },
+                io_type: 'output',
+                status: 'pending',
+                createdBy: 'step-2'
+            }
+        ],
+        inputMappings: [
+            {
+                sourceVariableId: 'stage-1-input-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'step-2-input-1'
+                }
+            }
+        ],
+        outputMappings: [
+            {
+                sourceVariableId: 'step-2-output-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'stage-1-output-1'
+                }
+            }
+        ],
+        tool_id: 'email-search',
+        status: 'unresolved',
+        createdAt: '2024-03-20T10:00:00Z',
+        updatedAt: '2024-03-20T10:00:00Z'
+    },
+    {
+        id: 'step-3',
+        name: 'Extract Info',
+        description: 'Extract information from documents',
+        type: 'atomic',
+        childVariables: [
+            {
+                variable_id: 'step-3-input-1',
+                name: 'data_to_analyze',
+                schema: {
+                    type: 'object',
+                    is_array: true,
+                    description: 'The data to be analyzed'
+                },
+                io_type: 'input',
+                required: true,
+                status: 'pending',
+                createdBy: 'step-3'
             },
-            io_type: 'output'
-        }],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+            {
+                variable_id: 'step-3-output-1',
+                name: 'analysis_results',
+                schema: {
+                    type: 'object',
+                    is_array: false,
+                    description: 'Results of the analysis'
+                },
+                io_type: 'output',
+                status: 'pending',
+                createdBy: 'step-3'
+            }
+        ],
+        inputMappings: [
+            {
+                sourceVariableId: 'stage-2-input-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'step-3-input-1'
+                }
+            }
+        ],
+        outputMappings: [
+            {
+                sourceVariableId: 'step-3-output-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'stage-2-output-1'
+                }
+            }
+        ],
+        tool_id: 'extract-info',
+        status: 'unresolved',
+        createdAt: '2024-03-20T10:00:00Z',
+        updatedAt: '2024-03-20T10:00:00Z'
     }
 ];
 
 export const mockStages: Stage[] = [
     {
-        id: 'stage1',
-        name: 'Search Stage',
-        description: 'Stage for searching',
+        id: 'stage-1',
+        name: 'Data Collection',
+        description: 'Gather and organize relevant information',
         status: 'pending',
-        steps: [mockSteps[0]],
-        inputs: [{
-            variable_id: 'stage_query',
-            name: 'stage_query',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'Stage search query'
+        steps: [mockSteps[0], mockSteps[1]],
+        childVariables: [
+            {
+                variable_id: 'stage-1-input-1',
+                name: 'search_query',
+                schema: {
+                    type: 'string',
+                    is_array: false,
+                    description: 'The search terms to look for'
+                },
+                io_type: 'input',
+                required: true,
+                status: 'pending',
+                createdBy: 'stage-1'
             },
-            io_type: 'input',
-            required: true
-        }],
-        outputs: [{
-            variable_id: 'stage_results',
-            name: 'stage_results',
-            schema: {
-                type: 'object',
-                is_array: true,
-                description: 'Stage search results'
-            },
-            io_type: 'output'
-        }],
-        success_criteria: ['Found relevant results'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+            {
+                variable_id: 'stage-1-output-1',
+                name: 'search_results',
+                schema: {
+                    type: 'object',
+                    is_array: true,
+                    description: 'List of search results'
+                },
+                io_type: 'output',
+                status: 'pending',
+                createdBy: 'stage-1'
+            }
+        ],
+        inputMappings: [
+            {
+                sourceVariableId: 'mission-input-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'stage-1-input-1'
+                }
+            }
+        ],
+        outputMappings: [
+            {
+                sourceVariableId: 'stage-1-output-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'workflow-output-1'
+                }
+            }
+        ],
+        success_criteria: ['All required data is collected'],
+        createdAt: '2024-03-20T10:00:00Z',
+        updatedAt: '2024-03-20T10:00:00Z'
     },
     {
-        id: 'stage2',
-        name: 'File Stage',
-        description: 'Stage for file processing',
+        id: 'stage-2',
+        name: 'Analysis',
+        description: 'Process and analyze the collected data',
         status: 'pending',
-        steps: [mockSteps[1]],
-        inputs: [{
-            variable_id: 'stage_file',
-            name: 'stage_file',
-            schema: {
-                type: 'file',
-                is_array: false,
-                description: 'Stage input file'
+        steps: [mockSteps[2]],
+        childVariables: [
+            {
+                variable_id: 'stage-2-input-1',
+                name: 'data_to_analyze',
+                schema: {
+                    type: 'object',
+                    is_array: true,
+                    description: 'The data to be analyzed'
+                },
+                io_type: 'input',
+                required: true,
+                status: 'pending',
+                createdBy: 'stage-2'
             },
-            io_type: 'input',
-            required: true
-        }],
-        outputs: [{
-            variable_id: 'stage_processed_file',
-            name: 'stage_processed_file',
-            schema: {
-                type: 'file',
-                is_array: false,
-                description: 'Stage processed file'
-            },
-            io_type: 'output'
-        }],
-        success_criteria: ['File processed successfully'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+            {
+                variable_id: 'stage-2-output-1',
+                name: 'analysis_results',
+                schema: {
+                    type: 'object',
+                    is_array: false,
+                    description: 'Results of the analysis'
+                },
+                io_type: 'output',
+                status: 'pending',
+                createdBy: 'stage-2'
+            }
+        ],
+        inputMappings: [
+            {
+                sourceVariableId: 'stage-1-output-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'stage-2-input-1'
+                }
+            }
+        ],
+        outputMappings: [
+            {
+                sourceVariableId: 'stage-2-output-1',
+                target: {
+                    type: 'variable',
+                    variableId: 'workflow-output-2'
+                }
+            }
+        ],
+        success_criteria: ['Analysis is complete and results are documented'],
+        createdAt: '2024-03-20T10:00:00Z',
+        updatedAt: '2024-03-20T10:00:00Z'
     }
 ];
 
 export const mockWorkflow: Workflow = {
-    id: 'workflow-1',
+    id: 'workflow1',
     name: 'Customer Feedback Analysis Workflow',
-    description: 'Standard workflow for analyzing customer feedback',
-    status: 'current',
+    description: 'Workflow to analyze customer feedback and generate insights',
+    status: 'pending',
     stages: mockStages,
-    assets: mockAssets,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-02T02:00:00Z'
+    childVariables: [{
+        variable_id: 'workflow_input',
+        name: 'customer_feedback',
+        schema: {
+            type: 'string',
+            is_array: false,
+            description: 'Raw customer feedback data'
+        },
+        io_type: 'input',
+        required: true,
+        status: 'pending',
+        createdBy: 'workflow1'
+    }, {
+        variable_id: 'workflow_output',
+        name: 'analysis_report',
+        schema: {
+            type: 'object',
+            is_array: false,
+            description: 'Final analysis report with insights'
+        },
+        io_type: 'output',
+        status: 'pending',
+        createdBy: 'workflow1'
+    }],
+    inputMappings: [{
+        sourceVariableId: 'mission_input',
+        target: {
+            type: 'variable',
+            variableId: 'workflow_input'
+        }
+    }],
+    outputMappings: [{
+        sourceVariableId: 'workflow_output',
+        target: {
+            type: 'variable',
+            variableId: 'mission_output'
+        }
+    }],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
 };
 
 export const mockMission: Mission = {
-    id: 'mission-1',
+    id: 'mission1',
     title: 'Customer Feedback Analysis',
-    description: 'Analyze customer feedback to identify key insights and trends',
-    goal: 'Create a report on customer feedback that contains the most common issues and suggestions for improvement',
-    status: 'current',
+    goal: 'Analyze customer feedback to identify key trends and insights',
+    status: 'pending',
     workflow: mockWorkflow,
-    assets: mockAssets,
-    inputs: ['asset-1'],
-    outputs: ['asset-2'],
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-02T02:00:00Z'
+    inputs: [{
+        variable_id: 'mission_input',
+        name: 'customer_feedback',
+        schema: {
+            type: 'string',
+            is_array: false,
+            description: 'Raw customer feedback data'
+        },
+        io_type: 'input',
+        required: true,
+        status: 'pending',
+        createdBy: 'mission1'
+    }],
+    outputs: [{
+        variable_id: 'mission_output',
+        name: 'analysis_report',
+        schema: {
+            type: 'object',
+            is_array: false,
+            description: 'Final analysis report with insights'
+        },
+        io_type: 'output',
+        status: 'pending',
+        createdBy: 'mission1'
+    }],
+    resources: ['Customer Feedback Dataset'],
+    success_criteria: ['Identified key trends', 'Generated actionable insights'],
+    selectedTools: mockTools,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
 };
 
 export const mockChatMessages: ChatMessage[] = [
@@ -322,14 +518,9 @@ export const mockWorkspace: Workspace =
 
 export const mockWorkspaceState: WorkspaceState = {
     currentMissionId: 'mission-1',
-    currentStageId: 'stage-2',
-    currentStepPath: ['step-2-1', 'step-2-2'],
-    viewMode: 'expanded',
-    getCurrentPath: () => ({
-        missionId: 'mission-1',
-        stageId: 'stage-2',
-        stepPath: ['step-2-1', 'step-2-2']
-    })
+    currentStageId: 'stage-1',
+    currentStepPath: ['step-1'],
+    viewMode: 'compact'
 };
 // Complete mock data snapshot
 export const mockDataSnapshotSample: MockDataSnapshot = {

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, Database } from 'lucide-react';
-import type { WorkflowVariable, Stage, Step, Mission, VariableMapping } from '../types';
+import type { WorkflowVariable, Stage, Step, Mission, VariableMapping, MappingTarget, VariableTarget, VariableStatus } from '../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 interface WorkflowVariableBrowserProps {
@@ -109,7 +109,9 @@ const getAvailableInputs = (step: Step, stages: Stage[], mission: Mission): Work
     const availableInputs: WorkflowVariable[] = [];
 
     // Always include all mission inputs
-    availableInputs.push(...mission.inputs);
+    if (mission.childVariables) {
+        availableInputs.push(...mission.childVariables.filter(v => v.io_type === 'input'));
+    }
 
     // Get outputs from all ancestors
     const ancestors = getAncestors(step, stages);
@@ -135,107 +137,138 @@ const getAvailableInputs = (step: Step, stages: Stage[], mission: Mission): Work
 };
 
 const WorkflowVariableBrowser: React.FC<WorkflowVariableBrowserProps> = ({ className = '', stages, mission }) => {
-    const { state } = useFractalBot();
-    const { selectedStepId } = state;
+    const {
+        state,
+        updateStepInput,
+        updateStepOutput
+    } = useFractalBot();
 
-    // Find the selected step
-    const selectedStep = stages.flatMap(stage => stage.steps).find(step => step.id === selectedStepId);
+    const [selectedStep, setSelectedStep] = useState<string | null>(null);
 
-    // Get available inputs for the selected step
-    const availableInputs = selectedStep ?
-        getAvailableInputs(selectedStep, stages, mission) :
-        [];
+    const getAvailableInputs = (stepId: string) => {
+        if (!mission?.childVariables) return [];
+        return mission.childVariables.filter((v: WorkflowVariable) => v.io_type === 'input');
+    };
+
+    const getAvailableOutputs = (stepId: string) => {
+        if (!mission?.childVariables) return [];
+        return mission.childVariables.filter((v: WorkflowVariable) => v.io_type === 'output');
+    };
+
+    const getMappedInputs = (stepId: string) => {
+        if (!mission?.inputMappings) return [];
+        return mission.inputMappings.filter((m: VariableMapping) => m.sourceVariableId === stepId);
+    };
+
+    const getMappedOutputs = (stepId: string) => {
+        if (!mission?.outputMappings) return [];
+        return mission.outputMappings.filter((m: VariableMapping) => m.sourceVariableId === stepId);
+    };
+
+    const handleInputMapping = (stepId: string, inputId: string) => {
+        const input: WorkflowVariable = {
+            variable_id: inputId,
+            name: getAvailableInputs(stepId).find((v: WorkflowVariable) => v.variable_id === inputId)?.name || '',
+            io_type: 'input',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: ''
+            },
+            status: 'pending' as VariableStatus,
+            createdBy: stepId
+        };
+        updateStepInput(mission.id, stepId, input);
+    };
+
+    const handleOutputMapping = (stepId: string, outputId: string) => {
+        const output: WorkflowVariable = {
+            variable_id: outputId,
+            name: getAvailableOutputs(stepId).find((v: WorkflowVariable) => v.variable_id === outputId)?.name || '',
+            io_type: 'output',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: ''
+            },
+            status: 'pending' as VariableStatus,
+            createdBy: stepId
+        };
+        updateStepOutput(mission.id, stepId, output);
+    };
+
+    const getVariableIdFromTarget = (target: MappingTarget): string | undefined => {
+        if (target.type === 'variable') {
+            return target.variableId;
+        }
+        return undefined;
+    };
+
+    const getMappedVariableId = (mappings: VariableMapping[], variableId: string): string | undefined => {
+        const mapping = mappings.find((m: VariableMapping) => m.sourceVariableId === variableId);
+        if (mapping && mapping.target.type === 'variable') {
+            return mapping.target.variableId;
+        }
+        return undefined;
+    };
 
     return (
-        <div className={`flex flex-col h-full ${className}`}>
-            <div className="px-4 py-3 border-b dark:border-gray-700">
+        <div className={`dark:bg-[#1e2330] ${className}`}>
+            <div className="p-4">
                 <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow Variables</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-                {selectedStep ? (
-                    <div className="space-y-4">
-                        <div>
-                            <h4 className="text-xs text-gray-500 dark:text-gray-400">Available Inputs</h4>
-                            <div className="space-y-2">
-                                {availableInputs.map((variable) => (
-                                    <div
-                                        key={variable.variable_id}
-                                        className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 cursor-pointer"
-                                    >
-                                        {getVariableIcon('input')}
-                                        <span className="text-sm">{variable.name}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="text-xs text-gray-500 dark:text-gray-400">Input Mappings</h4>
-                            <div className="space-y-2">
-                                {selectedStep.inputMappings.map((mapping) => (
-                                    <div
-                                        key={`${mapping.sourceVariable.variable_id}-${mapping.targetVariable.variable_id}`}
-                                        className="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-800/50"
-                                    >
-                                        <div className="flex-1">
-                                            <div className="text-sm text-gray-900 dark:text-gray-100">{mapping.sourceVariable.name}</div>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400">→ {mapping.targetVariable.name}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="text-xs text-gray-500 dark:text-gray-400">Output Mappings</h4>
-                            <div className="space-y-2">
-                                {selectedStep.outputMappings.map((mapping) => (
-                                    <div
-                                        key={`${mapping.sourceVariable.variable_id}-${mapping.targetVariable.variable_id}`}
-                                        className="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-800/50"
-                                    >
-                                        <div className="flex-1">
-                                            <div className="text-sm text-gray-900 dark:text-gray-100">{mapping.sourceVariable.name}</div>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                → {mapping.targetVariable.name}
-                                                {mapping.isParentOutput && " (parent output)"}
+                <div className="mt-4 space-y-4">
+                    {stages.map((stage) => (
+                        <div key={stage.id} className="bg-gray-50 dark:bg-[#252b3b] p-4 rounded-lg">
+                            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">{stage.name}</h3>
+                            <div className="mt-2 grid grid-cols-2 gap-4">
+                                <div>
+                                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
+                                    <div className="mt-1 space-y-1">
+                                        {getAvailableInputs(stage.id).map((input: WorkflowVariable) => (
+                                            <div key={input.variable_id} className="flex items-center justify-between">
+                                                <span className="text-xs text-gray-600 dark:text-gray-300">{input.name}</span>
+                                                <select
+                                                    className="text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1"
+                                                    value={getMappedVariableId(getMappedInputs(stage.id), input.variable_id) || ''}
+                                                    onChange={(e) => handleInputMapping(stage.id, input.variable_id)}
+                                                >
+                                                    <option value="">Select mapping</option>
+                                                    {getAvailableInputs(stage.id).map((i: WorkflowVariable) => (
+                                                        <option key={i.variable_id} value={i.variable_id}>
+                                                            {i.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
+                                    <div className="mt-1 space-y-1">
+                                        {getAvailableOutputs(stage.id).map((output: WorkflowVariable) => (
+                                            <div key={output.variable_id} className="flex items-center justify-between">
+                                                <span className="text-xs text-gray-600 dark:text-gray-300">{output.name}</span>
+                                                <select
+                                                    className="text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1"
+                                                    value={getMappedVariableId(getMappedOutputs(stage.id), output.variable_id) || ''}
+                                                    onChange={(e) => handleOutputMapping(stage.id, output.variable_id)}
+                                                >
+                                                    <option value="">Select mapping</option>
+                                                    {getAvailableOutputs(stage.id).map((o: WorkflowVariable) => (
+                                                        <option key={o.variable_id} value={o.variable_id}>
+                                                            {o.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        <div>
-                            <h4 className="text-xs text-gray-500 dark:text-gray-400">Mission Inputs</h4>
-                            <div className="space-y-2">
-                                {mission.inputs.map((variable) => (
-                                    <div
-                                        key={variable.variable_id}
-                                        className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 cursor-pointer"
-                                    >
-                                        {getVariableIcon('input')}
-                                        <span className="text-sm">{variable.name}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="text-xs text-gray-500 dark:text-gray-400">Mission Outputs</h4>
-                            <div className="space-y-2">
-                                {mission.outputs.map((variable) => (
-                                    <div
-                                        key={variable.variable_id}
-                                        className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 cursor-pointer"
-                                    >
-                                        {getVariableIcon('output')}
-                                        <span className="text-sm">{variable.name}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
+                    ))}
+                </div>
             </div>
         </div>
     );

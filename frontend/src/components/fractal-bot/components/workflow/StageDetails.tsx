@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Stage, Step, Tool, WorkflowVariable } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { Plus } from 'lucide-react';
@@ -15,12 +15,12 @@ const getNewStep = (stage: Stage) => {
         id: stepId,
         name: `Step ${(stage.steps?.length || 0) + 1}`,
         description: '',
-        status: 'pending',
+        status: 'unresolved',
         type: 'atomic',
         tool_id: '',
-        assets: { inputs: [], outputs: [] },
-        inputs: [],
-        outputs: [],
+        childVariables: [],
+        inputMappings: [],
+        outputMappings: [],
         isSubstep: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -32,7 +32,18 @@ export default function StageDetails({ stage }: StageDetailsProps) {
     const { state, addStep, addSubstep, deleteStep, updateStepType, updateStepTool, updateStepInput, updateStepOutput } = useFractalBot();
 
     // Get all available inputs (workflow inputs + previous step outputs)
-    const availableInputs = getAvailableInputs(state.currentWorkflow, stage.id);
+    const availableInputs = useMemo(() => {
+        if (!state.currentWorkflow) return [];
+        return getAvailableInputs(state.currentWorkflow);
+    }, [state.currentWorkflow]);
+
+    // Calculate available inputs for each step
+    const stepsWithAvailableInputs = useMemo(() => {
+        return stage.steps.map(step => ({
+            ...step,
+            availableInputs: getAvailableInputs(state.currentWorkflow, step)
+        }));
+    }, [stage.steps, state.currentWorkflow]);
 
     const handleAddStep = () => {
         const newStep = getNewStep(stage);
@@ -73,6 +84,13 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         console.log('Edit step:', step);
     };
 
+    const handleUpdateStep = (step: Step) => {
+        // Update the step in the stage
+        const updatedSteps = stage.steps.map(s => s.id === step.id ? step : s);
+        // TODO: Implement step update logic
+        console.log('Update step:', step);
+    };
+
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div className="p-4 border-b border-gray-100 dark:border-gray-700">
@@ -99,14 +117,14 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                     <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
                         <ul className="mt-1 space-y-0.5">
-                            {stage.inputs.slice(0, 3).map((input: WorkflowVariable) => (
+                            {stage.childVariables?.filter(v => v.io_type === 'input').slice(0, 3).map((input: WorkflowVariable) => (
                                 <li key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
                                     {input.name}
                                 </li>
                             ))}
-                            {stage.inputs.length > 3 && (
+                            {stage.childVariables?.filter(v => v.io_type === 'input').length > 3 && (
                                 <li className="text-xs text-gray-500 dark:text-gray-400">
-                                    +{stage.inputs.length - 3} more
+                                    +{stage.childVariables.filter(v => v.io_type === 'input').length - 3} more
                                 </li>
                             )}
                         </ul>
@@ -114,14 +132,14 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                     <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
                         <ul className="mt-1 space-y-0.5">
-                            {stage.outputs.slice(0, 3).map((output: WorkflowVariable) => (
+                            {stage.childVariables?.filter(v => v.io_type === 'output').slice(0, 3).map((output: WorkflowVariable) => (
                                 <li key={output.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
                                     {output.name}
                                 </li>
                             ))}
-                            {stage.outputs.length > 3 && (
+                            {stage.childVariables?.filter(v => v.io_type === 'output').length > 3 && (
                                 <li className="text-xs text-gray-500 dark:text-gray-400">
-                                    +{stage.outputs.length - 3} more
+                                    +{stage.childVariables.filter(v => v.io_type === 'output').length - 3} more
                                 </li>
                             )}
                         </ul>
@@ -142,6 +160,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                             onToolSelect={handleToolSelect}
                             onInputSelect={handleInputSelect}
                             onOutputSelect={handleOutputSelect}
+                            onUpdateStep={handleUpdateStep}
                             availableTools={state.currentMission.selectedTools}
                             availableInputs={availableInputs}
                         />

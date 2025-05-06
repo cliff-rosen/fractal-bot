@@ -648,8 +648,70 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
 
                     // Handle the final workflow
                     if (data.stage_generator) {
-                        const workflow = createWorkflowFromStageGenerator(data.stage_generator);
-                        //setWorkspaceWithWorkflow(workflow);
+                        const now = new Date().toISOString();
+                        const workflow = {
+                            ...workflowTemplate,
+                            name: 'Proposed Workflow',
+                            description: data.stage_generator.explanation,
+                            stages: data.stage_generator.stages.map((stage: any, index: number) => {
+                                // Create input variables
+                                const inputVariables = (stage.inputs || []).map((input: any) => ({
+                                    variable_id: `stage-${index}-input-${input.name}`,
+                                    name: input.name,
+                                    schema: input.schema || {
+                                        type: 'string',
+                                        is_array: false,
+                                        description: `Input for ${stage.name}`
+                                    },
+                                    io_type: 'input',
+                                    required: true,
+                                    status: 'pending',
+                                    createdBy: `stage-${index}`
+                                }));
+
+                                // Create output variables
+                                const outputVariables = (stage.outputs || []).map((output: any) => ({
+                                    variable_id: `stage-${index}-output-${output.name}`,
+                                    name: output.name,
+                                    schema: output.schema || {
+                                        type: 'string',
+                                        is_array: false,
+                                        description: `Output from ${stage.name}`
+                                    },
+                                    io_type: 'output',
+                                    status: 'pending',
+                                    createdBy: `stage-${index}`
+                                }));
+
+                                return {
+                                    id: `stage-${index}`,
+                                    name: stage.name,
+                                    description: stage.description,
+                                    status: 'pending',
+                                    steps: [],
+                                    childVariables: [...inputVariables, ...outputVariables],
+                                    inputMappings: inputVariables.map(input => ({
+                                        sourceVariableId: input.variable_id,
+                                        target: {
+                                            type: 'variable',
+                                            variableId: input.variable_id
+                                        }
+                                    })),
+                                    outputMappings: outputVariables.map(output => ({
+                                        sourceVariableId: output.variable_id,
+                                        target: {
+                                            type: 'variable',
+                                            variableId: output.variable_id
+                                        }
+                                    })),
+                                    success_criteria: stage.success_criteria || [],
+                                    createdAt: now,
+                                    updatedAt: now
+                                };
+                            }),
+                            createdAt: now,
+                            updatedAt: now
+                        };
                         setWorkflow(workflow);
                     }
 
