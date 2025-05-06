@@ -237,8 +237,9 @@ export default function Step({
 
     // Get available inputs based on step position
     const stepAvailableInputs = useMemo(() => {
-        return step.availableInputs || [];
-    }, [step.availableInputs]);
+        if (!availableInputs) return [];
+        return availableInputs;
+    }, [availableInputs]);
 
     // Get filtered inputs based on selected tool
     const filteredInputs = useMemo(() => {
@@ -442,36 +443,60 @@ export default function Step({
             </div>
 
             {/* Inputs and Outputs - Only show for atomic steps with a selected tool */}
-            {step.type === 'atomic' && step.tool_id && (
+            {step.type === 'atomic' && (
                 <div className="mt-2 grid grid-cols-3 gap-4">
                     <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Available Inputs</h4>
                         <div className="space-y-1">
-                            {step.availableInputs?.map((input) => (
-                                <div key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300">
-                                    {input.name}
-                                </div>
-                            ))}
-                            {(!step.availableInputs || step.availableInputs.length === 0) && (
+                            {stepAvailableInputs.map((input) => {
+                                const isCompatible = step.tool_id ?
+                                    filteredInputs.some(fi => fi.variable_id === input.variable_id) :
+                                    true;
+
+                                return (
+                                    <div
+                                        key={input.variable_id}
+                                        className={`text-xs flex items-center gap-1 ${isCompatible
+                                            ? 'text-gray-600 dark:text-gray-300'
+                                            : 'text-gray-400 dark:text-gray-500 line-through'
+                                            }`}
+                                    >
+                                        {input.name}
+                                        {!isCompatible && step.tool_id && (
+                                            <div className="group relative">
+                                                <HelpCircle className="w-3 h-3" />
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none">
+                                                    Incompatible with selected tool's requirements
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            {(!stepAvailableInputs || stepAvailableInputs.length === 0) && (
                                 <div className="text-xs text-gray-400 dark:text-gray-500">No available inputs</div>
                             )}
                         </div>
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
-                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Inputs</h4>
-                        <InputMappingList
-                            step={step}
-                            availableInputs={stepAvailableInputs}
-                            onInputMapping={handleInputMapping}
-                        />
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
-                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Outputs</h4>
-                        <OutputMappingList
-                            step={step}
-                            onOutputMapping={handleOutputMapping}
-                        />
-                    </div>
+                    {step.tool_id && (
+                        <>
+                            <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Inputs</h4>
+                                <InputMappingList
+                                    step={step}
+                                    availableInputs={stepAvailableInputs}
+                                    onInputMapping={handleInputMapping}
+                                />
+                            </div>
+                            <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Outputs</h4>
+                                <OutputMappingList
+                                    step={step}
+                                    onOutputMapping={handleOutputMapping}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 

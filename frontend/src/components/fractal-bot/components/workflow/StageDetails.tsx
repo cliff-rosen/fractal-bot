@@ -31,18 +31,16 @@ const getNewStep = (stage: Stage) => {
 export default function StageDetails({ stage }: StageDetailsProps) {
     const { state, addStep, addSubstep, deleteStep, updateStepType, updateStepTool, updateStepInput, updateStepOutput } = useFractalBot();
 
-    // Get all available inputs (workflow inputs + previous step outputs)
-    const availableInputs = useMemo(() => {
-        if (!state.currentWorkflow) return [];
-        return getAvailableInputs(state.currentWorkflow);
-    }, [state.currentWorkflow]);
 
     // Calculate available inputs for each step
     const stepsWithAvailableInputs = useMemo(() => {
-        return stage.steps.map(step => ({
-            ...step,
-            availableInputs: getAvailableInputs(state.currentWorkflow, step)
-        }));
+        return stage.steps.map(step => {
+            const stepInputs = getAvailableInputs(state.currentWorkflow, step);
+            return {
+                ...step,
+                availableInputs: stepInputs
+            };
+        });
     }, [stage.steps, state.currentWorkflow]);
 
     const handleAddStep = () => {
@@ -149,7 +147,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
 
             <div className="p-4">
                 <div className="space-y-2">
-                    {stage.steps.map(step => (
+                    {stepsWithAvailableInputs.map(step => (
                         <StepComponent
                             key={step.id}
                             step={step}
@@ -162,7 +160,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                             onOutputSelect={handleOutputSelect}
                             onUpdateStep={handleUpdateStep}
                             availableTools={state.currentMission.selectedTools}
-                            availableInputs={availableInputs}
+                            availableInputs={step.availableInputs}
                         />
                     ))}
                 </div>
