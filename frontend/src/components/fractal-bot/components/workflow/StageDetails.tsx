@@ -29,7 +29,7 @@ const getNewStep = (stage: Stage) => {
 };
 
 export default function StageDetails({ stage }: StageDetailsProps) {
-    const { state, addStep, addSubstep, deleteStep, updateStepType, updateStepTool, updateStepInput, updateStepOutput } = useFractalBot();
+    const { state, addStep, addSubstep, deleteStep, updateStepType, updateStepTool, updateStepInput, updateStepOutput, updateWorkflow, updateStep } = useFractalBot();
 
 
     // Calculate available inputs for each step
@@ -83,10 +83,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
     };
 
     const handleUpdateStep = (step: Step) => {
-        // Update the step in the stage
-        const updatedSteps = stage.steps.map(s => s.id === step.id ? step : s);
-        // TODO: Implement step update logic
-        console.log('Update step:', step);
+        updateStep(stage.id, step);
     };
 
     return (

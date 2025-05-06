@@ -153,6 +153,7 @@ export interface Step {
     inputMappings: VariableMapping[];  // Maps available inputs to tool parameters
     outputMappings: VariableMapping[]; // Maps tool outputs to new variables
     tool_id: string;
+    tool?: Tool;  // The selected tool for this step
     substeps?: Step[];
     isSubstep?: boolean;
     status: StepStatus;

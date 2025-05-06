@@ -46,7 +46,9 @@ type FractalBotAction =
     | { type: 'UPDATE_STEP_TYPE'; payload: { stageId: string; stepId: string; type: 'atomic' | 'composite' } }
     | { type: 'UPDATE_STEP_TOOL'; payload: { stageId: string; stepId: string; tool: Tool } }
     | { type: 'UPDATE_STEP_INPUT'; payload: { stageId: string; stepId: string; input: WorkflowVariable } }
-    | { type: 'UPDATE_STEP_OUTPUT'; payload: { stageId: string; stepId: string; output: WorkflowVariable } };
+    | { type: 'UPDATE_STEP_OUTPUT'; payload: { stageId: string; stepId: string; output: WorkflowVariable } }
+    | { type: 'UPDATE_WORKFLOW'; payload: WorkflowType }
+    | { type: 'UPDATE_STEP'; payload: { stageId: string; step: Step } };
 
 // Initial state
 const initialState: FractalBotState = {
@@ -107,6 +109,8 @@ const FractalBotContext = createContext<{
     updateStepInput: (stageId: string, stepId: string, input: WorkflowVariable) => void;
     updateStepOutput: (stageId: string, stepId: string, output: WorkflowVariable) => void;
     setSelectedStep: (stepId: string | null) => void;
+    updateWorkflow: (workflow: WorkflowType) => void;
+    updateStep: (stageId: string, step: Step) => void;
 } | undefined>(undefined);
 
 // Reducer function
@@ -358,6 +362,40 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
                             ? {
                                 ...stage,
                                 steps: stage.steps.map(step => getTreeWithUpdatedOutput(step))
+                            }
+                            : stage
+                    )
+                }
+            };
+        }
+        case 'UPDATE_WORKFLOW':
+            return { ...state, currentWorkflow: action.payload };
+        case 'UPDATE_STEP': {
+            const { stageId, step } = action.payload;
+            const updateStepInTree = (steps: Step[]): Step[] => {
+                return steps.map(s => {
+                    if (s.id === step.id) {
+                        return step;
+                    }
+                    if (s.substeps) {
+                        return {
+                            ...s,
+                            substeps: updateStepInTree(s.substeps)
+                        };
+                    }
+                    return s;
+                });
+            };
+
+            return {
+                ...state,
+                currentWorkflow: {
+                    ...state.currentWorkflow,
+                    stages: state.currentWorkflow.stages.map(stage =>
+                        stage.id === stageId
+                            ? {
+                                ...stage,
+                                steps: updateStepInTree(stage.steps)
                             }
                             : stage
                     )
@@ -770,6 +808,14 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
         dispatch({ type: 'SET_SELECTED_STEP', payload: stepId });
     }, []);
 
+    const updateWorkflow = useCallback((workflow: WorkflowType) => {
+        dispatch({ type: 'UPDATE_WORKFLOW', payload: workflow });
+    }, []);
+
+    const updateStep = useCallback((stageId: string, step: Step) => {
+        dispatch({ type: 'UPDATE_STEP', payload: { stageId, step } });
+    }, []);
+
     return (
         <FractalBotContext.Provider value={{
             state,
@@ -807,6 +853,8 @@ export function FractalBotProvider({ children }: { children: React.ReactNode }) 
             updateStepInput,
             updateStepOutput,
             setSelectedStep,
+            updateWorkflow,
+            updateStep,
         }}>
             {children}
         </FractalBotContext.Provider>
