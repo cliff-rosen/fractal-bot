@@ -363,6 +363,7 @@ export default function Step({
 
     const handleAddSubstep = () => {
         const newStep = createNewStep(step);
+        console.log('newStep', newStep);
         onAddSubstep(newStep);
     };
 

@@ -46,7 +46,7 @@ export default function Mission({
         switch (status) {
             case 'completed':
                 return 'text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30';
-            case 'current':
+            case 'active':
                 return 'text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
             case 'failed':
                 return 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
@@ -69,6 +69,8 @@ export default function Mission({
                 return 'FAILED';
             case 'ready':
                 return 'READY';
+            case 'active':
+                return 'ACTIVE';
             default:
                 return 'PENDING';
         }
