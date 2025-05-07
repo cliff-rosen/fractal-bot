@@ -93,23 +93,23 @@ const InputMappingList = ({
     onInputMapping: (mappingIndex: number, sourceVariableId: string) => void;
 }) => {
     return (
-        <div className="space-y-2">
+        <div className="space-y-1">
             {step.inputMappings.map((mapping, index) => (
                 <div key={index} className="flex items-center justify-between gap-2">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-900 dark:text-gray-100">
+                    <div className="w-1/3">
+                        <div className="flex items-center gap-1">
+                            <span className="text-xs text-gray-600 dark:text-gray-300 truncate">
                                 {mapping.target.type === 'parameter' ? mapping.target.name : 'Input'}
                             </span>
                             {mapping.target.type === 'parameter' && mapping.target.required && (
-                                <span className="text-xs text-red-500">*</span>
+                                <span className="text-xs text-red-500 flex-none">*</span>
                             )}
                         </div>
                     </div>
                     <select
                         value={mapping.sourceVariableId}
                         onChange={(e) => onInputMapping(index, e.target.value)}
-                        className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        className="flex-1 text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                         <option value="">Select input</option>
                         {availableInputs.map(input => (
@@ -187,7 +187,7 @@ const OutputMappingList = ({
     };
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-1">
             {step.outputMappings.map((mapping, index) => {
                 const outputName = selectedTool?.outputs[index]?.name || `Output ${index + 1}`;
                 const outputDescription = selectedTool?.outputs[index]?.description;
@@ -195,13 +195,13 @@ const OutputMappingList = ({
 
                 return (
                     <div key={index} className="flex items-center justify-between gap-2">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-900 dark:text-gray-100">
+                        <div className="w-1/3">
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-600 dark:text-gray-300 truncate">
                                     {outputName}
                                 </span>
                                 {mapping.sourceVariableId && (
-                                    <div className="w-2 h-2 rounded-full" style={{
+                                    <div className="w-2 h-2 rounded-full flex-none" style={{
                                         backgroundColor: step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'ready'
                                             ? 'rgb(34 197 94)' // green-500
                                             : step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'error'
@@ -211,24 +211,24 @@ const OutputMappingList = ({
                                 )}
                             </div>
                             {outputDescription && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
                                     {outputDescription}
                                 </p>
                             )}
                         </div>
                         {isCreatingNew === index ? (
-                            <div className="flex flex-col gap-2">
+                            <div className="flex-1 flex flex-col gap-2">
                                 <input
                                     type="text"
                                     value={newOutputName}
                                     onChange={(e) => setNewOutputName(e.target.value)}
                                     placeholder="Output name"
-                                    className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                    className="text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                                 <select
                                     value={newOutputType}
                                     onChange={(e) => setNewOutputType(e.target.value as any)}
-                                    className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                    className="text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 >
                                     <option value="string">String</option>
                                     <option value="number">Number</option>
@@ -251,11 +251,11 @@ const OutputMappingList = ({
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex gap-2">
+                            <div className="flex-1 flex gap-2">
                                 <select
                                     value={mapping.sourceVariableId || ''}
                                     onChange={(e) => onOutputMapping(index, e.target.value)}
-                                    className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                    className="flex-1 text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 >
                                     <option value="">Select output</option>
                                     {availableInputs
@@ -272,7 +272,7 @@ const OutputMappingList = ({
                                 </select>
                                 <button
                                     onClick={() => setIsCreatingNew(index)}
-                                    className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                                    className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 flex-none"
                                 >
                                     New
                                 </button>
@@ -485,7 +485,7 @@ export default function Step({
 
     return (
         <div className="w-full">
-            <div className="grid grid-cols-[40px_1fr_180px_180px_120px] gap-4 items-start">
+            <div className="grid grid-cols-[40px_240px_1fr_1fr_120px] gap-4 items-start">
                 {/* Status Column */}
                 <div className="flex items-center justify-center pt-1.5">
                     <StepStatusDisplay status={stepStatus} />
@@ -615,7 +615,8 @@ export default function Step({
 
             {/* Inputs and Outputs - Only show for atomic steps with a selected tool */}
             {step.type === 'atomic' && (
-                <div className="mt-2 grid grid-cols-3 gap-4" style={{ marginLeft: `${depth * 20}px` }}>
+                <div className="mt-2 grid grid-cols-[40px_240px_1fr_1fr_120px] gap-4" style={{ marginLeft: `${depth * 20}px` }}>
+                    <div></div> {/* Empty cell to align with status column */}
                     <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Available Inputs</h4>
                         <div className="space-y-1">
@@ -645,13 +646,13 @@ export default function Step({
                                 );
                             })}
                             {(!stepAvailableInputs || stepAvailableInputs.length === 0) && (
-                                <div className="text-xs text-gray-400 dark:text-gray-500">No available inputs</div>
+                                <div className="text-xs text-gray-400 dark:text-gray-400">No available inputs</div>
                             )}
                         </div>
                     </div>
                     {step.tool_id && (
                         <>
-                            <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                            <div className="bg-white/50 dark:bg-gray-700/50 p-2 rounded-lg">
                                 <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Inputs</h4>
                                 <InputMappingList
                                     step={step}
@@ -659,7 +660,7 @@ export default function Step({
                                     onInputMapping={handleInputMapping}
                                 />
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
+                            <div className="bg-white/50 dark:bg-gray-700/50 p-2 rounded-lg">
                                 <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Outputs</h4>
                                 <OutputMappingList
                                     step={step}
@@ -671,6 +672,7 @@ export default function Step({
                             </div>
                         </>
                     )}
+                    <div></div> {/* Empty cell to align with actions column */}
                 </div>
             )}
 

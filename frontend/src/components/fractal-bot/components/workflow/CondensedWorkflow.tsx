@@ -25,13 +25,15 @@ export default function CondensedWorkflow() {
                     <div
                         key={stage.id}
                         onClick={() => handleStageClick(stage)}
-                        className={`flex-shrink-0 w-64 p-4 rounded-lg cursor-pointer transition-colors ${selectedStageId === stage.id
+                        className={`flex-shrink-0 w-64 p-4 rounded-lg cursor-pointer transition-colors flex flex-col ${selectedStageId === stage.id
                             ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
                             : 'bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                             }`}
                     >
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{stage.name}</h3>
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{stage.description}</p>
+                        <div className="h-[60px] flex flex-col">
+                            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">{stage.name}</h3>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{stage.description}</p>
+                        </div>
 
                         <div className="mt-3 grid grid-cols-2 gap-2">
                             <div className="bg-white/50 dark:bg-gray-700/50 p-2 rounded-lg">
