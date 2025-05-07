@@ -105,22 +105,23 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             </div>
 
             <div className="p-4">
-                <div className="space-y-2">
-                    {stepsWithAvailableInputs.map(step => (
-                        <StepComponent
-                            key={step.id}
-                            step={step}
-                            onAddSubstep={handleAddSubstep}
-                            onEditStep={handleEditStep}
-                            onDeleteStep={handleDeleteStep}
-                            onStepTypeChange={handleStepTypeChange}
-                            onToolSelect={handleToolSelect}
-                            onInputSelect={handleInputSelect}
-                            onOutputSelect={handleOutputSelect}
-                            onUpdateStep={handleUpdateStep}
-                            availableTools={state.currentMission.selectedTools}
-                            availableInputs={step.availableInputs}
-                        />
+                <div className="space-y-4">
+                    {stepsWithAvailableInputs.map((step, index) => (
+                        <div key={step.id} className={!step.isSubstep ? "border-b border-gray-100 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0" : ""}>
+                            <StepComponent
+                                step={step}
+                                onAddSubstep={handleAddSubstep}
+                                onEditStep={handleEditStep}
+                                onDeleteStep={handleDeleteStep}
+                                onStepTypeChange={handleStepTypeChange}
+                                onToolSelect={handleToolSelect}
+                                onInputSelect={handleInputSelect}
+                                onOutputSelect={handleOutputSelect}
+                                onUpdateStep={handleUpdateStep}
+                                availableTools={state.currentMission.selectedTools}
+                                availableInputs={step.availableInputs}
+                            />
+                        </div>
                     ))}
                 </div>
             </div>

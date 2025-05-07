@@ -216,34 +216,45 @@ export const toolsTemplate: Tool[] = [
 
 export const workflowExample: Workflow = {
     id: 'workflow-1',
-    name: 'College Research Workflow',
-    description: 'A workflow to research and analyze college programs',
+    name: 'Newsletter Processing Workflow',
+    description: 'A workflow to retrieve, extract, and summarize information from email newsletters',
     status: 'active',
     stages: [
         {
             id: 'stage-1',
-            name: 'Data Collection',
-            description: 'Gather information about colleges and programs',
+            name: 'Email Retrieval',
+            description: 'Connect to email and retrieve newsletters from specified senders',
             steps: [],
             childVariables: [{
-                variable_id: 'search_query',
-                name: 'search_query',
+                variable_id: 'email_credentials',
+                name: 'email_credentials',
                 schema: {
-                    type: 'string',
+                    type: 'object',
                     is_array: false,
-                    description: 'Search query for colleges with dance programs'
+                    description: 'Email account credentials and configuration',
+                    fields: {
+                        email: { type: 'string', is_array: false, description: 'Email address' },
+                        password: { type: 'string', is_array: false, description: 'Email password or app token' },
+                        folders: { type: 'string', is_array: true, description: 'Email folders to search' }
+                    }
                 },
                 io_type: 'input',
                 required: true,
                 status: 'pending',
                 createdBy: 'stage-1'
             }, {
-                variable_id: 'program_details',
-                name: 'program_details',
+                variable_id: 'retrieved_emails',
+                name: 'retrieved_emails',
                 schema: {
                     type: 'object',
                     is_array: true,
-                    description: 'Detailed information about dance programs'
+                    description: 'Retrieved newsletter emails',
+                    fields: {
+                        subject: { type: 'string', is_array: false, description: 'Email subject' },
+                        sender: { type: 'string', is_array: false, description: 'Sender email' },
+                        date: { type: 'string', is_array: false, description: 'Date received' },
+                        content: { type: 'string', is_array: false, description: 'Email content' }
+                    }
                 },
                 io_type: 'output',
                 status: 'pending',
@@ -252,34 +263,40 @@ export const workflowExample: Workflow = {
             inputMappings: [],
             outputMappings: [],
             status: 'pending',
-            success_criteria: ['Gather information from at least 10 colleges'],
+            success_criteria: ['Successfully connect to email account', 'Retrieve all newsletters from last 30 days'],
             createdAt: '2024-03-20T10:00:00Z',
             updatedAt: '2024-03-20T10:00:00Z'
         },
         {
             id: 'stage-2',
-            name: 'Analysis',
-            description: 'Analyze and compare programs',
+            name: 'Content Extraction',
+            description: 'Extract key information from newsletter content',
             steps: [],
             childVariables: [{
-                variable_id: 'program_details',
-                name: 'program_details',
+                variable_id: 'retrieved_emails',
+                name: 'retrieved_emails',
                 schema: {
                     type: 'object',
                     is_array: true,
-                    description: 'Program details to analyze'
+                    description: 'Retrieved newsletter emails'
                 },
                 io_type: 'input',
                 required: true,
                 status: 'pending',
                 createdBy: 'stage-2'
             }, {
-                variable_id: 'comparison_results',
-                name: 'comparison_results',
+                variable_id: 'extracted_info',
+                name: 'extracted_info',
                 schema: {
                     type: 'object',
                     is_array: true,
-                    description: 'Analysis results of dance programs'
+                    description: 'Extracted key information from newsletters',
+                    fields: {
+                        title: { type: 'string', is_array: false, description: 'Article title' },
+                        topics: { type: 'string', is_array: true, description: 'Main topics' },
+                        key_points: { type: 'string', is_array: true, description: 'Key points' },
+                        source: { type: 'string', is_array: false, description: 'Newsletter source' }
+                    }
                 },
                 io_type: 'output',
                 status: 'pending',
@@ -288,30 +305,72 @@ export const workflowExample: Workflow = {
             inputMappings: [],
             outputMappings: [],
             status: 'pending',
-            success_criteria: ['Complete comparison of all programs'],
+            success_criteria: ['Extract structured information from each newsletter', 'Identify main topics and key points'],
+            createdAt: '2024-03-20T10:00:00Z',
+            updatedAt: '2024-03-20T10:00:00Z'
+        },
+        {
+            id: 'stage-3',
+            name: 'Summary Generation',
+            description: 'Generate concise summaries and insights from extracted information',
+            steps: [],
+            childVariables: [{
+                variable_id: 'extracted_info',
+                name: 'extracted_info',
+                schema: {
+                    type: 'object',
+                    is_array: true,
+                    description: 'Extracted newsletter information'
+                },
+                io_type: 'input',
+                required: true,
+                status: 'pending',
+                createdBy: 'stage-3'
+            }, {
+                variable_id: 'newsletter_summary',
+                name: 'newsletter_summary',
+                schema: {
+                    type: 'object',
+                    is_array: false,
+                    description: 'Comprehensive summary of newsletters',
+                    fields: {
+                        overview: { type: 'string', is_array: false, description: 'High-level overview' },
+                        key_trends: { type: 'string', is_array: true, description: 'Identified trends' },
+                        highlights: { type: 'string', is_array: true, description: 'Important highlights' },
+                        recommendations: { type: 'string', is_array: true, description: 'Action items or recommendations' }
+                    }
+                },
+                io_type: 'output',
+                status: 'pending',
+                createdBy: 'stage-3'
+            }],
+            inputMappings: [],
+            outputMappings: [],
+            status: 'pending',
+            success_criteria: ['Generate comprehensive summary', 'Identify trends across newsletters', 'Provide actionable insights'],
             createdAt: '2024-03-20T10:00:00Z',
             updatedAt: '2024-03-20T10:00:00Z'
         }
     ],
     childVariables: [{
-        variable_id: 'search_query',
-        name: 'search_query',
+        variable_id: 'email_credentials',
+        name: 'email_credentials',
         schema: {
-            type: 'string',
+            type: 'object',
             is_array: false,
-            description: 'Search query for colleges with dance programs'
+            description: 'Email account credentials and configuration'
         },
         io_type: 'input',
         required: true,
         status: 'pending',
         createdBy: 'workflow-1'
     }, {
-        variable_id: 'comparison_results',
-        name: 'comparison_results',
+        variable_id: 'newsletter_summary',
+        name: 'newsletter_summary',
         schema: {
             type: 'object',
-            is_array: true,
-            description: 'Analysis results of dance programs'
+            is_array: false,
+            description: 'Final summary and insights from newsletters'
         },
         io_type: 'output',
         status: 'pending',
@@ -414,29 +473,29 @@ export const missionProposalTemplate: MissionProposal = {
 
 export const missionExample: Mission = {
     id: 'mission-1',
-    title: 'Research Dance Programs',
-    goal: 'Find and analyze dance programs at top colleges',
+    title: 'Newsletter Intelligence',
+    goal: 'Process and analyze email newsletters to extract key information and generate actionable insights',
     status: 'active',
     workflow: workflowExample,
     childVariables: [{
-        variable_id: 'search_query',
-        name: 'search_query',
+        variable_id: 'email_credentials',
+        name: 'email_credentials',
         schema: {
-            type: 'string',
+            type: 'object',
             is_array: false,
-            description: 'Search query for colleges with dance programs'
+            description: 'Email account credentials and configuration'
         },
         io_type: 'input',
         required: true,
         status: 'pending',
         createdBy: 'mission-1'
     }, {
-        variable_id: 'comparison_results',
-        name: 'comparison_results',
+        variable_id: 'newsletter_summary',
+        name: 'newsletter_summary',
         schema: {
             type: 'object',
-            is_array: true,
-            description: 'Analysis results of dance programs'
+            is_array: false,
+            description: 'Final summary and insights from newsletters'
         },
         io_type: 'output',
         status: 'pending',
@@ -444,8 +503,12 @@ export const missionExample: Mission = {
     }],
     inputMappings: [],
     outputMappings: [],
-    resources: ['College databases', 'Dance program directories'],
-    success_criteria: ['Find at least 10 colleges', 'Compare programs based on criteria'],
+    resources: ['Email API', 'Natural Language Processing Tools', 'Text Analysis Libraries'],
+    success_criteria: [
+        'Successfully process all newsletters from the last 30 days',
+        'Extract meaningful insights and trends',
+        'Generate actionable recommendations'
+    ],
     selectedTools: toolsTemplate,
     createdAt: '2024-03-20T10:00:00Z',
     updatedAt: '2024-03-20T10:00:00Z'
