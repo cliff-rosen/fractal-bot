@@ -37,15 +37,18 @@ export default function Workflow({ className = '' }: WorkflowProps) {
 
                 {/* Workflow Header */}
                 <div className="relative p-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col items-center text-center">
                         <div className="space-y-0.5">
                             <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow Stages</h2>
                             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{workflow.name || 'No Workflow'}</h3>
+                            {workflow.description && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{workflow.description}</p>
+                            )}
                         </div>
                         {shouldShowGenerateButton && (
                             <button
                                 onClick={handleGenerateWorkflowClick}
-                                className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                className="mt-4 px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                             >
                                 Generate Workflow
                             </button>

@@ -79,15 +79,21 @@ export default function Mission({
     return (
         <div className={`dark:bg-[#1e2330] ${className}`}>
             <div className="p-4">
-                <div className="flex justify-between items-start">
-                    <div className="space-y-0.5">
-                        <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Mission</h2>
-                        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-200">{mission.title || 'No Mission Selected'}</h1>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
-                            {mission.goal || 'No mission goal defined'}
-                        </p>
+                {/* Mission Header */}
+                <div className="relative">
+                    {/* Centered Mission Title */}
+                    <div className="flex flex-col items-center text-center mb-4">
+                        <div className="space-y-0.5">
+                            <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Mission</h2>
+                            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-200">{mission.title || 'No Mission Selected'}</h1>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
+                                {mission.goal || 'No mission goal defined'}
+                            </p>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    {/* Action Buttons */}
+                    <div className="absolute top-0 right-0 flex items-center gap-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${getStatusColor(mission.status)} dark:bg-opacity-20`}>
                             {getStatusText(mission.status)}
                         </span>
