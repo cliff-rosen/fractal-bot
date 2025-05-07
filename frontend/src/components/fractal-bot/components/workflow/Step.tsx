@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { Step, Tool, WorkflowVariable, StepStatus, VariableStatus, VariableMapping } from '../../types';
 import { Pencil, Sparkles, Plus, Trash2, AlertCircle, CheckCircle2, Clock, Settings, ArrowRight, XCircle, HelpCircle } from 'lucide-react';
 import { getFilteredInputs, getStepStatus, getAvailableInputs } from '../../utils/utils';
@@ -229,6 +229,8 @@ export default function Step({
     depth = 0
 }: StepProps) {
     const { setSelectedStep } = useFractalBot();
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [stepName, setStepName] = useState(step.name);
 
     // Get available inputs based on step position
     const stepAvailableInputs = useMemo(() => {
@@ -363,6 +365,31 @@ export default function Step({
         onAddSubstep(step);
     };
 
+    const handleNameEdit = () => {
+        setIsEditingName(true);
+    };
+
+    const handleNameSave = () => {
+        onUpdateStep({
+            ...step,
+            name: stepName
+        });
+        setIsEditingName(false);
+    };
+
+    const handleNameCancel = () => {
+        setStepName(step.name);
+        setIsEditingName(false);
+    };
+
+    const handleNameKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleNameSave();
+        } else if (e.key === 'Escape') {
+            handleNameCancel();
+        }
+    };
+
     return (
         <div className="w-full">
             <div className="grid grid-cols-[40px_1fr_180px_180px_120px] gap-4 items-start">
@@ -374,7 +401,40 @@ export default function Step({
                 {/* Name Column */}
                 <div className="flex items-center gap-2 min-w-0">
                     <div style={{ marginLeft: `${depth * 20}px` }} className="flex items-center gap-2 min-w-0">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{step.name}</h3>
+                        {isEditingName ? (
+                            <div className="flex items-center gap-2 w-full">
+                                <input
+                                    type="text"
+                                    value={stepName}
+                                    onChange={(e) => setStepName(e.target.value)}
+                                    onKeyDown={handleNameKeyDown}
+                                    className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-full"
+                                    autoFocus
+                                />
+                                <button
+                                    onClick={handleNameSave}
+                                    className="p-1 text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={handleNameCancel}
+                                    className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                >
+                                    <XCircle className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 group">
+                                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{step.name}</h3>
+                                <button
+                                    onClick={handleNameEdit}
+                                    className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <Pencil className="w-3 h-3" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
