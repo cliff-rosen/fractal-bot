@@ -134,15 +134,10 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                         ))}
                     </div>
                 </div>
-
                 {/* Stage Details */}
-                {workflow.stages.map((stage: Stage) => (
-                    expandedStages.has(stage.id) && (
-                        <div key={stage.id} className="relative px-4 pb-4">
-                            <StageDetails stage={stage} />
-                        </div>
-                    )
-                ))}
+                <div key={workflow.stages[0].id} className="relative px-4 pb-4">
+                    <StageDetails stage={workflow.stages[0]} />
+                </div>
             </div>
         </div>
     );
