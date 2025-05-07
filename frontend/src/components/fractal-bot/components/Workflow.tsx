@@ -1,87 +1,149 @@
 import React, { useState } from 'react';
-import { LayoutGrid, List } from 'lucide-react';
-import CondensedWorkflow from './workflow/CondensedWorkflow';
-import FullWorkflow from './workflow/FullWorkflow';
 import { useFractalBot } from '@/context/FractalBotContext';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import type { Stage } from '../types';
+import StageDetails from './workflow/StageDetails';
 
 interface WorkflowProps {
+    className?: string;
 }
 
-export default function Workflow({ }: WorkflowProps) {
-    const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('compact');
-    const [isGenerating, setIsGenerating] = useState(false);
+export default function Workflow({ className = '' }: WorkflowProps) {
+    const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
     const { state, generateWorkflow } = useFractalBot();
 
     const workflow = state.currentWorkflow;
 
     const handleGenerateWorkflowClick = async () => {
-        setIsGenerating(true);
         try {
             await generateWorkflow();
-        } finally {
-            setIsGenerating(false);
+        } catch (error) {
+            console.error('Failed to generate workflow:', error);
         }
+    };
+
+    const toggleStage = (stageId: string) => {
+        const newExpandedStages = new Set(expandedStages);
+        if (newExpandedStages.has(stageId)) {
+            newExpandedStages.delete(stageId);
+        } else {
+            newExpandedStages.add(stageId);
+        }
+        setExpandedStages(newExpandedStages);
     };
 
     // Show generate button only when mission is ready and workflow is not ready
     const shouldShowGenerateButton = state.currentMission.status === 'ready' && workflow.status !== 'ready';
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow p-6`}>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow</h2>
-                <div className="flex space-x-2">
-                    <button
-                        onClick={() => setViewMode('compact')}
-                        className={`p-2 rounded-lg ${viewMode === 'compact'
-                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                            : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
-                    >
-                        <LayoutGrid className="w-5 h-5" />
-                    </button>
-                    <button
-                        onClick={() => setViewMode('expanded')}
-                        className={`p-2 rounded-lg ${viewMode === 'expanded'
-                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                            : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
-                    >
-                        <List className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
+        <div className={`bg-white dark:bg-gray-800 rounded-lg shadow ${className}`}>
+            {/* Vertical Line from Mission to Stages */}
+            <div className="relative">
+                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700 transform -translate-x-1/2"></div>
 
-            {viewMode === 'compact' ? (
-                <CondensedWorkflow />
-            ) : (
-                <FullWorkflow />
-            )}
-
-            {shouldShowGenerateButton && (
-                <div className="mt-6 flex justify-end">
-                    <button
-                        onClick={handleGenerateWorkflowClick}
-                        disabled={isGenerating}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isGenerating
-                            ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/40'
-                            }`}
-                    >
-                        {isGenerating ? (
-                            <span className="flex items-center gap-2">
-                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Generating...
-                            </span>
-                        ) : (
-                            'Generate Workflow'
+                {/* Workflow Header */}
+                <div className="relative p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-between items-center">
+                        <div className="space-y-0.5">
+                            <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow Stages</h2>
+                            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{workflow.name || 'No Workflow'}</h3>
+                        </div>
+                        {shouldShowGenerateButton && (
+                            <button
+                                onClick={handleGenerateWorkflowClick}
+                                className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                            >
+                                Generate Workflow
+                            </button>
                         )}
-                    </button>
+                    </div>
                 </div>
-            )}
+
+                {/* Horizontal Stages */}
+                <div className="relative py-12">
+                    <div className="flex justify-center items-start gap-16">
+                        {workflow.stages.map((stage: Stage, index: number) => (
+                            <div key={stage.id} className="relative w-80">
+                                {/* Stage Card */}
+                                <div
+                                    className="bg-gray-50 dark:bg-[#252b3b] rounded-lg p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                    onClick={() => toggleStage(stage.id)}
+                                >
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
+                                            {index + 1}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                {stage.name}
+                                            </h4>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                                                {stage.description}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${stage.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                                stage.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                                                }`}>
+                                                {stage.status.toUpperCase()}
+                                            </span>
+                                            {expandedStages.has(stage.id) ? (
+                                                <ChevronDown className="w-4 h-4 text-gray-400" />
+                                            ) : (
+                                                <ChevronRight className="w-4 h-4 text-gray-400" />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Stage Inputs and Outputs */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Stage Inputs */}
+                                        <div>
+                                            <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Inputs</h5>
+                                            <ul className="space-y-1">
+                                                {stage.childVariables?.filter(v => v.io_type === 'input').map((input) => (
+                                                    <li key={input.variable_id} className="flex items-center gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{input.name}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                        {/* Stage Outputs */}
+                                        <div>
+                                            <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Outputs</h5>
+                                            <ul className="space-y-1">
+                                                {stage.childVariables?.filter(v => v.io_type === 'output').map((output) => (
+                                                    <li key={output.variable_id} className="flex items-center gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{output.name}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Vertical Line to Steps */}
+                                {expandedStages.has(stage.id) && (
+                                    <div className="absolute left-1/2 top-full w-0.5 h-8 bg-gray-200 dark:bg-gray-700 transform -translate-x-1/2"></div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Stage Details */}
+                {workflow.stages.map((stage: Stage) => (
+                    expandedStages.has(stage.id) && (
+                        <div key={stage.id} className="relative px-4 pb-4">
+                            <StageDetails stage={stage} />
+                        </div>
+                    )
+                ))}
+            </div>
         </div>
     );
 } 
