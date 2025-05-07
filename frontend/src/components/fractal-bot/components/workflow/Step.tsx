@@ -217,7 +217,6 @@ export default function Step({
     step,
     parentStep,
     onAddSubstep,
-    onEditStep,
     onDeleteStep,
     onStepTypeChange,
     onToolSelect,
@@ -229,8 +228,9 @@ export default function Step({
     depth = 0
 }: StepProps) {
     const { setSelectedStep } = useFractalBot();
-    const [isEditingName, setIsEditingName] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [stepName, setStepName] = useState(step.name);
+    const [stepDescription, setStepDescription] = useState(step.description);
 
     // Get available inputs based on step position
     const stepAvailableInputs = useMemo(() => {
@@ -250,12 +250,6 @@ export default function Step({
     const stepStatus = useMemo(() => {
         return getStepStatus(step);
     }, [step]);
-
-    const handleEditClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setSelectedStep(step.id);
-        onEditStep?.(step);
-    };
 
     const handleAISuggestion = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -365,28 +359,31 @@ export default function Step({
         onAddSubstep(step);
     };
 
-    const handleNameEdit = () => {
-        setIsEditingName(true);
+    const handleEdit = () => {
+        setIsEditing(true);
     };
 
-    const handleNameSave = () => {
+    const handleSave = () => {
         onUpdateStep({
             ...step,
-            name: stepName
+            name: stepName,
+            description: stepDescription
         });
-        setIsEditingName(false);
+        setIsEditing(false);
     };
 
-    const handleNameCancel = () => {
+    const handleCancel = () => {
         setStepName(step.name);
-        setIsEditingName(false);
+        setStepDescription(step.description);
+        setIsEditing(false);
     };
 
-    const handleNameKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleNameSave();
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSave();
         } else if (e.key === 'Escape') {
-            handleNameCancel();
+            handleCancel();
         }
     };
 
@@ -398,41 +395,68 @@ export default function Step({
                     <StepStatusDisplay status={stepStatus} />
                 </div>
 
-                {/* Name Column */}
-                <div className="flex items-center gap-2 min-w-0">
-                    <div style={{ marginLeft: `${depth * 20}px` }} className="flex items-center gap-2 min-w-0">
-                        {isEditingName ? (
-                            <div className="flex items-center gap-2 w-full">
-                                <input
-                                    type="text"
-                                    value={stepName}
-                                    onChange={(e) => setStepName(e.target.value)}
-                                    onKeyDown={handleNameKeyDown}
-                                    className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-full"
-                                    autoFocus
+                {/* Name and Description Column */}
+                <div className="flex items-start gap-2 min-w-0">
+                    <div style={{ marginLeft: `${(depth - 1) * 20}px` }} className="flex flex-col gap-1 min-w-0">
+                        {depth > 0 && (
+                            <div className="flex items-center">
+                                <div className="relative w-4 h-4 flex items-center justify-center">
+                                    <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-gray-300 dark:bg-gray-600"></div>
+                                    <div className="absolute left-0 right-0 top-1/2 h-[1px] bg-gray-300 dark:bg-gray-600"></div>
+                                    <div className="w-2 h-2 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                                        <ArrowRight className="w-2 h-2" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {isEditing ? (
+                            <div className="flex flex-col gap-2 w-full">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={stepName}
+                                        onChange={(e) => setStepName(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-full"
+                                        placeholder="Step name"
+                                        autoFocus
+                                    />
+                                    <button
+                                        onClick={handleSave}
+                                        className="p-1 text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                                    >
+                                        <CheckCircle2 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={handleCancel}
+                                        className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                    >
+                                        <XCircle className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                <textarea
+                                    value={stepDescription}
+                                    onChange={(e) => setStepDescription(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-full resize-none"
+                                    placeholder="Step description"
+                                    rows={2}
                                 />
-                                <button
-                                    onClick={handleNameSave}
-                                    className="p-1 text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
-                                >
-                                    <CheckCircle2 className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={handleNameCancel}
-                                    className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                >
-                                    <XCircle className="w-4 h-4" />
-                                </button>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2 group">
-                                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{step.name}</h3>
-                                <button
-                                    onClick={handleNameEdit}
-                                    className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    <Pencil className="w-3 h-3" />
-                                </button>
+                            <div className="flex flex-col gap-1 group">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{step.name}</h3>
+                                    <button
+                                        onClick={handleEdit}
+                                        className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <Pencil className="w-3 h-3" />
+                                    </button>
+                                </div>
+                                {step.description && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{step.description}</p>
+                                )}
                             </div>
                         )}
                     </div>
@@ -478,12 +502,6 @@ export default function Step({
 
                 {/* Actions Column */}
                 <div className="flex items-center gap-1 justify-end">
-                    <button
-                        onClick={handleEditClick}
-                        className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                        <Pencil className="w-3 h-3" />
-                    </button>
                     <button
                         onClick={handleAISuggestion}
                         className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -566,7 +584,6 @@ export default function Step({
                             step={substep}
                             parentStep={step}
                             onAddSubstep={onAddSubstep}
-                            onEditStep={onEditStep}
                             onDeleteStep={onDeleteStep}
                             onStepTypeChange={onStepTypeChange}
                             onToolSelect={onToolSelect}
