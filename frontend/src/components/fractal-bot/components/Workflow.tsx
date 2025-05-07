@@ -64,9 +64,17 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                     </div>
                 </div>
 
-                {/* Vertical line between workflow and step list */}
+                {/* Vertical line between workflow and step list, aligned with selected stage */}
                 {state.currentStageIdx !== null && (
-                    <div className="w-1 h-4 bg-gray-400 dark:bg-gray-600 my-1 rounded mx-auto"></div>
+                    <div className="flex justify-center items-start gap-16" style={{ minHeight: '1.5rem' }}>
+                        {workflow.stages.map((_, idx) => (
+                            <div key={idx} className="flex-1 flex justify-center">
+                                {state.currentStageIdx === idx ? (
+                                    <div className="w-1 h-4 bg-blue-500 dark:bg-blue-400 my-1 rounded"></div>
+                                ) : null}
+                            </div>
+                        ))}
+                    </div>
                 )}
 
                 {/* Stage Details */}

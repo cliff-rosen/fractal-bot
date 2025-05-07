@@ -83,7 +83,7 @@ export default function FractalBot() {
                   </div>
 
                   {/* Vertical line as a flex child */}
-                  <div className="w-1 h-4 bg-gray-400 dark:bg-gray-600 my-1 rounded"></div>
+                  <div className="w-1 h-4 bg-blue-500 dark:bg-blue-400 my-1 rounded"></div>
 
                   {/* Stage Tracker */}
                   <div className="pt-2 w-full">
