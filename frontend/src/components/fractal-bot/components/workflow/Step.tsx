@@ -60,42 +60,25 @@ const VariableStatusBadge = ({ status, error_message }: { status: VariableStatus
 const StepStatusDisplay = ({ status }: { status: StepStatus }) => {
     const getStatusColor = () => {
         switch (status) {
-            case 'ready':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-            case 'failed':
-                return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-            case 'in_progress':
-                return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+            case 'unresolved':
+                return 'bg-red-500';
             case 'pending_inputs_ready':
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-            case 'completed':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-            default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-        }
-    };
-
-    const getStatusIcon = () => {
-        switch (status) {
+                return 'bg-yellow-500';
             case 'ready':
-            case 'completed':
-                return <CheckCircle2 className="w-3 h-3" />;
-            case 'failed':
-                return <AlertCircle className="w-3 h-3" />;
+                return 'bg-green-500';
             case 'in_progress':
-                return <ArrowRight className="w-3 h-3" />;
-            case 'pending_inputs_ready':
-                return <Clock className="w-3 h-3" />;
+                return 'bg-blue-500';
+            case 'completed':
+                return 'bg-green-500';
+            case 'failed':
+                return 'bg-red-500';
             default:
-                return <Settings className="w-3 h-3" />;
+                return 'bg-gray-500';
         }
     };
 
     return (
-        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getStatusColor()}`}>
-            {getStatusIcon()}
-            <span>{status}</span>
-        </div>
+        <span className={`w-2 h-2 rounded-full ${getStatusColor()} animate-pulse`}></span>
     );
 };
 
@@ -149,30 +132,42 @@ const OutputMappingList = ({
     step: Step;
     onOutputMapping: (outputIndex: number, createNew: boolean) => void;
 }) => {
+    const selectedTool = step.tool_id ? step.tool : undefined;
+
     return (
         <div className="space-y-2">
-            {step.outputMappings.map((mapping, index) => (
-                <div key={index} className="flex items-center justify-between gap-2">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-900 dark:text-gray-100">
-                                Output {index + 1}
-                            </span>
-                            {mapping.sourceVariableId && (
-                                <VariableStatusBadge
-                                    status={step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status || 'pending'}
-                                />
+            {step.outputMappings.map((mapping, index) => {
+                const outputName = selectedTool?.outputs[index]?.name || `Output ${index + 1}`;
+                const outputDescription = selectedTool?.outputs[index]?.description;
+
+                return (
+                    <div key={index} className="flex items-center justify-between gap-2">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-900 dark:text-gray-100">
+                                    {outputName}
+                                </span>
+                                {mapping.sourceVariableId && (
+                                    <VariableStatusBadge
+                                        status={step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status || 'pending'}
+                                    />
+                                )}
+                            </div>
+                            {outputDescription && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {outputDescription}
+                                </p>
                             )}
                         </div>
+                        <button
+                            onClick={() => onOutputMapping(index, true)}
+                            className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                        >
+                            Create New Variable
+                        </button>
                     </div>
-                    <button
-                        onClick={() => onOutputMapping(index, true)}
-                        className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                    >
-                        Create New Variable
-                    </button>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 };
@@ -363,15 +358,16 @@ export default function Step({
 
     const handleAddSubstep = () => {
         const newStep = createNewStep(step);
+        console.log('step', step);
         console.log('newStep', newStep);
-        onAddSubstep(newStep);
+        onAddSubstep(step);
     };
 
     return (
         <div className="w-full">
-            <div className="grid grid-cols-[100px_200px_200px_1fr_100px] gap-4 items-start">
+            <div className="grid grid-cols-[40px_1fr_180px_180px_120px] gap-4 items-start">
                 {/* Status Column */}
-                <div className="flex items-center">
+                <div className="flex items-center justify-center pt-1.5">
                     <StepStatusDisplay status={stepStatus} />
                 </div>
 
@@ -394,7 +390,7 @@ export default function Step({
                     </select>
                 </div>
 
-                {/* Additional Space Column */}
+                {/* Tool Selection Column */}
                 <div className="flex items-center">
                     {step.type === 'atomic' ? (
                         <select
@@ -445,7 +441,7 @@ export default function Step({
 
             {/* Inputs and Outputs - Only show for atomic steps with a selected tool */}
             {step.type === 'atomic' && (
-                <div className="mt-2 grid grid-cols-3 gap-4">
+                <div className="mt-2 grid grid-cols-3 gap-4" style={{ marginLeft: `${depth * 20}px` }}>
                     <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Available Inputs</h4>
                         <div className="space-y-1">

@@ -171,6 +171,7 @@ function fractalBotReducer(state: FractalBotState, action: FractalBotAction): Fr
             };
         }
         case 'ADD_SUBSTEP': {
+            console.log('ADD_SUBSTEP', action.payload);
             const { stageId, parentStepId, step } = action.payload;
             const addSubstepToStep = (steps: Step[], targetId: string): Step[] => {
                 return steps.map(step => {
