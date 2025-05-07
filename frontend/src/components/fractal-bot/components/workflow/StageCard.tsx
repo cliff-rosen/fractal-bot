@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import type { Stage } from '../types';
+import type { Stage } from '../../types';
 
 interface StageCardProps {
     stage: Stage;

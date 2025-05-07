@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Chat from './components/Chat';
 import Mission from './components/Mission';
-import Workflow from './components/Workflow';
+import Workflow from './components/workflow/Workflow';
 import WorkflowVariableBrowser from './components/WorkflowVariableBrowser';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
@@ -40,7 +40,7 @@ export default function FractalBot() {
         <div className="flex h-full gap-4 px-4">
           {/* Left Chat Rail */}
           <div
-            className={`relative transition-all duration-300 ease-in-out ${isChatCollapsed ? 'w-12' : 'w-[400px]'
+            className={`relative transition-all duration-300 ease-in-out ${isChatCollapsed ? 'w-0' : 'w-[400px]'}
               } h-full flex-shrink-0`}
           >
             <button

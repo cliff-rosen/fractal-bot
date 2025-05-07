@@ -33,21 +33,26 @@ class WorkflowVariable(BaseModel):
     io_type: str
     required: Optional[bool] = None
 
-class ToolStep(BaseModel):
+class ToolIO(BaseModel):
     name: str
-    description: str
-    tool_id: str
-    inputs: List[WorkflowVariable]
-    outputs: List[WorkflowVariable]
+    description: str = ""
+    schema: Schema
+    required: bool = False
 
 class Tool(BaseModel):
     id: str
     name: str
     description: str
     category: str
-    inputs: List[WorkflowVariable]
-    outputs: List[WorkflowVariable]
-    steps: Optional[List[ToolStep]] = None
+    inputs: List[ToolIO]
+    outputs: List[ToolIO]
+    steps: Optional[List[Any]] = None
+
+class ToolStep(BaseModel):
+    name: str
+    description: str
+    tool_id: str
+    # ToolStep IOs should use ToolIO or be omitted if not needed
 
 ### WORKFLOW ###
 
@@ -73,8 +78,7 @@ class Stage(BaseModel):
     description: str
     status: str
     steps: List[Step]
-    inputs: List[WorkflowVariable]
-    outputs: List[WorkflowVariable]
+    childVariables: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
     createdAt: str
     updatedAt: str
@@ -85,8 +89,9 @@ class Workflow(BaseModel):
     description: str
     status: str
     stages: List[Stage]
-    inputs: List[WorkflowVariable]
-    outputs: List[WorkflowVariable]
+    childVariables: List[WorkflowVariable]
+    inputMappings: List[Any] = []
+    outputMappings: List[Any] = []
     createdAt: str
     updatedAt: str
 
@@ -96,9 +101,10 @@ class Mission(BaseModel):
     goal: str
     status: str
     workflow: Workflow
-    inputs: List[WorkflowVariable]
+    childVariables: List[WorkflowVariable]
+    inputMappings: List[Any] = []
+    outputMappings: List[Any] = []
     resources: List[str]
-    outputs: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify mission completion")
     selectedTools: List[Tool] = Field(default_factory=list, description="Tools selected for this mission")
     createdAt: str
@@ -107,18 +113,20 @@ class Mission(BaseModel):
 class MissionProposal(BaseModel):
     title: str
     goal: str
-    inputs: List[WorkflowVariable]
+    childVariables: List[WorkflowVariable]
+    inputMappings: List[Any] = []
+    outputMappings: List[Any] = []
     resources: List[str] = Field(default_factory=list)
-    outputs: List[WorkflowVariable]
     success_criteria: List[str]
     selectedTools: List[Tool] = Field(default_factory=list)
+    has_sufficient_info: bool
+    missing_info_explanation: str
 
 class StageProposal(BaseModel):
     id: str
     name: str
     description: str
-    inputs: List[WorkflowVariable]
-    outputs: List[WorkflowVariable]
+    childVariables: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
 
 ### BOT REQUEST ###

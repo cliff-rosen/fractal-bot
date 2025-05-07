@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFractalBot } from '@/context/FractalBotContext';
-import type { Stage } from '../types';
-import StepsList from './workflow/StepsList';
+import type { Stage } from '../../types';
+import StepsList from './StepsList';
 import StageCard from './StageCard';
 
 interface WorkflowProps {

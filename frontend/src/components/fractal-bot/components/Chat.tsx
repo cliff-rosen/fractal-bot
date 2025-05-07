@@ -56,7 +56,7 @@ export default function Chat({ messages, onNewMessage, streamingMessage }: ChatP
     };
 
     return (
-        <div className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <div className="h-full flex flex-col bg-white dark:bg-gray-800 shadow-sm">
             <div className="flex-shrink-0 px-4 py-3 border-b dark:border-gray-700">
                 <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Chat</h2>
             </div>
