@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { Stage } from '../types';
-import StageDetails from './workflow/StageDetails';
+import StepsList from './workflow/StepsList';
 
 interface WorkflowProps {
     className?: string;
 }
 
 export default function Workflow({ className = '' }: WorkflowProps) {
-    const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
-    const { state, generateWorkflow } = useFractalBot();
+    const { state, generateWorkflow, setCurrentStage } = useFractalBot();
 
     const workflow = state.currentWorkflow;
 
@@ -22,14 +21,9 @@ export default function Workflow({ className = '' }: WorkflowProps) {
         }
     };
 
-    const toggleStage = (stageId: string) => {
-        const newExpandedStages = new Set(expandedStages);
-        if (newExpandedStages.has(stageId)) {
-            newExpandedStages.delete(stageId);
-        } else {
-            newExpandedStages.add(stageId);
-        }
-        setExpandedStages(newExpandedStages);
+    const handleStageClick = (stageIdx: number) => {
+        console.log('handleStageClick', stageIdx);
+        setCurrentStage(stageIdx);
     };
 
     // Show generate button only when mission is ready and workflow is not ready
@@ -67,7 +61,7 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                                 {/* Stage Card */}
                                 <div
                                     className="bg-gray-50 dark:bg-[#252b3b] rounded-lg p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
-                                    onClick={() => toggleStage(stage.id)}
+                                    onClick={() => handleStageClick(index)}
                                 >
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
@@ -88,7 +82,7 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                                                 }`}>
                                                 {stage.status.toUpperCase()}
                                             </span>
-                                            {expandedStages.has(stage.id) ? (
+                                            {state.currentStageIdx === index ? (
                                                 <ChevronDown className="w-4 h-4 text-gray-400" />
                                             ) : (
                                                 <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -127,7 +121,7 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                                 </div>
 
                                 {/* Vertical Line to Steps */}
-                                {expandedStages.has(stage.id) && (
+                                {state.currentStageIdx === index && (
                                     <div className="absolute left-1/2 top-full w-0.5 h-8 bg-gray-200 dark:bg-gray-700 transform -translate-x-1/2"></div>
                                 )}
                             </div>
@@ -135,9 +129,11 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                     </div>
                 </div>
                 {/* Stage Details */}
-                <div key={workflow.stages[0].id} className="relative px-4 pb-4">
-                    <StageDetails stage={workflow.stages[0]} />
-                </div>
+                {state.currentStageIdx !== null && (
+                    <div className="relative px-4 pb-4">
+                        <StepsList stage={workflow.stages[state.currentStageIdx]} />
+                    </div>
+                )}
             </div>
         </div>
     );

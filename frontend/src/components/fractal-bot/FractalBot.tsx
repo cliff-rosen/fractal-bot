@@ -11,8 +11,8 @@ import type { Stage, Step } from './types/index';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function FractalBot() {
-  const [isRightColumnCollapsed, setIsRightColumnCollapsed] = useState(false);
-  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [isRightColumnCollapsed, setIsRightColumnCollapsed] = useState(true);
+  const [isChatCollapsed, setIsChatCollapsed] = useState(true);
   const {
     state,
     toggleToolSelection,

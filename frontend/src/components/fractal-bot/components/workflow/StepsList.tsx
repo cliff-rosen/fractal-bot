@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
+import { Plus } from 'lucide-react';
 import type { Stage, Step, Tool, WorkflowVariable } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
-import { Plus } from 'lucide-react';
 import StepComponent from './Step';
 import { getAvailableInputs } from '../../utils/utils';
+
 
 interface StageDetailsProps {
     stage: Stage;
@@ -28,7 +29,7 @@ const getNewStep = (stage: Stage) => {
     return newStep;
 };
 
-export default function StageDetails({ stage }: StageDetailsProps) {
+export default function StepsList({ stage }: StageDetailsProps) {
     const { state, addStep, addSubstep, deleteStep, updateStepType, updateStepTool, updateStepInput, updateStepOutput, updateWorkflow, updateStep } = useFractalBot();
 
 
