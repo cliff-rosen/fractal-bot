@@ -90,14 +90,11 @@ export default function StepsList({ stage }: StageDetailsProps) {
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-                <div className="flex justify-between items-start">
-                    <div className="space-y-0.5">
-                        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Steps</h3>
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{stage.name}</h2>
-                    </div>
+                <div className="flex items-center justify-center relative">
+                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center w-full">Steps</h3>
                     <button
                         onClick={handleAddStep}
-                        className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-2 py-1"
+                        className="absolute right-0 flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-2 py-1"
                     >
                         <Plus className="w-3 h-3" />
                         Add Step
