@@ -1,6 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Tool, ToolIO, Schema, SchemaValueType, FileValue, Query, SearchResult, KnowledgeBase } from './tools';
 
+// Re-export Tool type
+export type { Tool };
+
 // Variable status types
 export type VariableStatus = 'pending' | 'ready' | 'error';
 

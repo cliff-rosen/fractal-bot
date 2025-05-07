@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Step, Tool, WorkflowVariable, StepStatus, VariableStatus, VariableMapping } from '../../types';
-import { Pencil, Sparkles, Plus, Trash2, AlertCircle, CheckCircle2, Clock, Settings, ArrowRight, XCircle, HelpCircle } from 'lucide-react';
+import { Pencil, Sparkles, Plus, Trash2, AlertCircle, CheckCircle2, Clock, Settings, ArrowRight, XCircle, HelpCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { getFilteredInputs, getStepStatus, getAvailableInputs } from '../../utils/utils';
 import { doSchemasMatch } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
@@ -143,6 +143,41 @@ const OutputMappingList = ({
     const [newOutputName, setNewOutputName] = useState('');
     const [newOutputType, setNewOutputType] = useState<'string' | 'number' | 'boolean' | 'object'>('string');
 
+    // Get available outputs from parent and prior siblings
+    const getAvailableOutputs = () => {
+        const availableOutputs: WorkflowVariable[] = [];
+
+        // If this is a first-level step (not a substep), get outputs from parent stage
+        if (!parentStep) {
+            // Get outputs from the stage's childVariables
+            const stageOutputs = availableInputs.filter((v: WorkflowVariable) => v.io_type === 'output');
+            availableOutputs.push(...stageOutputs);
+            return availableOutputs;
+        }
+
+        // For substeps, get outputs from parent step and prior siblings
+        if (parentStep?.childVariables) {
+            const parentOutputs = parentStep.childVariables.filter((v: WorkflowVariable) => v.io_type === 'output');
+            availableOutputs.push(...parentOutputs);
+        }
+
+        // Add outputs from prior siblings
+        if (parentStep?.substeps) {
+            const currentIndex = parentStep.substeps.findIndex(s => s.id === step.id);
+            if (currentIndex > 0) {
+                for (let i = 0; i < currentIndex; i++) {
+                    const sibling = parentStep.substeps[i];
+                    if (sibling.childVariables) {
+                        const siblingOutputs = sibling.childVariables.filter((v: WorkflowVariable) => v.io_type === 'output');
+                        availableOutputs.push(...siblingOutputs);
+                    }
+                }
+            }
+        }
+
+        return availableOutputs;
+    };
+
     const handleCreateNewOutput = (outputIndex: number) => {
         const selectedTool = step.tool;
         if (!selectedTool) return;
@@ -186,6 +221,8 @@ const OutputMappingList = ({
         setNewOutputType('string');
     };
 
+    const availableOutputs = getAvailableOutputs();
+
     return (
         <div className="space-y-1">
             {step.outputMappings.map((mapping, index) => {
@@ -221,13 +258,13 @@ const OutputMappingList = ({
                                 <input
                                     type="text"
                                     value={newOutputName}
-                                    onChange={(e) => setNewOutputName(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewOutputName(e.target.value)}
                                     placeholder="Output name"
                                     className="text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 />
                                 <select
                                     value={newOutputType}
-                                    onChange={(e) => setNewOutputType(e.target.value as any)}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNewOutputType(e.target.value as 'string' | 'number' | 'boolean' | 'object')}
                                     className="text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 >
                                     <option value="string">String</option>
@@ -254,18 +291,18 @@ const OutputMappingList = ({
                             <div className="flex-1 flex gap-2">
                                 <select
                                     value={mapping.sourceVariableId || ''}
-                                    onChange={(e) => onOutputMapping(index, e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onOutputMapping(index, e.target.value)}
                                     className="flex-1 text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 >
                                     <option value="">Select output</option>
-                                    {availableInputs
-                                        .filter(input => {
+                                    {availableOutputs
+                                        .filter((output: WorkflowVariable) => {
                                             if (!outputSchema) return true;
-                                            return doSchemasMatch(input.schema, outputSchema).isMatch;
+                                            return doSchemasMatch(output.schema, outputSchema).isMatch;
                                         })
-                                        .map(input => (
-                                            <option key={input.variable_id} value={input.variable_id}>
-                                                {input.name}
+                                        .map((output: WorkflowVariable) => (
+                                            <option key={output.variable_id} value={output.variable_id}>
+                                                {output.name}
                                             </option>
                                         ))
                                     }
