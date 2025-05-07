@@ -90,8 +90,8 @@ export default function StepsList({ stage }: StageDetailsProps) {
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-                <div className="flex items-center justify-center relative">
-                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center w-full">Steps</h3>
+                <div className="flex items-center relative">
+                    <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left w-full">Steps</h3>
                     <button
                         onClick={handleAddStep}
                         className="absolute right-0 flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-2 py-1"
@@ -104,23 +104,29 @@ export default function StepsList({ stage }: StageDetailsProps) {
 
             <div className="p-4">
                 <div className="space-y-4">
-                    {stepsWithAvailableInputs.map((step, index) => (
-                        <div key={step.id} className={!step.isSubstep ? "border-b border-gray-100 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0" : ""}>
-                            <StepComponent
-                                step={step}
-                                onAddSubstep={handleAddSubstep}
-                                onEditStep={handleEditStep}
-                                onDeleteStep={handleDeleteStep}
-                                onStepTypeChange={handleStepTypeChange}
-                                onToolSelect={handleToolSelect}
-                                onInputSelect={handleInputSelect}
-                                onOutputSelect={handleOutputSelect}
-                                onUpdateStep={handleUpdateStep}
-                                availableTools={state.currentMission.selectedTools}
-                                availableInputs={step.availableInputs}
-                            />
+                    {stepsWithAvailableInputs.length === 0 ? (
+                        <div className="text-center text-sm text-gray-400 dark:text-gray-500 py-8">
+                            No steps have been added to this stage yet.
                         </div>
-                    ))}
+                    ) : (
+                        stepsWithAvailableInputs.map((step, index) => (
+                            <div key={step.id} className={!step.isSubstep ? "border-b border-gray-100 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0" : ""}>
+                                <StepComponent
+                                    step={step}
+                                    onAddSubstep={handleAddSubstep}
+                                    onEditStep={handleEditStep}
+                                    onDeleteStep={handleDeleteStep}
+                                    onStepTypeChange={handleStepTypeChange}
+                                    onToolSelect={handleToolSelect}
+                                    onInputSelect={handleInputSelect}
+                                    onOutputSelect={handleOutputSelect}
+                                    onUpdateStep={handleUpdateStep}
+                                    availableTools={state.currentMission.selectedTools}
+                                    availableInputs={step.availableInputs}
+                                />
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

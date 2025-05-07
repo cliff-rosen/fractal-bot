@@ -34,9 +34,9 @@ export default function Workflow({ className = '' }: WorkflowProps) {
             <div className="relative">
                 {/* Workflow Header */}
                 <div className="relative p-4">
-                    <div className="flex flex-col items-center text-center">
+                    <div className="flex flex-col">
                         <div className="space-y-0.5">
-                            <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow Stages</h2>
+                            <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">Workflow Stages</h2>
                         </div>
                         {shouldShowGenerateButton && (
                             <button
