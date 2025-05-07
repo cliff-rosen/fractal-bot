@@ -31,19 +31,12 @@ export default function Workflow({ className = '' }: WorkflowProps) {
 
     return (
         <div className={`bg-white dark:bg-gray-800 rounded-lg shadow ${className}`}>
-            {/* Vertical Line from Mission to Stages */}
             <div className="relative">
-                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700 transform -translate-x-1/2"></div>
-
                 {/* Workflow Header */}
-                <div className="relative p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="relative p-4">
                     <div className="flex flex-col items-center text-center">
                         <div className="space-y-0.5">
                             <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Workflow Stages</h2>
-                            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{workflow.name || 'No Workflow'}</h3>
-                            {workflow.description && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{workflow.description}</p>
-                            )}
                         </div>
                         {shouldShowGenerateButton && (
                             <button
@@ -57,13 +50,13 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                 </div>
 
                 {/* Horizontal Stages */}
-                <div className="relative py-12">
+                <div className="relative py-2">
                     <div className="flex justify-center items-start gap-16">
                         {workflow.stages.map((stage: Stage, index: number) => (
                             <div key={stage.id} className="relative w-80">
                                 {/* Stage Card */}
                                 <div
-                                    className="bg-gray-50 dark:bg-[#252b3b] rounded-lg p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                    className="bg-gray-50 dark:bg-[#252b3b] rounded-lg p-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                                     onClick={() => handleStageClick(index)}
                                 >
                                     <div className="flex items-center gap-3 mb-4">
@@ -122,15 +115,16 @@ export default function Workflow({ className = '' }: WorkflowProps) {
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Vertical Line to Steps */}
-                                {state.currentStageIdx === index && (
-                                    <div className="absolute left-1/2 top-full w-0.5 h-8 bg-gray-200 dark:bg-gray-700 transform -translate-x-1/2"></div>
-                                )}
                             </div>
                         ))}
                     </div>
                 </div>
+
+                {/* Vertical line between workflow and step list */}
+                {state.currentStageIdx !== null && (
+                    <div className="w-1 h-4 bg-gray-400 dark:bg-gray-600 my-1 rounded mx-auto"></div>
+                )}
+
                 {/* Stage Details */}
                 {state.currentStageIdx !== null && (
                     <div className="relative px-4 pb-4">

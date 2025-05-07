@@ -76,25 +76,24 @@ export default function FractalBot() {
             <>
               {/* Main Content Area */}
               <div key="main-content" className={`h-full flex flex-col flex-1 ${isRightColumnCollapsed ? 'w-full' : ''}`}>
-                {/* Mission Header */}
-                <div className="mb-6 pt-4">
-                  <Mission />
-                </div>
+                <div className="flex flex-col items-center">
+                  {/* Mission Header */}
+                  <div className="pt-2 pb-2 w-full">
+                    <Mission />
+                  </div>
 
-                {/* Stage Tracker */}
-                <div className="mb-6">
-                  <Workflow />
-                </div>
+                  {/* Vertical line as a flex child */}
+                  <div className="w-1 h-4 bg-gray-400 dark:bg-gray-600 my-1 rounded"></div>
 
+                  {/* Stage Tracker */}
+                  <div className="pt-2 w-full">
+                    <Workflow />
+                  </div>
+                </div>
                 {/* Workspace Canvas */}
                 <div className="flex-1 overflow-y-auto">
                   {/* Content goes here */}
                 </div>
-
-                {/* Status History */}
-                {/* <div className="border-t border-gray-200 dark:border-gray-700">
-                  <StatusHistory messages={statusHistory} />
-                </div> */}
               </div>
 
               {/* Right Rail */}
