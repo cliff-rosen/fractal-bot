@@ -127,18 +127,71 @@ const InputMappingList = ({
 // Helper component for output mapping list
 const OutputMappingList = ({
     step,
-    onOutputMapping
+    onOutputMapping,
+    availableInputs,
+    parentStep,
+    onUpdateStep
 }: {
     step: Step;
-    onOutputMapping: (outputIndex: number, createNew: boolean) => void;
+    onOutputMapping: (outputIndex: number, sourceVariableId: string) => void;
+    availableInputs: WorkflowVariable[];
+    parentStep?: Step;
+    onUpdateStep: (step: Step) => void;
 }) => {
     const selectedTool = step.tool_id ? step.tool : undefined;
+    const [isCreatingNew, setIsCreatingNew] = useState<number | null>(null);
+    const [newOutputName, setNewOutputName] = useState('');
+    const [newOutputType, setNewOutputType] = useState<'string' | 'number' | 'boolean' | 'object'>('string');
+
+    const handleCreateNewOutput = (outputIndex: number) => {
+        const selectedTool = step.tool;
+        if (!selectedTool) return;
+
+        const outputSchema = selectedTool.outputs[outputIndex].schema;
+        const newVariable: WorkflowVariable = {
+            variable_id: crypto.randomUUID(),
+            name: newOutputName || `Output ${outputIndex + 1}`,
+            schema: {
+                type: newOutputType,
+                is_array: outputSchema.is_array,
+                description: selectedTool.outputs[outputIndex].description || ''
+            },
+            io_type: 'output',
+            status: 'pending',
+            createdBy: step.id
+        };
+
+        // Update the mapping to point to this new variable
+        const updatedMappings = step.outputMappings.map((m, i) =>
+            i === outputIndex
+                ? {
+                    ...m,
+                    sourceVariableId: newVariable.variable_id,
+                    target: {
+                        type: 'variable' as const,
+                        variableId: newVariable.variable_id
+                    }
+                }
+                : m
+        );
+
+        onUpdateStep({
+            ...step,
+            childVariables: [...step.childVariables, newVariable],
+            outputMappings: updatedMappings
+        });
+
+        setIsCreatingNew(null);
+        setNewOutputName('');
+        setNewOutputType('string');
+    };
 
     return (
         <div className="space-y-2">
             {step.outputMappings.map((mapping, index) => {
                 const outputName = selectedTool?.outputs[index]?.name || `Output ${index + 1}`;
                 const outputDescription = selectedTool?.outputs[index]?.description;
+                const outputSchema = selectedTool?.outputs[index]?.schema;
 
                 return (
                     <div key={index} className="flex items-center justify-between gap-2">
@@ -148,9 +201,13 @@ const OutputMappingList = ({
                                     {outputName}
                                 </span>
                                 {mapping.sourceVariableId && (
-                                    <VariableStatusBadge
-                                        status={step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status || 'pending'}
-                                    />
+                                    <div className="w-2 h-2 rounded-full" style={{
+                                        backgroundColor: step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'ready'
+                                            ? 'rgb(34 197 94)' // green-500
+                                            : step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'error'
+                                                ? 'rgb(239 68 68)' // red-500
+                                                : 'rgb(234 179 8)' // yellow-500
+                                    }} />
                                 )}
                             </div>
                             {outputDescription && (
@@ -159,12 +216,68 @@ const OutputMappingList = ({
                                 </p>
                             )}
                         </div>
-                        <button
-                            onClick={() => onOutputMapping(index, true)}
-                            className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                        >
-                            Create New Variable
-                        </button>
+                        {isCreatingNew === index ? (
+                            <div className="flex flex-col gap-2">
+                                <input
+                                    type="text"
+                                    value={newOutputName}
+                                    onChange={(e) => setNewOutputName(e.target.value)}
+                                    placeholder="Output name"
+                                    className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                />
+                                <select
+                                    value={newOutputType}
+                                    onChange={(e) => setNewOutputType(e.target.value as any)}
+                                    className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                >
+                                    <option value="string">String</option>
+                                    <option value="number">Number</option>
+                                    <option value="boolean">Boolean</option>
+                                    <option value="object">Object</option>
+                                </select>
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => handleCreateNewOutput(index)}
+                                        className="text-xs px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50"
+                                    >
+                                        Create
+                                    </button>
+                                    <button
+                                        onClick={() => setIsCreatingNew(null)}
+                                        className="text-xs px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-900/50"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <select
+                                    value={mapping.sourceVariableId || ''}
+                                    onChange={(e) => onOutputMapping(index, e.target.value)}
+                                    className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                >
+                                    <option value="">Select output</option>
+                                    {availableInputs
+                                        .filter(input => {
+                                            if (!outputSchema) return true;
+                                            return doSchemasMatch(input.schema, outputSchema).isMatch;
+                                        })
+                                        .map(input => (
+                                            <option key={input.variable_id} value={input.variable_id}>
+                                                {input.name}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                                <button
+                                    onClick={() => setIsCreatingNew(index)}
+                                    className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                                >
+                                    New
+                                </button>
+                            </div>
+                        )}
                     </div>
                 );
             })}
@@ -315,31 +428,15 @@ export default function Step({
         });
     };
 
-    const handleOutputMapping = (outputIndex: number, createNew: boolean) => {
-        if (!createNew) return;
-
-        const selectedTool = availableTools.find(t => t.id === step.tool_id);
-        if (!selectedTool) return;
-
-        // Create a new variable in childVariables
-        const newVariable: WorkflowVariable = {
-            variable_id: crypto.randomUUID(),
-            name: `Output ${outputIndex + 1}`,
-            schema: selectedTool.outputs[outputIndex].schema,
-            io_type: 'output',
-            status: 'pending',
-            createdBy: step.id
-        };
-
-        // Update the mapping to point to this new variable
-        const updatedMappings: VariableMapping[] = step.outputMappings.map((m, i) =>
+    const handleOutputMapping = (outputIndex: number, sourceVariableId: string) => {
+        const updatedMappings = step.outputMappings.map((m, i) =>
             i === outputIndex
                 ? {
                     ...m,
-                    sourceVariableId: newVariable.variable_id,
+                    sourceVariableId,
                     target: {
                         type: 'variable' as const,
-                        variableId: newVariable.variable_id
+                        variableId: sourceVariableId
                     }
                 }
                 : m
@@ -347,7 +444,6 @@ export default function Step({
 
         onUpdateStep({
             ...step,
-            childVariables: [...step.childVariables, newVariable],
             outputMappings: updatedMappings
         });
     };
@@ -568,6 +664,9 @@ export default function Step({
                                 <OutputMappingList
                                     step={step}
                                     onOutputMapping={handleOutputMapping}
+                                    availableInputs={stepAvailableInputs}
+                                    parentStep={parentStep}
+                                    onUpdateStep={onUpdateStep}
                                 />
                             </div>
                         </>

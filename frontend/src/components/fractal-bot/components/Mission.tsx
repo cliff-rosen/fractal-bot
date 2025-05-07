@@ -208,6 +208,21 @@ export default function Mission({
                                     )}
                                 </ul>
                             </div>
+                            <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
+                                <ul className="mt-1 space-y-0.5">
+                                    {mission.childVariables?.filter(v => v.io_type === 'output').slice(0, 3).map((output: WorkflowVariable) => (
+                                        <li key={output.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                            {output.name}
+                                        </li>
+                                    ))}
+                                    {mission.childVariables?.filter(v => v.io_type === 'output').length > 3 && (
+                                        <li className="text-xs text-gray-500 dark:text-gray-400">
+                                            +{mission.childVariables.filter(v => v.io_type === 'output').length - 3} more
+                                        </li>
+                                    )}
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 )}
