@@ -13,7 +13,7 @@ const StageCard: React.FC<StageCardProps> = ({ stage, index, isSelected, onClick
     return (
         <div className={`relative w-80 ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : ''}`}>
             <div
-                className="bg-gray-50 dark:bg-[#252b3b] rounded-lg p-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                className="dark:bg-[#1e2330] rounded-lg p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                 onClick={() => onClick(index)}
             >
                 <div className="flex items-center gap-3 mb-4">
@@ -43,27 +43,23 @@ const StageCard: React.FC<StageCardProps> = ({ stage, index, isSelected, onClick
                     </div>
                 </div>
                 {/* Stage Inputs and Outputs */}
-                <div className="grid grid-cols-2 gap-4">
-                    {/* Stage Inputs */}
-                    <div>
-                        <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Inputs</h5>
-                        <ul className="space-y-1">
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
+                        <ul className="mt-1 space-y-0.5">
                             {stage.childVariables?.filter(v => v.io_type === 'input').map((input) => (
-                                <li key={input.variable_id} className="flex items-center gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{input.name}</span>
+                                <li key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                    {input.name}
                                 </li>
                             ))}
                         </ul>
                     </div>
-                    {/* Stage Outputs */}
-                    <div>
-                        <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Outputs</h5>
-                        <ul className="space-y-1">
+                    <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
+                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
+                        <ul className="mt-1 space-y-0.5">
                             {stage.childVariables?.filter(v => v.io_type === 'output').map((output) => (
-                                <li key={output.variable_id} className="flex items-center gap-2 p-1.5 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{output.name}</span>
+                                <li key={output.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                                    {output.name}
                                 </li>
                             ))}
                         </ul>

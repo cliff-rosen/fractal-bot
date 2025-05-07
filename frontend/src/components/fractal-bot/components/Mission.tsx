@@ -86,9 +86,6 @@ export default function Mission({
                         <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">Current Mission</h2>
                         <div className="flex flex-col items-center text-center mt-1">
                             <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-200">{mission.title || 'No Mission Selected'}</h1>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
-                                {mission.goal || 'No mission goal defined'}
-                            </p>
                         </div>
                     </div>
 
@@ -197,8 +194,8 @@ export default function Mission({
                         </div>
                     </>
                 ) : (
-                    <div className="mt-2 p-3 border-t border-gray-100 dark:border-gray-700">
-                        <div className="grid grid-cols-2 gap-3">
+                    <div className="mt-2 p-1 border-gray-100 dark:border-gray-700">
+                        <div className="grid grid-cols-3 gap-3">
                             <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                                 <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
                                 <ul className="mt-1 space-y-0.5">
@@ -213,6 +210,11 @@ export default function Mission({
                                         </li>
                                     )}
                                 </ul>
+                            </div>
+                            <div className="p-2">
+                                <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
+                                    {mission.goal || 'No mission goal defined'}
+                                </p>
                             </div>
                             <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                                 <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
