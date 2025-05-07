@@ -1,4 +1,5 @@
-import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState, Tool, MissionProposal, Stage, WorkflowVariable } from './index';
+import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState, MissionProposal, Stage, WorkflowVariable } from './index';
+import { Tool, ToolType, availableTools } from './tools';
 import { createMissionFromProposal } from '../utils/utils';
 
 // default workspace object
@@ -36,350 +37,370 @@ export const workflowTemplate: Workflow = {
     updatedAt: new Date().toISOString(),
 }
 
-export const toolsTemplate: Tool[] = [
-    {
-        id: 'tool1',
-        name: 'Web Search',
-        description: 'Search the web for information',
-        category: 'Data Retrieval',
-        inputs: [{
-            name: 'query',
-            description: 'The search query',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The search query to look for'
-            },
-            required: true
-        }],
-        outputs: [{
-            name: 'results',
-            description: 'The search results',
-            schema: {
-                type: 'object',
-                is_array: true,
-                description: 'List of search results'
-            }
-        }]
-    },
-    {
-        id: 'tool2',
-        name: 'Email Search',
-        description: 'Search through emails',
-        category: 'Data Retrieval',
-        inputs: [{
-            name: 'query',
-            description: 'The search query',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The search query to look for'
-            },
-            required: true
-        }],
-        outputs: [{
-            name: 'results',
-            description: 'The search results',
-            schema: {
-                type: 'object',
-                is_array: true,
-                description: 'List of search results'
-            }
-        }]
-    },
-    {
-        id: 'tool3',
-        name: 'Extract Info',
-        description: 'Extract information from text',
-        category: 'Data Processing',
-        inputs: [{
-            name: 'text',
-            description: 'The text to extract information from',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The text to extract information from'
-            },
-            required: true
-        }],
-        outputs: [{
-            name: 'extracted_info',
-            description: 'The extracted information',
-            schema: {
-                type: 'object',
-                is_array: true,
-                description: 'List of extracted information'
-            }
-        }]
-    },
-    {
-        id: 'tool4',
-        name: 'Add to KB',
-        description: 'Add information to knowledge base',
-        category: 'Knowledge Management',
-        inputs: [{
-            name: 'info',
-            description: 'The information to add',
-            schema: {
-                type: 'object',
-                is_array: false,
-                description: 'The information to add to the knowledge base'
-            },
-            required: true
-        }],
-        outputs: [{
-            name: 'status',
-            description: 'The status of the operation',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The status of the operation'
-            }
-        }]
-    },
-    {
-        id: 'tool5',
-        name: 'Search KB',
-        description: 'Search the knowledge base',
-        category: 'Knowledge Management',
-        inputs: [{
-            name: 'query',
-            description: 'The search query',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The search query to look for'
-            },
-            required: true
-        }],
-        outputs: [{
-            name: 'results',
-            description: 'The search results',
-            schema: {
-                type: 'object',
-                is_array: true,
-                description: 'List of search results'
-            }
-        }]
-    },
-    {
-        id: 'tool6',
-        name: 'Generate Query',
-        description: 'Generate a search query',
-        category: 'Query Generation',
-        inputs: [{
-            name: 'context',
-            description: 'The context for generating the query',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The context for generating the query'
-            },
-            required: true
-        }],
-        outputs: [{
-            name: 'query',
-            description: 'The generated query',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The generated query'
-            }
-        }]
-    },
-    {
-        id: 'tool7',
-        name: 'Improve Question',
-        description: 'Improve a question for better results',
-        category: 'Query Generation',
-        inputs: [{
-            name: 'question',
-            description: 'The question to improve',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The question to improve'
-            },
-            required: true
-        }],
-        outputs: [{
-            name: 'improved_question',
-            description: 'The improved question',
-            schema: {
-                type: 'string',
-                is_array: false,
-                description: 'The improved question'
-            }
-        }]
-    }
-];
 
+// Research workflow example
 export const workflowExample: Workflow = {
-    id: 'workflow-1',
-    name: 'Newsletter Processing Workflow',
-    description: 'A workflow to retrieve, extract, and summarize information from email newsletters',
+    id: 'research-workflow',
+    name: 'Research and Answer Generation',
+    description: 'A comprehensive workflow for researching and answering complex questions using multiple tools',
     status: 'active',
     stages: [
         {
-            id: 'stage-1',
-            name: 'Email Retrieval',
-            description: 'Connect to email and retrieve newsletters from specified senders',
+            id: 'question-processing',
+            name: 'Question Processing',
+            description: 'Improve and analyze the question to create clear requirements',
             steps: [],
-            childVariables: [{
-                variable_id: 'email_credentials',
-                name: 'email_credentials',
-                schema: {
-                    type: 'object',
-                    is_array: false,
-                    description: 'Email account credentials and configuration',
-                    fields: {
-                        email: { type: 'string', is_array: false, description: 'Email address' },
-                        password: { type: 'string', is_array: false, description: 'Email password or app token' },
-                        folders: { type: 'string', is_array: true, description: 'Email folders to search' }
-                    }
-                },
-                io_type: 'input',
-                required: true,
-                status: 'pending',
-                createdBy: 'stage-1'
-            }, {
-                variable_id: 'retrieved_emails',
-                name: 'retrieved_emails',
-                schema: {
-                    type: 'object',
-                    is_array: true,
-                    description: 'Retrieved newsletter emails',
-                    fields: {
-                        subject: { type: 'string', is_array: false, description: 'Email subject' },
-                        sender: { type: 'string', is_array: false, description: 'Sender email' },
-                        date: { type: 'string', is_array: false, description: 'Date received' },
-                        content: { type: 'string', is_array: false, description: 'Email content' }
-                    }
-                },
-                io_type: 'output',
-                status: 'pending',
-                createdBy: 'stage-1'
-            }],
-            inputMappings: [],
-            outputMappings: [],
             status: 'pending',
-            success_criteria: ['Successfully connect to email account', 'Retrieve all newsletters from last 30 days'],
-            createdAt: '2024-03-20T10:00:00Z',
-            updatedAt: '2024-03-20T10:00:00Z'
+            childVariables: [
+                {
+                    variable_id: 'stage.question_processing.inputs.question',
+                    name: 'question',
+                    description: 'The original question to process',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The question to improve and analyze'
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'question-processing'
+                },
+                {
+                    variable_id: 'stage.question_processing.outputs.improved_question',
+                    name: 'improved_question',
+                    description: 'The improved and clarified question',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The improved version of the question'
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'question-processing'
+                },
+                {
+                    variable_id: 'stage.question_processing.outputs.checklist',
+                    name: 'checklist',
+                    description: 'Requirements checklist for a complete answer',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        fields: {
+                            item_to_score: { type: 'string', is_array: false },
+                            current_score: { type: 'number', is_array: false },
+                            explanation: { type: 'string', is_array: false }
+                        }
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'question-processing'
+                }
+            ],
+            inputMappings: [{
+                sourceVariableId: 'mission.question',
+                target: {
+                    type: 'variable',
+                    variableId: 'stage.question_processing.inputs.question'
+                }
+            }],
+            outputMappings: [
+                {
+                    sourceVariableId: 'stage.question_processing.outputs.improved_question',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.question_processing.outputs.improved_question'
+                    }
+                },
+                {
+                    sourceVariableId: 'stage.question_processing.outputs.checklist',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.question_processing.outputs.checklist'
+                    }
+                }
+            ],
+            success_criteria: [
+                'Question is improved and clarified',
+                'Requirements checklist is generated'
+            ],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         },
         {
-            id: 'stage-2',
-            name: 'Content Extraction',
-            description: 'Extract key information from newsletter content',
+            id: 'research',
+            name: 'Research and Knowledge Building',
+            description: 'Conduct research and build knowledge base from multiple sources',
             steps: [],
-            childVariables: [{
-                variable_id: 'retrieved_emails',
-                name: 'retrieved_emails',
-                schema: {
-                    type: 'object',
-                    is_array: true,
-                    description: 'Retrieved newsletter emails'
+            status: 'pending',
+            childVariables: [
+                {
+                    variable_id: 'stage.research.inputs.question',
+                    name: 'question',
+                    description: 'The improved question to research',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The question to research'
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'research'
                 },
-                io_type: 'input',
-                required: true,
-                status: 'pending',
-                createdBy: 'stage-2'
-            }, {
-                variable_id: 'extracted_info',
-                name: 'extracted_info',
-                schema: {
-                    type: 'object',
-                    is_array: true,
-                    description: 'Extracted key information from newsletters',
-                    fields: {
-                        title: { type: 'string', is_array: false, description: 'Article title' },
-                        topics: { type: 'string', is_array: true, description: 'Main topics' },
-                        key_points: { type: 'string', is_array: true, description: 'Key points' },
-                        source: { type: 'string', is_array: false, description: 'Newsletter source' }
+                {
+                    variable_id: 'stage.research.inputs.checklist',
+                    name: 'checklist',
+                    description: 'Requirements checklist for research',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        fields: {
+                            item_to_score: { type: 'string', is_array: false },
+                            current_score: { type: 'number', is_array: false },
+                            explanation: { type: 'string', is_array: false }
+                        }
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'research'
+                },
+                {
+                    variable_id: 'stage.research.outputs.knowledge_base',
+                    name: 'knowledge_base',
+                    description: 'The knowledge base built from research',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        fields: {
+                            nugget_id: { type: 'string', is_array: false },
+                            content: { type: 'string', is_array: false },
+                            confidence: { type: 'number', is_array: false },
+                            conflicts_with: { type: 'string', is_array: true }
+                        }
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'research'
+                }
+            ],
+            inputMappings: [
+                {
+                    sourceVariableId: 'stage.question_processing.outputs.improved_question',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.research.inputs.question'
                     }
                 },
-                io_type: 'output',
-                status: 'pending',
-                createdBy: 'stage-2'
+                {
+                    sourceVariableId: 'stage.question_processing.outputs.checklist',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.research.inputs.checklist'
+                    }
+                }
+            ],
+            outputMappings: [{
+                sourceVariableId: 'stage.research.outputs.knowledge_base',
+                target: {
+                    type: 'variable',
+                    variableId: 'stage.research.outputs.knowledge_base'
+                }
             }],
-            inputMappings: [],
-            outputMappings: [],
-            status: 'pending',
-            success_criteria: ['Extract structured information from each newsletter', 'Identify main topics and key points'],
-            createdAt: '2024-03-20T10:00:00Z',
-            updatedAt: '2024-03-20T10:00:00Z'
+            success_criteria: [
+                'Effective search queries are generated',
+                'Relevant sources are identified and analyzed',
+                'Content is scraped from selected sources',
+                'Knowledge base is initialized with relevant information'
+            ],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         },
         {
-            id: 'stage-3',
-            name: 'Summary Generation',
-            description: 'Generate concise summaries and insights from extracted information',
+            id: 'answer-generation',
+            name: 'Answer Generation',
+            description: 'Generate and validate the final answer',
             steps: [],
-            childVariables: [{
-                variable_id: 'extracted_info',
-                name: 'extracted_info',
-                schema: {
-                    type: 'object',
-                    is_array: true,
-                    description: 'Extracted newsletter information'
+            status: 'pending',
+            childVariables: [
+                {
+                    variable_id: 'stage.answer_generation.inputs.question',
+                    name: 'question',
+                    description: 'The improved question to answer',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The question to answer'
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'answer-generation'
                 },
-                io_type: 'input',
-                required: true,
-                status: 'pending',
-                createdBy: 'stage-3'
-            }, {
-                variable_id: 'newsletter_summary',
-                name: 'newsletter_summary',
-                schema: {
-                    type: 'object',
-                    is_array: false,
-                    description: 'Comprehensive summary of newsletters',
-                    fields: {
-                        overview: { type: 'string', is_array: false, description: 'High-level overview' },
-                        key_trends: { type: 'string', is_array: true, description: 'Identified trends' },
-                        highlights: { type: 'string', is_array: true, description: 'Important highlights' },
-                        recommendations: { type: 'string', is_array: true, description: 'Action items or recommendations' }
+                {
+                    variable_id: 'stage.answer_generation.inputs.checklist',
+                    name: 'checklist',
+                    description: 'Requirements checklist for answer',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        fields: {
+                            item_to_score: { type: 'string', is_array: false },
+                            current_score: { type: 'number', is_array: false },
+                            explanation: { type: 'string', is_array: false }
+                        }
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'answer-generation'
+                },
+                {
+                    variable_id: 'stage.answer_generation.inputs.knowledge_base',
+                    name: 'knowledge_base',
+                    description: 'The knowledge base to use for answer generation',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        fields: {
+                            nugget_id: { type: 'string', is_array: false },
+                            content: { type: 'string', is_array: false },
+                            confidence: { type: 'number', is_array: false },
+                            conflicts_with: { type: 'string', is_array: true }
+                        }
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'answer-generation'
+                },
+                {
+                    variable_id: 'stage.answer_generation.outputs.answer',
+                    name: 'answer',
+                    description: 'The final generated answer',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The generated answer in markdown format',
+                        format: 'markdown'
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'answer-generation'
+                },
+                {
+                    variable_id: 'stage.answer_generation.outputs.scored_checklist',
+                    name: 'scored_checklist',
+                    description: 'The scored requirements checklist',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        fields: {
+                            item_to_score: { type: 'string', is_array: false },
+                            current_score: { type: 'number', is_array: false },
+                            explanation: { type: 'string', is_array: false }
+                        }
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'answer-generation'
+                }
+            ],
+            inputMappings: [
+                {
+                    sourceVariableId: 'stage.question_processing.outputs.improved_question',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.answer_generation.inputs.question'
                     }
                 },
-                io_type: 'output',
-                status: 'pending',
-                createdBy: 'stage-3'
-            }],
-            inputMappings: [],
-            outputMappings: [],
-            status: 'pending',
-            success_criteria: ['Generate comprehensive summary', 'Identify trends across newsletters', 'Provide actionable insights'],
-            createdAt: '2024-03-20T10:00:00Z',
-            updatedAt: '2024-03-20T10:00:00Z'
+                {
+                    sourceVariableId: 'stage.question_processing.outputs.checklist',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.answer_generation.inputs.checklist'
+                    }
+                },
+                {
+                    sourceVariableId: 'stage.research.outputs.knowledge_base',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.answer_generation.inputs.knowledge_base'
+                    }
+                }
+            ],
+            outputMappings: [
+                {
+                    sourceVariableId: 'stage.answer_generation.outputs.answer',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.answer_generation.outputs.answer'
+                    }
+                },
+                {
+                    sourceVariableId: 'stage.answer_generation.outputs.scored_checklist',
+                    target: {
+                        type: 'variable',
+                        variableId: 'stage.answer_generation.outputs.scored_checklist'
+                    }
+                }
+            ],
+            success_criteria: [
+                'Comprehensive answer is generated',
+                'Answer meets all requirements',
+                'Answer is properly scored and validated'
+            ],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         }
     ],
-    childVariables: [{
-        variable_id: 'email_credentials',
-        name: 'email_credentials',
-        schema: {
-            type: 'object',
-            is_array: false,
-            description: 'Email account credentials and configuration'
+    childVariables: [
+        {
+            variable_id: 'question',
+            name: 'question',
+            description: 'The original question',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'The question to research'
+            },
+            io_type: 'input',
+            required: true,
+            status: 'pending',
+            createdBy: 'research-workflow'
         },
-        io_type: 'input',
-        required: true,
-        status: 'pending',
-        createdBy: 'workflow-1'
-    }, {
-        variable_id: 'newsletter_summary',
-        name: 'newsletter_summary',
-        schema: {
-            type: 'object',
-            is_array: false,
-            description: 'Final summary and insights from newsletters'
-        },
-        io_type: 'output',
-        status: 'pending',
-        createdBy: 'workflow-1'
+        {
+            variable_id: 'answer',
+            name: 'answer',
+            description: 'The final answer',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'The generated answer in markdown format',
+                format: 'markdown'
+            },
+            io_type: 'output',
+            status: 'pending',
+            createdBy: 'research-workflow'
+        }
+    ],
+    inputMappings: [{
+        sourceVariableId: 'mission.question',
+        target: {
+            type: 'variable',
+            variableId: 'question'
+        }
     }],
-    inputMappings: [],
-    outputMappings: [],
-    createdAt: '2024-03-20T10:00:00Z',
-    updatedAt: '2024-03-20T10:00:00Z'
+    outputMappings: [{
+        sourceVariableId: 'stage.answer_generation.outputs.answer',
+        target: {
+            type: 'variable',
+            variableId: 'answer'
+        }
+    }],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
 };
 
 // default mission object
@@ -392,126 +413,68 @@ export const missionTemplate: Mission = {
     childVariables: [],
     inputMappings: [],
     outputMappings: [],
-    resources: [],  // General resources needed but not specific data objects
+    resources: [],
     success_criteria: [],
     selectedTools: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
 }
 
-export const missionProposalTemplate: MissionProposal = {
-    title: "Top 10 Dance Colleges in the United States",
-    goal: "To produce a ranked list of the top 10 colleges for dance in the United States based on specified criteria.",
-    childVariables: [{
-        variable_id: "ranking_criteria",
-        name: "ranking_criteria",
-        schema: {
-            type: "string",
-            is_array: true,
-            description: "List of potential criteria (faculty quality, facilities, alumni success)"
-        },
-        io_type: "input",
-        required: true,
-        status: 'pending',
-        createdBy: 'mission-proposal'
-    }, {
-        variable_id: "geographic_scope",
-        name: "geographic_scope",
-        schema: {
-            type: "string",
-            is_array: false,
-            description: "Geographic scope (United States)"
-        },
-        io_type: "input",
-        required: true,
-        status: 'pending',
-        createdBy: 'mission-proposal'
-    }, {
-        variable_id: "ranked_list",
-        name: "ranked_list",
-        schema: {
-            type: "object",
-            is_array: true,
-            description: "Ranked list of top 10 colleges with justification for each ranking"
-        },
-        io_type: "output",
-        status: 'pending',
-        createdBy: 'mission-proposal'
-    }],
-    inputMappings: [],
-    outputMappings: [],
-    resources: ["College databases", "Dance program directories", "Ranking methodologies"],
-    success_criteria: ["The list includes 10 colleges", "Each college ranking is justified with data", "Criteria for ranking are consistently applied"],
-    selectedTools: [{
-        id: "tool1",
-        name: "College Database Search",
-        description: "A tool to search and retrieve data from college databases.",
-        category: "Data Retrieval",
-        inputs: [{
-            name: "search_query",
-            description: "The search query to find colleges offering dance programs.",
-            schema: {
-                type: "string",
-                is_array: false,
-                description: "The search query to find colleges offering dance programs."
-            },
-            required: true
-        }],
-        outputs: [{
-            name: "college_list",
-            description: "List of colleges matching the search criteria.",
-            schema: {
-                type: "object",
-                is_array: true,
-                description: "List of colleges matching the search criteria."
-            }
-        }]
-    }],
-    has_sufficient_info: true,
-    missing_info_explanation: ""
-};
-
+// Research mission example
 export const missionExample: Mission = {
-    id: 'mission-1',
-    title: 'Newsletter Intelligence',
-    goal: 'Process and analyze email newsletters to extract key information and generate actionable insights',
+    id: 'research-mission',
+    title: 'Research and Answer Generation',
+    goal: 'Research and provide a comprehensive answer to a complex question using multiple tools and sources',
     status: 'active',
     workflow: workflowExample,
-    childVariables: [{
-        variable_id: 'email_credentials',
-        name: 'email_credentials',
-        schema: {
-            type: 'object',
-            is_array: false,
-            description: 'Email account credentials and configuration'
+    childVariables: [
+        {
+            variable_id: 'question',
+            name: 'question',
+            description: 'The question to research',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'The question to research'
+            },
+            io_type: 'input',
+            required: true,
+            status: 'pending',
+            createdBy: 'research-mission'
         },
-        io_type: 'input',
-        required: true,
-        status: 'pending',
-        createdBy: 'mission-1'
-    }, {
-        variable_id: 'newsletter_summary',
-        name: 'newsletter_summary',
-        schema: {
-            type: 'object',
-            is_array: false,
-            description: 'Final summary and insights from newsletters'
-        },
-        io_type: 'output',
-        status: 'pending',
-        createdBy: 'mission-1'
-    }],
+        {
+            variable_id: 'answer',
+            name: 'answer',
+            description: 'The final answer',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'The generated answer in markdown format',
+                format: 'markdown'
+            },
+            io_type: 'output',
+            status: 'pending',
+            createdBy: 'research-mission'
+        }
+    ],
     inputMappings: [],
     outputMappings: [],
-    resources: ['Email API', 'Natural Language Processing Tools', 'Text Analysis Libraries'],
-    success_criteria: [
-        'Successfully process all newsletters from the last 30 days',
-        'Extract meaningful insights and trends',
-        'Generate actionable recommendations'
+    resources: [
+        'Web Search API',
+        'Content Scraping Tools',
+        'Natural Language Processing',
+        'Knowledge Base Management System'
     ],
-    selectedTools: toolsTemplate,
-    createdAt: '2024-03-20T10:00:00Z',
-    updatedAt: '2024-03-20T10:00:00Z'
+    success_criteria: [
+        'Question is improved and clarified',
+        'Comprehensive research is conducted',
+        'Knowledge base is properly maintained',
+        'Answer meets all requirements',
+        'Answer is properly formatted and validated'
+    ],
+    selectedTools: availableTools,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
 };
 
 export const workspaceStateTemplate: WorkspaceState = {

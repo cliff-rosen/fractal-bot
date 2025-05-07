@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
 import { Plus } from 'lucide-react';
-import type { Stage, Step, Tool, WorkflowVariable } from '../../types';
+import type { Stage, Step, WorkflowVariable } from '../../types';
+import type { Tool } from '../../types/tools';
 import { useFractalBot } from '@/context/FractalBotContext';
 import StepComponent from './Step';
 import { getAvailableInputs } from '../../utils/utils';
+import { availableTools } from '../../types/tools';
 
 
 interface StageDetailsProps {
@@ -121,7 +123,7 @@ export default function StepsList({ stage }: StageDetailsProps) {
                                     onInputSelect={handleInputSelect}
                                     onOutputSelect={handleOutputSelect}
                                     onUpdateStep={handleUpdateStep}
-                                    availableTools={state.currentMission.selectedTools}
+                                    availableTools={availableTools}
                                     availableInputs={step.availableInputs}
                                 />
                             </div>

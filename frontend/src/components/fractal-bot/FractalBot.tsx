@@ -5,10 +5,10 @@ import Workflow from './components/workflow/Workflow';
 import WorkflowVariableBrowser from './components/WorkflowVariableBrowser';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
-import StatusHistory from './components/StatusHistory';
 import { useFractalBot } from '@/context/FractalBotContext';
-import type { Stage, Step } from './types/index';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { availableTools } from '@/components/fractal-bot/types/tools';
+import { a } from 'vitest/dist/chunks/suite.B2jumIFP.js';
 
 export default function FractalBot() {
   const [isRightColumnCollapsed, setIsRightColumnCollapsed] = useState(true);
@@ -103,7 +103,7 @@ export default function FractalBot() {
               >
                 <div className="h-1/2 overflow-y-auto">
                   <Tools
-                    tools={currentTools}
+                    tools={availableTools}
                     selectedToolIds={selectedToolIds}
                     onToolSelect={toggleToolSelection}
                     onSelectAll={selectAllTools}

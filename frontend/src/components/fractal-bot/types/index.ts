@@ -1,73 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-
-
-// SCHEMA AND VARIABLE TYPES
-
-// Basic type definitions
-export type PrimitiveType = 'string' | 'number' | 'boolean';
-export type ComplexType = 'object' | 'file';
-export type ValueType = PrimitiveType | ComplexType;
-
-// File value type
-export interface FileValue {
-    file_id: string;
-    name: string;
-    description?: string;
-    content: Uint8Array;
-    mime_type: string;
-    size: number;
-    extracted_text?: string;
-    created_at: string;
-    updated_at: string;
-}
-
-// Query value type
-export interface Query {
-    text: string;
-    filters?: Record<string, any>;
-    limit?: number;
-    offset?: number;
-}
-
-// Search result type
-export interface SearchResult {
-    id: string;
-    score: number;
-    content: string;
-    metadata?: Record<string, any>;
-}
-
-// Knowledge base type
-export interface KnowledgeBase {
-    id: string;
-    name: string;
-    description?: string;
-    content: string;
-    metadata?: Record<string, any>;
-}
-
-// Core schema definition that describes the shape/structure of a value
-export interface Schema {
-    type: ValueType;
-    description?: string;
-    is_array: boolean;  // If true, the value will be an array of the base type
-    // Only used for object type
-    fields?: Record<string, Schema>;
-    // Format constraints
-    format?: string;
-    content_types?: string[];
-}
-
-// Runtime value type for any schema
-export type SchemaValueType =
-    | string
-    | number
-    | boolean
-    | object
-    | FileValue
-    | Query
-    | SearchResult
-    | KnowledgeBase;
+import { Tool, ToolIO, Schema, SchemaValueType, FileValue, Query, SearchResult, KnowledgeBase } from './tools';
 
 // Variable status types
 export type VariableStatus = 'pending' | 'ready' | 'error';
@@ -108,7 +40,6 @@ export interface VariableMapping {
     isParentOutput?: boolean;  // Whether this maps to a parent's output
 }
 
-
 // PRIMARY TYPES FOR TASK EXECUTION
 // Common status types
 export type Status = 'completed' | 'current' | 'pending' | 'failed' | 'in_progress' | 'ready';
@@ -122,26 +53,6 @@ export type StepConfigState = 'unconfigured' | 'configuring' | 'resolved' | 'inp
 
 // Step status type
 export type StepStatus = 'unresolved' | 'pending_inputs_ready' | 'ready' | 'in_progress' | 'completed' | 'failed';
-
-
-// Tool input/output definition
-export interface ToolIO {
-    name: string;
-    description?: string;
-    schema: Schema;
-    required?: boolean;
-}
-
-// Updated Tool interface
-export interface Tool {
-    id: string;
-    name: string;
-    description: string;
-    category: string;
-    inputs: ToolIO[];    // Just the schema definitions
-    outputs: ToolIO[];   // Just the schema definitions
-}
-
 
 // Updated Step interface
 export interface Step {
@@ -226,7 +137,6 @@ export interface SchemaMatch {
     isMatch: boolean;
     reason?: string;
 }
-
 
 // SCHEMA AND VARIABLE SUPPORT FUNCTIONS
 
@@ -432,7 +342,6 @@ export interface ItemView {
     type: 'tools' | 'assets' | 'proposedMission' | 'proposedWorkflowDesign' | 'thinking' | 'progressUpdate' | 'text' | 'none';
     isOpen: boolean;
 }
-
 
 // Asset types
 export type Asset = {

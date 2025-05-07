@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, Tool, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult, Step, WorkflowVariable } from '@/components/fractal-bot/types/index';
-import { assetsTemplate, missionExample, workflowExample, workflowTemplate, workspaceStateTemplate, workspaceTemplate, toolsTemplate } from '@/components/fractal-bot/types/type-defaults';
+import { Asset, ChatMessage, Mission as MissionType, Workflow as WorkflowType, Workspace as WorkspaceType, WorkspaceState, ItemView as ItemViewType, MissionProposal, DataFromLine, StageGeneratorResult, Step, WorkflowVariable } from '@/components/fractal-bot/types/index';
+import { Tool, ToolType } from '@/components/fractal-bot/types/tools';
+import { availableTools } from '@/components/fractal-bot/types/tools';
+import { assetsTemplate, missionExample, workflowExample, workflowTemplate, workspaceStateTemplate, workspaceTemplate } from '@/components/fractal-bot/types/type-defaults';
 import { botApi } from '@/lib/api/botApi';
 import { Message, MessageRole } from '@/types/message';
 import { createMissionFromProposal, getDataFromLine } from '@/components/fractal-bot/utils/utils';
@@ -61,9 +63,9 @@ const initialState: FractalBotState = {
     currentStreamingMessage: '',
     currentWorkflow: workflowExample,
     currentWorkspace: workspaceTemplate,
-    currentTools: toolsTemplate,
+    currentTools: availableTools,
     currentAssets: assetsTemplate,
-    selectedToolIds: [],
+    selectedToolIds: availableTools.map(tool => tool.id), // Initialize with all tool IDs
     currentItemView: {
         title: '',
         type: 'none',

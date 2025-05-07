@@ -51,15 +51,22 @@ export default function Workflow({ className = '' }: WorkflowProps) {
 
                 {/* Horizontal Stages */}
                 <div className="relative py-2">
-                    <div className="flex justify-center items-start gap-16">
+                    <div className="flex justify-center items-center">
                         {workflow.stages.map((stage: Stage, index: number) => (
-                            <StageCard
-                                key={stage.id}
-                                stage={stage}
-                                index={index}
-                                isSelected={state.currentStageIdx === index}
-                                onClick={handleStageClick}
-                            />
+                            <React.Fragment key={stage.id}>
+                                <StageCard
+                                    stage={stage}
+                                    index={index}
+                                    isSelected={state.currentStageIdx === index}
+                                    onClick={handleStageClick}
+                                />
+                                {index < workflow.stages.length - 1 && (
+                                    <div className="flex items-center px-6">
+                                        <div className="w-12 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                                        <div className="w-2 h-2 border-t-2 border-r-2 border-gray-200 dark:border-gray-700 transform rotate-45"></div>
+                                    </div>
+                                )}
+                            </React.Fragment>
                         ))}
                     </div>
                 </div>
