@@ -143,37 +143,10 @@ const OutputMappingList = ({
     const [newOutputName, setNewOutputName] = useState('');
     const [newOutputType, setNewOutputType] = useState<'string' | 'number' | 'boolean' | 'object'>('string');
 
-    // Get available outputs from parent and prior siblings
+    // Get available outputs from ancestor steps
     const getAvailableOutputs = () => {
         const availableOutputs: WorkflowVariable[] = [];
 
-        // If this is a first-level step (not a substep), get outputs from parent stage
-        if (!parentStep) {
-            // Get outputs from the stage's childVariables
-            const stageOutputs = availableInputs.filter((v: WorkflowVariable) => v.io_type === 'output');
-            availableOutputs.push(...stageOutputs);
-            return availableOutputs;
-        }
-
-        // For substeps, get outputs from parent step and prior siblings
-        if (parentStep?.childVariables) {
-            const parentOutputs = parentStep.childVariables.filter((v: WorkflowVariable) => v.io_type === 'output');
-            availableOutputs.push(...parentOutputs);
-        }
-
-        // Add outputs from prior siblings
-        if (parentStep?.substeps) {
-            const currentIndex = parentStep.substeps.findIndex(s => s.id === step.id);
-            if (currentIndex > 0) {
-                for (let i = 0; i < currentIndex; i++) {
-                    const sibling = parentStep.substeps[i];
-                    if (sibling.childVariables) {
-                        const siblingOutputs = sibling.childVariables.filter((v: WorkflowVariable) => v.io_type === 'output');
-                        availableOutputs.push(...siblingOutputs);
-                    }
-                }
-            }
-        }
 
         return availableOutputs;
     };
