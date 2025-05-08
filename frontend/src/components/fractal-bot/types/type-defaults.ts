@@ -423,7 +423,7 @@ export const missionTemplate: Mission = {
 // Research mission example
 export const missionExample: Mission = {
     id: 'research-mission',
-    title: 'Research and Answer Generation',
+    title: 'General Purpose Research Mission',
     goal: 'Research and provide a comprehensive answer to a complex question using multiple tools and sources',
     status: 'active',
     workflow: workflowExample,
