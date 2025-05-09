@@ -1,4 +1,5 @@
 import { Step, Stage, Workflow, WorkflowVariable, doSchemasMatch, StepStatus, Tool } from '../types/index';
+import { useFractalBot } from '@/context/FractalBotContext';
 
 // Helper function to get available inputs for a step or workflow
 export function getAvailableInputs(workflow: Workflow, step?: Step): WorkflowVariable[] {
@@ -194,6 +195,58 @@ export function validateOutputMapping(
 
     // For intermediate outputs, we just need compatible types
     return sourceVariable.schema.type === targetVariable.schema.type;
+}
+
+export function getStepFromTree(treeStart: Step | Stage, stepId: string): Step | Stage | undefined {
+    console.log('getStepFromTree', treeStart.id, stepId);
+    if (treeStart.id === stepId) {
+        return treeStart;
+    }
+
+    const stepsToSearch = [];
+
+    if ('steps' in treeStart) {
+        stepsToSearch.push(...treeStart.steps);
+    } else {
+        stepsToSearch.push(treeStart);
+    }
+
+    while (stepsToSearch.length > 0) {
+        const step = stepsToSearch.shift();
+        if (step.id === stepId) {
+            console.log('found step', step.id);
+            return step;
+        }
+        if (step.substeps) {
+            console.log('searching substeps', step.substeps);
+            const newStepsToSearch = step?.substeps
+            if (newStepsToSearch) {
+                for (const substep of newStepsToSearch) {
+                    const result = getStepFromTree(substep, stepId);
+                    if (result) {
+                        console.log('found step', result.id);
+                        return result;
+                    }
+                }
+            }
+        }
+    }
+
+    console.log('no step found from ', treeStart.id);
+
+    return undefined;
+}
+
+export function getStepFromId(stepId: string): Step | undefined {
+    const { state } = useFractalBot();
+    const { currentWorkflow } = state;
+
+    for (const stage of currentWorkflow.stages) {
+        const step = getStepFromTree(stage, stepId);
+        if (step) return step;
+    }
+
+    return undefined;
 }
 
 export function getAvailableOutputVariables(task: Step | Stage, workflow: Workflow): WorkflowVariable[] {

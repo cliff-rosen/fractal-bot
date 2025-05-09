@@ -90,12 +90,6 @@ export default function FractalBot() {
                     <Workflow />
                   </div>
                 </div>
-                {/* Workspace Canvas */}
-                <div className="flex-1 overflow-y-auto">
-                  <div className="p-4">
-                    <StageDebug workflow={state.currentWorkflow} />
-                  </div>
-                </div>
               </div>
 
               {/* Right Rail */}
@@ -140,6 +134,11 @@ export default function FractalBot() {
             </>
           )}
         </div>
+      </div>
+
+      {/* StageDebug at bottom of viewport */}
+      <div className="fixed bottom-0 left-0 right-0 h-[400px] bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 overflow-auto z-50">
+        <StageDebug workflow={state.currentWorkflow} />
       </div>
     </div>
   );
