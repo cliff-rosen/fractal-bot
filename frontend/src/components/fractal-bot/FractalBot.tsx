@@ -5,10 +5,10 @@ import Workflow from './components/workflow/Workflow';
 import WorkflowVariableBrowser from './components/WorkflowVariableBrowser';
 import Tools from './components/Tools';
 import ItemView from './components/ItemView';
+import StageDebug from './components/workflow/StageDebug';
 import { useFractalBot } from '@/context/FractalBotContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { availableTools } from '@/components/fractal-bot/types/tools';
-import { a } from 'vitest/dist/chunks/suite.B2jumIFP.js';
 
 export default function FractalBot() {
   const [isRightColumnCollapsed, setIsRightColumnCollapsed] = useState(true);
@@ -92,7 +92,9 @@ export default function FractalBot() {
                 </div>
                 {/* Workspace Canvas */}
                 <div className="flex-1 overflow-y-auto">
-                  {/* Content goes here */}
+                  <div className="p-4">
+                    <StageDebug workflow={state.currentWorkflow} />
+                  </div>
                 </div>
               </div>
 

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { Step, Tool, WorkflowVariable, StepStatus, VariableStatus, VariableMapping } from '../../types';
 import { Pencil, Sparkles, Plus, Trash2, AlertCircle, CheckCircle2, Clock, Settings, ArrowRight, XCircle, HelpCircle, ChevronDown, ChevronRight } from 'lucide-react';
-import { getFilteredInputs, getStepStatus, getAvailableInputs } from '../../utils/utils';
+import { getFilteredInputs, getStepStatus, getAvailableInputs } from '../../utils/variableScoping';
 import { doSchemasMatch } from '../../types';
 import { useFractalBot } from '@/context/FractalBotContext';
 
@@ -20,41 +20,6 @@ interface StepProps {
     availableInputs?: WorkflowVariable[];
     depth?: number;
 }
-
-// Helper component for variable status badge
-const VariableStatusBadge = ({ status, error_message }: { status: VariableStatus; error_message?: string }) => {
-    const getStatusColor = () => {
-        switch (status) {
-            case 'ready':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-            case 'error':
-                return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-            default:
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-        }
-    };
-
-    const getStatusIcon = () => {
-        switch (status) {
-            case 'ready':
-                return <CheckCircle2 className="w-3 h-3" />;
-            case 'error':
-                return <AlertCircle className="w-3 h-3" />;
-            default:
-                return <Clock className="w-3 h-3" />;
-        }
-    };
-
-    return (
-        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${getStatusColor()}`}>
-            {getStatusIcon()}
-            <span>{status}</span>
-            {error_message && (
-                <span className="ml-1 text-xs opacity-75">({error_message})</span>
-            )}
-        </div>
-    );
-};
 
 // Helper component for step status display
 const StepStatusDisplay = ({ status }: { status: StepStatus }) => {
@@ -350,7 +315,6 @@ export default function Step({
     availableInputs = [],
     depth = 0
 }: StepProps) {
-    const { setSelectedStep } = useFractalBot();
     const [isEditing, setIsEditing] = useState(false);
     const [stepName, setStepName] = useState(step.name);
     const [stepDescription, setStepDescription] = useState(step.description);

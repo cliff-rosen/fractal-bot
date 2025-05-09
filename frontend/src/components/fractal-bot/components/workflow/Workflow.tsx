@@ -3,6 +3,7 @@ import { useFractalBot } from '@/context/FractalBotContext';
 import type { Stage } from '../../types';
 import StepsList from './StepsList';
 import StageCard from './StageCard';
+import StageDebug from './StageDebug';
 
 interface WorkflowProps {
     className?: string;

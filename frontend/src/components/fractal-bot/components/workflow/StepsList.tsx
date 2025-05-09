@@ -4,7 +4,7 @@ import type { Stage, Step, WorkflowVariable } from '../../types';
 import type { Tool } from '../../types/tools';
 import { useFractalBot } from '@/context/FractalBotContext';
 import StepComponent from './Step';
-import { getAvailableInputs } from '../../utils/utils';
+import { getAvailableInputs } from '../../utils/variableScoping';
 import { availableTools } from '../../types/tools';
 
 
