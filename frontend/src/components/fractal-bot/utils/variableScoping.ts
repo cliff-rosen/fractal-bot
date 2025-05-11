@@ -105,73 +105,6 @@ export function getFilteredInputs(
     });
 }
 
-// Helper function to get step status
-export function getStepStatus(step: Step): StepStatus {
-    // For atomic steps
-    if (step.type === 'atomic') {
-        // Check if tool is assigned
-        if (!step.tool_id) {
-            return 'unresolved';
-        }
-
-        // Check if all required inputs are mapped
-        const requiredInputs = step.inputMappings.filter(m =>
-            m.target.type === 'parameter' &&
-            (m.target as ParameterTarget).required
-        );
-        const allRequiredInputsMapped = requiredInputs.every(mapping => mapping.sourceVariableId);
-
-        if (!allRequiredInputsMapped) {
-            return 'unresolved';
-        }
-
-        // Check if all mapped inputs are ready
-        const allMappedInputsReady = step.inputMappings.every(mapping => {
-            const sourceVariable = step.childVariables.find(v => v.variable_id === mapping.sourceVariableId);
-            return sourceVariable?.status === 'ready';
-        });
-
-        if (!allMappedInputsReady) {
-            return 'pending_inputs_ready';
-        }
-
-        // Return current status if all checks pass
-        return step.status;
-    }
-
-    // For composite steps
-    if (step.type === 'composite') {
-        // Check if there are at least 2 substeps
-        if (!step.substeps || step.substeps.length < 2) {
-            return 'unresolved';
-        }
-
-        // Check if all substeps are resolved
-        const allSubstepsResolved = step.substeps.every(substep =>
-            getStepStatus(substep) !== 'unresolved'
-        );
-
-        if (!allSubstepsResolved) {
-            return 'unresolved';
-        }
-
-        // Check if all substeps are ready
-        const allSubstepsReady = step.substeps.every(substep =>
-            getStepStatus(substep) === 'ready'
-        );
-
-        if (!allSubstepsReady) {
-            return 'pending_inputs_ready';
-        }
-
-        // Return current status if all checks pass
-        return step.status;
-    }
-
-    // Default to unresolved for unknown step types
-    return 'unresolved';
-}
-
 // Helper function to validate input mapping
 export function validateInputMapping(
     sourceVariable: WorkflowVariable,
@@ -219,16 +152,7 @@ export function getStepFromTree(treeStart: Step | Stage, stepId: string): Step |
         }
         if (step.substeps) {
             console.log('searching substeps', step.substeps);
-            const newStepsToSearch = step?.substeps
-            if (newStepsToSearch) {
-                for (const substep of newStepsToSearch) {
-                    const result = getStepFromTree(substep, stepId);
-                    if (result) {
-                        console.log('found step', result.id);
-                        return result;
-                    }
-                }
-            }
+            stepsToSearch.push(...step.substeps);
         }
     }
 
@@ -308,4 +232,71 @@ export function getAvailableOutputVariables(task: Step | Stage, workflow: Workfl
     collectAncestorVariables(task);
 
     return availableOutputs;
-} 
+}
+
+// Helper function to get step status
+export function getStepStatus(step: Step): StepStatus {
+    // For atomic steps
+    if (step.type === 'atomic') {
+        // Check if tool is assigned
+        if (!step.tool_id) {
+            return 'unresolved';
+        }
+
+        // Check if all required inputs are mapped
+        const requiredInputs = step.inputMappings.filter(m =>
+            m.target.type === 'parameter' &&
+            (m.target as ParameterTarget).required
+        );
+        const allRequiredInputsMapped = requiredInputs.every(mapping => mapping.sourceVariableId);
+
+        if (!allRequiredInputsMapped) {
+            return 'unresolved';
+        }
+
+        // Check if all mapped inputs are ready
+        const allMappedInputsReady = step.inputMappings.every(mapping => {
+            const sourceVariable = step.childVariables.find(v => v.variable_id === mapping.sourceVariableId);
+            return sourceVariable?.status === 'ready';
+        });
+
+        if (!allMappedInputsReady) {
+            return 'pending_inputs_ready';
+        }
+
+        // Return current status if all checks pass
+        return step.status;
+    }
+
+    // For composite steps
+    if (step.type === 'composite') {
+        // Check if there are at least 2 substeps
+        if (!step.substeps || step.substeps.length < 2) {
+            return 'unresolved';
+        }
+
+        // Check if all substeps are resolved
+        const allSubstepsResolved = step.substeps.every(substep =>
+            getStepStatus(substep) !== 'unresolved'
+        );
+
+        if (!allSubstepsResolved) {
+            return 'unresolved';
+        }
+
+        // Check if all substeps are ready
+        const allSubstepsReady = step.substeps.every(substep =>
+            getStepStatus(substep) === 'ready'
+        );
+
+        if (!allSubstepsReady) {
+            return 'pending_inputs_ready';
+        }
+
+        // Return current status if all checks pass
+        return step.status;
+    }
+
+    // Default to unresolved for unknown step types
+    return 'unresolved';
+}

@@ -6,29 +6,6 @@ interface StageDebugProps {
     workflow: Workflow;
 }
 
-// // Helper function to find a step in the workflow tree
-// function getStepFromTree(workflow: Workflow, stepId: string): Step | null {
-//     for (const stage of workflow.stages) {
-//         const findStep = (step: Step): Step | null => {
-//             if (step.id === stepId) return step;
-//             if (step.substeps) {
-//                 for (const substep of step.substeps) {
-//                     const found = findStep(substep);
-//                     if (found) return found;
-//                 }
-//             }
-//             return null;
-//         };
-
-//         for (const step of stage.steps) {
-//             const found = findStep(step);
-//             if (found) return found;
-//         }
-//     }
-//     return null;
-// }
-
-
 export default function StageDebug({ workflow }: StageDebugProps) {
     const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<Step | null>(null);

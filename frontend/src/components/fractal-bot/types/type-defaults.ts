@@ -49,74 +49,61 @@ export const workflowExample: Workflow = {
             id: 'question-processing',
             name: 'Question Processing',
             description: 'Improve and analyze the question to create clear requirements',
-            steps: [],
-            status: 'pending',
-            childVariables: [
+            steps: [
                 {
-                    variable_id: 'stage.question_processing.inputs.question',
-                    name: 'question',
-                    description: 'The original question to process',
-                    schema: {
-                        type: 'string',
-                        is_array: false,
-                        description: 'The question to improve and analyze'
-                    },
-                    io_type: 'input',
-                    required: true,
-                    status: 'pending',
-                    createdBy: 'question-processing'
-                },
-                {
-                    variable_id: 'stage.question_processing.outputs.improved_question',
-                    name: 'improved_question',
-                    description: 'The improved and clarified question',
-                    schema: {
-                        type: 'string',
-                        is_array: false,
-                        description: 'The improved version of the question'
-                    },
-                    io_type: 'output',
-                    status: 'pending',
-                    createdBy: 'question-processing'
-                },
-                {
-                    variable_id: 'stage.question_processing.outputs.checklist',
-                    name: 'checklist',
-                    description: 'Requirements checklist for a complete answer',
-                    schema: {
-                        type: 'object',
-                        is_array: true,
-                        fields: {
-                            item_to_score: { type: 'string', is_array: false },
-                            current_score: { type: 'number', is_array: false },
-                            explanation: { type: 'string', is_array: false }
+                    id: 'improve-question',
+                    name: 'Improve Question',
+                    description: 'Improve and clarify the question',
+                    type: 'atomic',
+                    tool_id: 'question-improver',
+                    status: 'unresolved',
+                    childVariables: [],
+                    inputMappings: [{
+                        sourceVariableId: 'workflow.question',
+                        target: {
+                            type: 'parameter',
+                            name: 'question',
+                            schema: {
+                                type: 'string',
+                                is_array: false,
+                                description: 'The question to improve'
+                            },
+                            required: true
                         }
-                    },
-                    io_type: 'output',
-                    status: 'pending',
-                    createdBy: 'question-processing'
+                    }],
+                    outputMappings: [{
+                        sourceVariableId: 'improved_question',
+                        target: {
+                            type: 'variable',
+                            variableId: 'workflow.improved_question'
+                        }
+                    }],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 }
             ],
+            status: 'pending',
+            childVariables: [],
             inputMappings: [{
-                sourceVariableId: 'mission.question',
+                sourceVariableId: 'workflow.question',
                 target: {
                     type: 'variable',
-                    variableId: 'stage.question_processing.inputs.question'
+                    variableId: 'workflow.question'
                 }
             }],
             outputMappings: [
                 {
-                    sourceVariableId: 'stage.question_processing.outputs.improved_question',
+                    sourceVariableId: 'workflow.improved_question',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.question_processing.outputs.improved_question'
+                        variableId: 'workflow.improved_question'
                     }
                 },
                 {
-                    sourceVariableId: 'stage.question_processing.outputs.checklist',
+                    sourceVariableId: 'workflow.checklist',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.question_processing.outputs.checklist'
+                        variableId: 'workflow.checklist'
                     }
                 }
             ],
@@ -133,79 +120,28 @@ export const workflowExample: Workflow = {
             description: 'Conduct research and build knowledge base from multiple sources',
             steps: [],
             status: 'pending',
-            childVariables: [
-                {
-                    variable_id: 'stage.research.inputs.question',
-                    name: 'question',
-                    description: 'The improved question to research',
-                    schema: {
-                        type: 'string',
-                        is_array: false,
-                        description: 'The question to research'
-                    },
-                    io_type: 'input',
-                    required: true,
-                    status: 'pending',
-                    createdBy: 'research'
-                },
-                {
-                    variable_id: 'stage.research.inputs.checklist',
-                    name: 'checklist',
-                    description: 'Requirements checklist for research',
-                    schema: {
-                        type: 'object',
-                        is_array: true,
-                        fields: {
-                            item_to_score: { type: 'string', is_array: false },
-                            current_score: { type: 'number', is_array: false },
-                            explanation: { type: 'string', is_array: false }
-                        }
-                    },
-                    io_type: 'input',
-                    required: true,
-                    status: 'pending',
-                    createdBy: 'research'
-                },
-                {
-                    variable_id: 'stage.research.outputs.knowledge_base',
-                    name: 'knowledge_base',
-                    description: 'The knowledge base built from research',
-                    schema: {
-                        type: 'object',
-                        is_array: true,
-                        fields: {
-                            nugget_id: { type: 'string', is_array: false },
-                            content: { type: 'string', is_array: false },
-                            confidence: { type: 'number', is_array: false },
-                            conflicts_with: { type: 'string', is_array: true }
-                        }
-                    },
-                    io_type: 'output',
-                    status: 'pending',
-                    createdBy: 'research'
-                }
-            ],
+            childVariables: [],
             inputMappings: [
                 {
-                    sourceVariableId: 'stage.question_processing.outputs.improved_question',
+                    sourceVariableId: 'workflow.improved_question',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.research.inputs.question'
+                        variableId: 'workflow.improved_question'
                     }
                 },
                 {
-                    sourceVariableId: 'stage.question_processing.outputs.checklist',
+                    sourceVariableId: 'workflow.checklist',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.research.inputs.checklist'
+                        variableId: 'workflow.checklist'
                     }
                 }
             ],
             outputMappings: [{
-                sourceVariableId: 'stage.research.outputs.knowledge_base',
+                sourceVariableId: 'workflow.knowledge_base',
                 target: {
                     type: 'variable',
-                    variableId: 'stage.research.outputs.knowledge_base'
+                    variableId: 'workflow.knowledge_base'
                 }
             }],
             success_criteria: [
@@ -223,126 +159,36 @@ export const workflowExample: Workflow = {
             description: 'Generate and validate the final answer',
             steps: [],
             status: 'pending',
-            childVariables: [
-                {
-                    variable_id: 'stage.answer_generation.inputs.question',
-                    name: 'question',
-                    description: 'The improved question to answer',
-                    schema: {
-                        type: 'string',
-                        is_array: false,
-                        description: 'The question to answer'
-                    },
-                    io_type: 'input',
-                    required: true,
-                    status: 'pending',
-                    createdBy: 'answer-generation'
-                },
-                {
-                    variable_id: 'stage.answer_generation.inputs.checklist',
-                    name: 'checklist',
-                    description: 'Requirements checklist for answer',
-                    schema: {
-                        type: 'object',
-                        is_array: true,
-                        fields: {
-                            item_to_score: { type: 'string', is_array: false },
-                            current_score: { type: 'number', is_array: false },
-                            explanation: { type: 'string', is_array: false }
-                        }
-                    },
-                    io_type: 'input',
-                    required: true,
-                    status: 'pending',
-                    createdBy: 'answer-generation'
-                },
-                {
-                    variable_id: 'stage.answer_generation.inputs.knowledge_base',
-                    name: 'knowledge_base',
-                    description: 'The knowledge base to use for answer generation',
-                    schema: {
-                        type: 'object',
-                        is_array: true,
-                        fields: {
-                            nugget_id: { type: 'string', is_array: false },
-                            content: { type: 'string', is_array: false },
-                            confidence: { type: 'number', is_array: false },
-                            conflicts_with: { type: 'string', is_array: true }
-                        }
-                    },
-                    io_type: 'input',
-                    required: true,
-                    status: 'pending',
-                    createdBy: 'answer-generation'
-                },
-                {
-                    variable_id: 'stage.answer_generation.outputs.answer',
-                    name: 'answer',
-                    description: 'The final generated answer',
-                    schema: {
-                        type: 'string',
-                        is_array: false,
-                        description: 'The generated answer in markdown format',
-                        format: 'markdown'
-                    },
-                    io_type: 'output',
-                    status: 'pending',
-                    createdBy: 'answer-generation'
-                },
-                {
-                    variable_id: 'stage.answer_generation.outputs.scored_checklist',
-                    name: 'scored_checklist',
-                    description: 'The scored requirements checklist',
-                    schema: {
-                        type: 'object',
-                        is_array: true,
-                        fields: {
-                            item_to_score: { type: 'string', is_array: false },
-                            current_score: { type: 'number', is_array: false },
-                            explanation: { type: 'string', is_array: false }
-                        }
-                    },
-                    io_type: 'output',
-                    status: 'pending',
-                    createdBy: 'answer-generation'
-                }
-            ],
+            childVariables: [],
             inputMappings: [
                 {
-                    sourceVariableId: 'stage.question_processing.outputs.improved_question',
+                    sourceVariableId: 'workflow.improved_question',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.answer_generation.inputs.question'
+                        variableId: 'workflow.improved_question'
                     }
                 },
                 {
-                    sourceVariableId: 'stage.question_processing.outputs.checklist',
+                    sourceVariableId: 'workflow.checklist',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.answer_generation.inputs.checklist'
+                        variableId: 'workflow.checklist'
                     }
                 },
                 {
-                    sourceVariableId: 'stage.research.outputs.knowledge_base',
+                    sourceVariableId: 'workflow.knowledge_base',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.answer_generation.inputs.knowledge_base'
+                        variableId: 'workflow.knowledge_base'
                     }
                 }
             ],
             outputMappings: [
                 {
-                    sourceVariableId: 'stage.answer_generation.outputs.answer',
+                    sourceVariableId: 'workflow.answer',
                     target: {
                         type: 'variable',
-                        variableId: 'stage.answer_generation.outputs.answer'
-                    }
-                },
-                {
-                    sourceVariableId: 'stage.answer_generation.outputs.scored_checklist',
-                    target: {
-                        type: 'variable',
-                        variableId: 'stage.answer_generation.outputs.scored_checklist'
+                        variableId: 'workflow.answer'
                     }
                 }
             ],
@@ -357,7 +203,7 @@ export const workflowExample: Workflow = {
     ],
     childVariables: [
         {
-            variable_id: 'question',
+            variable_id: 'workflow.question',
             name: 'question',
             description: 'The original question',
             schema: {
@@ -371,7 +217,55 @@ export const workflowExample: Workflow = {
             createdBy: 'research-workflow'
         },
         {
-            variable_id: 'answer',
+            variable_id: 'workflow.improved_question',
+            name: 'improved_question',
+            description: 'The improved and clarified question',
+            schema: {
+                type: 'string',
+                is_array: false,
+                description: 'The improved version of the question'
+            },
+            io_type: 'output',
+            status: 'pending',
+            createdBy: 'research-workflow'
+        },
+        {
+            variable_id: 'workflow.checklist',
+            name: 'checklist',
+            description: 'Requirements checklist for a complete answer',
+            schema: {
+                type: 'object',
+                is_array: true,
+                fields: {
+                    item_to_score: { type: 'string', is_array: false },
+                    current_score: { type: 'number', is_array: false },
+                    explanation: { type: 'string', is_array: false }
+                }
+            },
+            io_type: 'output',
+            status: 'pending',
+            createdBy: 'research-workflow'
+        },
+        {
+            variable_id: 'workflow.knowledge_base',
+            name: 'knowledge_base',
+            description: 'The knowledge base built from research',
+            schema: {
+                type: 'object',
+                is_array: true,
+                fields: {
+                    nugget_id: { type: 'string', is_array: false },
+                    content: { type: 'string', is_array: false },
+                    confidence: { type: 'number', is_array: false },
+                    conflicts_with: { type: 'string', is_array: true }
+                }
+            },
+            io_type: 'output',
+            status: 'pending',
+            createdBy: 'research-workflow'
+        },
+        {
+            variable_id: 'workflow.answer',
             name: 'answer',
             description: 'The final answer',
             schema: {
@@ -389,16 +283,39 @@ export const workflowExample: Workflow = {
         sourceVariableId: 'mission.question',
         target: {
             type: 'variable',
-            variableId: 'question'
+            variableId: 'workflow.question'
         }
     }],
-    outputMappings: [{
-        sourceVariableId: 'stage.answer_generation.outputs.answer',
-        target: {
-            type: 'variable',
-            variableId: 'answer'
+    outputMappings: [
+        {
+            sourceVariableId: 'workflow.improved_question',
+            target: {
+                type: 'variable',
+                variableId: 'mission.improved_question'
+            }
+        },
+        {
+            sourceVariableId: 'workflow.checklist',
+            target: {
+                type: 'variable',
+                variableId: 'mission.checklist'
+            }
+        },
+        {
+            sourceVariableId: 'workflow.knowledge_base',
+            target: {
+                type: 'variable',
+                variableId: 'mission.knowledge_base'
+            }
+        },
+        {
+            sourceVariableId: 'workflow.answer',
+            target: {
+                type: 'variable',
+                variableId: 'mission.answer'
+            }
         }
-    }],
+    ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
 };
