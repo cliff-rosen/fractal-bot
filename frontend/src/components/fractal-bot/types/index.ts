@@ -63,7 +63,7 @@ export interface Step {
     name: string;
     description: string;
     type?: 'atomic' | 'composite';
-    childVariables: WorkflowVariable[];
+    state: WorkflowVariable[];
     inputMappings: VariableMapping[];  // Maps available inputs to tool parameters
     outputMappings: VariableMapping[]; // Maps tool outputs to new variables
     tool_id: string;
@@ -83,7 +83,7 @@ export interface Stage {
     description: string;
     status: string;
     steps: Step[];
-    childVariables: WorkflowVariable[];
+    state: WorkflowVariable[];
     inputMappings: VariableMapping[];  // Maps available inputs to stage inputs
     outputMappings: VariableMapping[]; // Maps step outputs to stage outputs
     success_criteria: string[];
@@ -98,7 +98,7 @@ export interface Workflow {
     description: string;
     status: string;
     stages: Stage[];
-    childVariables: WorkflowVariable[];
+    state: WorkflowVariable[];
     inputMappings: VariableMapping[];  // Maps mission inputs to workflow inputs
     outputMappings: VariableMapping[]; // Maps stage outputs to workflow outputs
     createdAt: string;
@@ -112,7 +112,7 @@ export interface Mission {
     goal: string;
     status: string;
     workflow: Workflow;
-    childVariables: WorkflowVariable[];
+    state: WorkflowVariable[];
     inputMappings: VariableMapping[];  // Maps available inputs to mission inputs
     outputMappings: VariableMapping[]; // Maps workflow outputs to mission outputs
     resources: string[];
@@ -217,7 +217,7 @@ export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?:
         const mission = stepOrWorkflow as Workflow;
         return mission.inputMappings
             .filter(m => m.target.type === 'variable')
-            .map(m => mission.childVariables.find(v => v.variable_id === m.sourceVariableId))
+            .map(m => mission.state.find(v => v.variable_id === m.sourceVariableId))
             .filter((v): v is WorkflowVariable => v !== undefined);
     }
 
@@ -226,7 +226,7 @@ export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?:
 
     // Add parent's child variables (variables created by siblings)
     if (parentStep) {
-        availableInputs.push(...parentStep.childVariables);
+        availableInputs.push(...parentStep.state);
     }
 
     // Add outputs from prior siblings
@@ -236,7 +236,7 @@ export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?:
             for (let i = 0; i < currentIndex; i++) {
                 const sibling = parentStep.substeps[i];
                 // Get variables created by this sibling that aren't mapped to parent outputs
-                const siblingOutputs = sibling.childVariables.filter(v =>
+                const siblingOutputs = sibling.state.filter(v =>
                     !sibling.outputMappings.some(m =>
                         m.isParentOutput && m.target.type === 'variable' && m.target.variableId === v.variable_id
                     )
@@ -253,7 +253,7 @@ export function getAvailableInputs(stepOrWorkflow: Step | Workflow, parentStep?:
 export function getWorkflowAvailableInputs(workflow: Workflow): WorkflowVariable[] {
     return workflow.inputMappings
         .filter(m => m.target.type === 'variable')
-        .map(m => workflow.childVariables.find(v => v.variable_id === m.sourceVariableId))
+        .map(m => workflow.state.find(v => v.variable_id === m.sourceVariableId))
         .filter((v): v is WorkflowVariable => v !== undefined);
 }
 
@@ -263,7 +263,7 @@ export function isStepReady(step: Step): boolean {
     const allInputsReady = step.inputMappings
         .filter(m => m.target.type === 'parameter' && m.target.required)
         .every(mapping => {
-            const sourceVar = step.childVariables.find(v => v.variable_id === mapping.sourceVariableId);
+            const sourceVar = step.state.find(v => v.variable_id === mapping.sourceVariableId);
             return sourceVar && sourceVar.status === 'ready';
         });
 

@@ -1,16 +1,16 @@
-import { Step, Stage, Workflow, WorkflowVariable, doSchemasMatch, StepStatus, Tool } from '../types/index';
+import { Step, Stage, Workflow, WorkflowVariable, doSchemasMatch, StepStatus, Tool, ParameterTarget } from '../types/index';
 import { useFractalBot } from '@/context/FractalBotContext';
 
 // Helper function to get available inputs for a step or workflow
 export function getAvailableInputs(workflow: Workflow, step?: Step): WorkflowVariable[] {
-    if (!workflow || !workflow.childVariables) {
+    if (!workflow || !workflow.state) {
         return [];
     }
 
     const availableInputs: WorkflowVariable[] = [];
 
-    // Add workflow inputs from childVariables
-    const workflowInputs = workflow.childVariables.filter(v =>
+    // Add workflow inputs from state
+    const workflowInputs = workflow.state.filter(v =>
         v.io_type === 'input'
     );
     availableInputs.push(...workflowInputs);
@@ -21,8 +21,8 @@ export function getAvailableInputs(workflow: Workflow, step?: Step): WorkflowVar
             s.steps.some(st => st.id === step?.id)
         ));
         previousStages.forEach(stage => {
-            if (stage.childVariables) {
-                const stageOutputs = stage.childVariables.filter(v =>
+            if (stage.state) {
+                const stageOutputs = stage.state.filter(v =>
                     v.io_type === 'output'
                 );
                 availableInputs.push(...stageOutputs);
@@ -71,8 +71,8 @@ export function getAvailableInputs(workflow: Workflow, step?: Step): WorkflowVar
 
             const priorSiblings = findPriorSiblings(stage.steps, step.id);
             priorSiblings.forEach(sibling => {
-                if (sibling.childVariables) {
-                    const siblingOutputs = sibling.childVariables.filter(v =>
+                if (sibling.state) {
+                    const siblingOutputs = sibling.state.filter(v =>
                         v.io_type === 'output'
                     );
                     availableInputs.push(...siblingOutputs);
@@ -146,6 +146,7 @@ export function getStepFromTree(treeStart: Step | Stage, stepId: string): Step |
 
     while (stepsToSearch.length > 0) {
         const step = stepsToSearch.shift();
+        if (!step) continue;
         if (step.id === stepId) {
             console.log('found step', step.id);
             return step;
@@ -166,8 +167,10 @@ export function getStepFromId(stepId: string): Step | undefined {
     const { currentWorkflow } = state;
 
     for (const stage of currentWorkflow.stages) {
-        const step = getStepFromTree(stage, stepId);
-        if (step) return step;
+        const result = getStepFromTree(stage, stepId);
+        if (result && !('steps' in result)) {
+            return result as Step;
+        }
     }
 
     return undefined;
@@ -177,7 +180,7 @@ export function getAvailableOutputVariables(task: Step | Stage, workflow: Workfl
     const availableOutputs: WorkflowVariable[] = [];
 
     // Always include workflow-level variables
-    availableOutputs.push(...workflow.childVariables);
+    availableOutputs.push(...workflow.state);
 
     // If it's a stage, we're done - can only map to workflow vars
     if ('steps' in task) {
@@ -218,11 +221,11 @@ export function getAvailableOutputVariables(task: Step | Stage, workflow: Workfl
         const { parentStage, parentStep } = findParents(currentStep);
 
         if (parentStage) {
-            availableOutputs.push(...parentStage.childVariables);
+            availableOutputs.push(...parentStage.state);
         }
 
         if (parentStep) {
-            availableOutputs.push(...parentStep.childVariables);
+            availableOutputs.push(...parentStep.state);
             // Recursively collect from parent step's ancestors
             collectAncestorVariables(parentStep);
         }
@@ -256,7 +259,7 @@ export function getStepStatus(step: Step): StepStatus {
 
         // Check if all mapped inputs are ready
         const allMappedInputsReady = step.inputMappings.every(mapping => {
-            const sourceVariable = step.childVariables.find(v => v.variable_id === mapping.sourceVariableId);
+            const sourceVariable = step.state.find(v => v.variable_id === mapping.sourceVariableId);
             return sourceVariable?.status === 'ready';
         });
 

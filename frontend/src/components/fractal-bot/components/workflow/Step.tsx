@@ -150,7 +150,7 @@ const OutputMappingList = ({
 
         onUpdateStep({
             ...step,
-            childVariables: [...step.childVariables, newVariable],
+            state: [...step.state, newVariable],
             outputMappings: updatedMappings
         });
 
@@ -177,9 +177,9 @@ const OutputMappingList = ({
                                 </span>
                                 {mapping.sourceVariableId && (
                                     <div className="w-2 h-2 rounded-full flex-none" style={{
-                                        backgroundColor: step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'ready'
+                                        backgroundColor: step.state.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'ready'
                                             ? 'rgb(34 197 94)' // green-500
-                                            : step.childVariables.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'error'
+                                            : step.state.find(v => v.variable_id === mapping.sourceVariableId)?.status === 'error'
                                                 ? 'rgb(239 68 68)' // red-500
                                                 : 'rgb(234 179 8)' // yellow-500
                                     }} />
@@ -268,7 +268,7 @@ const createNewStep = (parentStep?: Step, priorSibling?: Step): Step => {
         description: '',
         type: 'atomic',
         tool_id: '',
-        childVariables: [],
+        state: [],
         inputMappings: [],
         outputMappings: [],
         status: 'unresolved',
@@ -288,7 +288,7 @@ const createNewStep = (parentStep?: Step, priorSibling?: Step): Step => {
     // For substeps, we need to consider parent's child variables and prior siblings
     if (priorSibling) {
         // Get outputs from prior sibling that aren't mapped to parent outputs
-        const siblingOutputs = priorSibling.childVariables.filter(v =>
+        const siblingOutputs = priorSibling.state.filter(v =>
             !priorSibling.outputMappings.some(m =>
                 m.isParentOutput && m.target.type === 'variable' && m.target.variableId === v.variable_id
             )

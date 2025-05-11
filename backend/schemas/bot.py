@@ -71,6 +71,7 @@ class Step(BaseModel):
     type: Optional[str] = None
     tool_id: Optional[str] = None
     isSubstep: Optional[bool] = None
+    state: List[WorkflowVariable]
 
 class Stage(BaseModel):
     id: str
@@ -78,7 +79,7 @@ class Stage(BaseModel):
     description: str
     status: str
     steps: List[Step]
-    childVariables: List[WorkflowVariable]
+    state: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
     createdAt: str
     updatedAt: str
@@ -89,7 +90,7 @@ class Workflow(BaseModel):
     description: str
     status: str
     stages: List[Stage]
-    childVariables: List[WorkflowVariable]
+    state: List[WorkflowVariable]
     inputMappings: List[Any] = []
     outputMappings: List[Any] = []
     createdAt: str
@@ -101,7 +102,7 @@ class Mission(BaseModel):
     goal: str
     status: str
     workflow: Workflow
-    childVariables: List[WorkflowVariable]
+    state: List[WorkflowVariable]
     inputMappings: List[Any] = []
     outputMappings: List[Any] = []
     resources: List[str]
@@ -113,7 +114,7 @@ class Mission(BaseModel):
 class MissionProposal(BaseModel):
     title: str
     goal: str
-    childVariables: List[WorkflowVariable]
+    state: List[WorkflowVariable]
     inputMappings: List[Any] = []
     outputMappings: List[Any] = []
     resources: List[str] = Field(default_factory=list)
@@ -126,7 +127,7 @@ class StageProposal(BaseModel):
     id: str
     name: str
     description: str
-    childVariables: List[WorkflowVariable]
+    state: List[WorkflowVariable]
     success_criteria: List[str] = Field(default_factory=list, description="Measurable conditions that verify stage completion")
 
 ### BOT REQUEST ###

@@ -30,7 +30,7 @@ export const workflowTemplate: Workflow = {
     description: '',
     status: 'pending',
     stages: [],
-    childVariables: [],
+    state: [],
     inputMappings: [],
     outputMappings: [],
     createdAt: new Date().toISOString(),
@@ -57,7 +57,7 @@ export const workflowExample: Workflow = {
                     type: 'atomic',
                     tool_id: 'question-improver',
                     status: 'unresolved',
-                    childVariables: [],
+                    state: [],
                     inputMappings: [{
                         sourceVariableId: 'workflow.question',
                         target: {
@@ -83,7 +83,7 @@ export const workflowExample: Workflow = {
                 }
             ],
             status: 'pending',
-            childVariables: [],
+            state: [],
             inputMappings: [{
                 sourceVariableId: 'workflow.question',
                 target: {
@@ -120,7 +120,7 @@ export const workflowExample: Workflow = {
             description: 'Conduct research and build knowledge base from multiple sources',
             steps: [],
             status: 'pending',
-            childVariables: [],
+            state: [],
             inputMappings: [
                 {
                     sourceVariableId: 'workflow.improved_question',
@@ -159,7 +159,7 @@ export const workflowExample: Workflow = {
             description: 'Generate and validate the final answer',
             steps: [],
             status: 'pending',
-            childVariables: [],
+            state: [],
             inputMappings: [
                 {
                     sourceVariableId: 'workflow.improved_question',
@@ -201,7 +201,7 @@ export const workflowExample: Workflow = {
             updatedAt: new Date().toISOString()
         }
     ],
-    childVariables: [
+    state: [
         {
             variable_id: 'workflow.question',
             name: 'question',
@@ -327,7 +327,7 @@ export const missionTemplate: Mission = {
     goal: '',
     status: 'pending',
     workflow: workflowTemplate,
-    childVariables: [],
+    state: [],
     inputMappings: [],
     outputMappings: [],
     resources: [],
@@ -344,7 +344,7 @@ export const missionExample: Mission = {
     goal: 'Research and provide a comprehensive answer to a complex question using multiple tools and sources',
     status: 'active',
     workflow: workflowExample,
-    childVariables: [
+    state: [
         {
             variable_id: 'question',
             name: 'question',
