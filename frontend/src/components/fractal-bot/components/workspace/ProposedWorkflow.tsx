@@ -24,14 +24,14 @@ export default function ProposedWorkflow({ workflow }: ProposedWorkflowProps) {
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{stage.description}</p>
 
                             {/* Stage Inputs and Outputs */}
-                            <div className="mt-3 grid grid-cols-2 gap-4">
+                            <div className="mt-4 grid grid-cols-2 gap-4">
                                 <div className="bg-gray-100 dark:bg-gray-600/50 p-3 rounded-lg">
                                     <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Inputs</h5>
-                                    {stage.inputs.length > 0 ? (
+                                    {stage.state.filter(v => v.io_type === 'input').length > 0 ? (
                                         <ul className="space-y-1">
-                                            {stage.inputs.map((input: string) => (
-                                                <li key={input} className="text-sm text-gray-600 dark:text-gray-300">
-                                                    {input}
+                                            {stage.state.filter(v => v.io_type === 'input').map((input) => (
+                                                <li key={input.variable_id} className="text-sm text-gray-600 dark:text-gray-300">
+                                                    {input.name}
                                                 </li>
                                             ))}
                                         </ul>
@@ -41,11 +41,11 @@ export default function ProposedWorkflow({ workflow }: ProposedWorkflowProps) {
                                 </div>
                                 <div className="bg-gray-100 dark:bg-gray-600/50 p-3 rounded-lg">
                                     <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Outputs</h5>
-                                    {stage.outputs.length > 0 ? (
+                                    {stage.state.filter(v => v.io_type === 'output').length > 0 ? (
                                         <ul className="space-y-1">
-                                            {stage.outputs.map((output: string) => (
-                                                <li key={output} className="text-sm text-gray-600 dark:text-gray-300">
-                                                    {output}
+                                            {stage.state.filter(v => v.io_type === 'output').map((output) => (
+                                                <li key={output.variable_id} className="text-sm text-gray-600 dark:text-gray-300">
+                                                    {output.name}
                                                 </li>
                                             ))}
                                         </ul>

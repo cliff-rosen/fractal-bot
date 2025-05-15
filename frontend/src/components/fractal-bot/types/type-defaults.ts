@@ -1,6 +1,5 @@
 import { Asset, ChatMessage, Mission, Workflow, Workspace, WorkspaceState, MissionProposal, Stage, WorkflowVariable } from './index';
-import { Tool, ToolType, availableTools } from './tools';
-import { createMissionFromProposal } from '../utils/utils';
+import { availableTools } from './tools';
 
 // default workspace object
 export const workspaceTemplate: Workspace = {
@@ -38,281 +37,302 @@ export const workflowTemplate: Workflow = {
 }
 
 
-// Research workflow example
+// Example workflow demonstrating proper variable and mapping structure
 export const workflowExample: Workflow = {
     id: 'research-workflow',
     name: 'Research and Answer Generation',
-    description: 'A comprehensive workflow for researching and answering complex questions using multiple tools',
-    status: 'active',
+    description: 'A comprehensive workflow for researching and answering complex questions',
+    status: 'pending',
     stages: [
         {
-            id: 'question-processing',
-            name: 'Question Processing',
-            description: 'Improve and analyze the question to create clear requirements',
-            steps: [
+            id: 'question-development',
+            name: 'Question Development',
+            description: 'Develop and refine the research question',
+            status: 'pending',
+            steps: [],
+            state: [
+                // Stage-level input variables
                 {
-                    id: 'improve-question',
-                    name: 'Improve Question',
-                    description: 'Improve and clarify the question',
-                    type: 'atomic',
-                    tool_id: 'question-improver',
-                    status: 'unresolved',
-                    state: [],
-                    inputMappings: [{
-                        sourceVariableId: 'workflow.question',
-                        target: {
-                            type: 'parameter',
-                            name: 'question',
-                            schema: {
-                                type: 'string',
-                                is_array: false,
-                                description: 'The question to improve'
-                            },
-                            required: true
-                        }
-                    }],
-                    outputMappings: [{
-                        sourceVariableId: 'improved_question',
-                        target: {
-                            type: 'variable',
-                            variableId: 'workflow.improved_question'
-                        }
-                    }],
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
+                    variable_id: 'question-dev-input',
+                    name: 'raw_question',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The initial question to develop'
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'question-development',
+                    error_message: undefined
+                },
+                // Stage-level output variables
+                {
+                    variable_id: 'question-dev-output',
+                    name: 'developed_question',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The developed and refined question'
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'question-development',
+                    error_message: undefined
                 }
             ],
-            status: 'pending',
-            state: [],
-            inputMappings: [{
-                sourceVariableId: 'workflow.question',
-                target: {
-                    type: 'variable',
-                    variableId: 'workflow.question'
+            inputMappings: [
+                {
+                    sourceVariableId: 'research-workflow-input',
+                    target: {
+                        type: 'variable',
+                        variableId: 'question-dev-input'
+                    }
                 }
-            }],
+            ],
             outputMappings: [
                 {
-                    sourceVariableId: 'workflow.improved_question',
+                    sourceVariableId: 'question-dev-output',
                     target: {
                         type: 'variable',
-                        variableId: 'workflow.improved_question'
-                    }
-                },
-                {
-                    sourceVariableId: 'workflow.checklist',
-                    target: {
-                        type: 'variable',
-                        variableId: 'workflow.checklist'
+                        variableId: 'research-workflow-intermediate'
                     }
                 }
             ],
-            success_criteria: [
-                'Question is improved and clarified',
-                'Requirements checklist is generated'
-            ],
+            success_criteria: ['Question is properly developed and refined'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         },
         {
-            id: 'research',
-            name: 'Research and Knowledge Building',
-            description: 'Conduct research and build knowledge base from multiple sources',
-            steps: [],
+            id: 'information-gathering',
+            name: 'Information Gathering',
+            description: 'Gather relevant information for the question',
             status: 'pending',
-            state: [],
+            steps: [],
+            state: [
+                // Stage-level input variables
+                {
+                    variable_id: 'info-gather-input',
+                    name: 'developed_question',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The developed question to research'
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'information-gathering',
+                    error_message: undefined
+                },
+                // Stage-level output variables
+                {
+                    variable_id: 'info-gather-output',
+                    name: 'research_findings',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        description: 'The gathered research findings',
+                        fields: {
+                            source: { type: 'string', is_array: false },
+                            content: { type: 'string', is_array: false },
+                            relevance: { type: 'number', is_array: false }
+                        }
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'information-gathering',
+                    error_message: undefined
+                }
+            ],
             inputMappings: [
                 {
-                    sourceVariableId: 'workflow.improved_question',
+                    sourceVariableId: 'research-workflow-intermediate',
                     target: {
                         type: 'variable',
-                        variableId: 'workflow.improved_question'
+                        variableId: 'info-gather-input'
                     }
-                },
+                }
+            ],
+            outputMappings: [
                 {
-                    sourceVariableId: 'workflow.checklist',
+                    sourceVariableId: 'info-gather-output',
                     target: {
                         type: 'variable',
-                        variableId: 'workflow.checklist'
+                        variableId: 'research-workflow-intermediate2'
                     }
                 }
             ],
-            outputMappings: [{
-                sourceVariableId: 'workflow.knowledge_base',
-                target: {
-                    type: 'variable',
-                    variableId: 'workflow.knowledge_base'
-                }
-            }],
-            success_criteria: [
-                'Effective search queries are generated',
-                'Relevant sources are identified and analyzed',
-                'Content is scraped from selected sources',
-                'Knowledge base is initialized with relevant information'
-            ],
+            success_criteria: ['Comprehensive research findings are gathered'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         },
         {
             id: 'answer-generation',
             name: 'Answer Generation',
-            description: 'Generate and validate the final answer',
-            steps: [],
+            description: 'Generate the final answer based on research',
             status: 'pending',
-            state: [],
+            steps: [],
+            state: [
+                // Stage-level input variables
+                {
+                    variable_id: 'answer-gen-input1',
+                    name: 'developed_question',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The developed question'
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'answer-generation',
+                    error_message: undefined
+                },
+                {
+                    variable_id: 'answer-gen-input2',
+                    name: 'research_findings',
+                    schema: {
+                        type: 'object',
+                        is_array: true,
+                        description: 'The research findings',
+                        fields: {
+                            source: { type: 'string', is_array: false },
+                            content: { type: 'string', is_array: false },
+                            relevance: { type: 'number', is_array: false }
+                        }
+                    },
+                    io_type: 'input',
+                    required: true,
+                    status: 'pending',
+                    createdBy: 'answer-generation',
+                    error_message: undefined
+                },
+                // Stage-level output variables
+                {
+                    variable_id: 'answer-gen-output',
+                    name: 'final_answer',
+                    schema: {
+                        type: 'string',
+                        is_array: false,
+                        description: 'The final answer to the question',
+                        format: 'markdown'
+                    },
+                    io_type: 'output',
+                    status: 'pending',
+                    createdBy: 'answer-generation',
+                    error_message: undefined
+                }
+            ],
             inputMappings: [
                 {
-                    sourceVariableId: 'workflow.improved_question',
+                    sourceVariableId: 'research-workflow-intermediate',
                     target: {
                         type: 'variable',
-                        variableId: 'workflow.improved_question'
+                        variableId: 'answer-gen-input1'
                     }
                 },
                 {
-                    sourceVariableId: 'workflow.checklist',
+                    sourceVariableId: 'research-workflow-intermediate2',
                     target: {
                         type: 'variable',
-                        variableId: 'workflow.checklist'
-                    }
-                },
-                {
-                    sourceVariableId: 'workflow.knowledge_base',
-                    target: {
-                        type: 'variable',
-                        variableId: 'workflow.knowledge_base'
+                        variableId: 'answer-gen-input2'
                     }
                 }
             ],
             outputMappings: [
                 {
-                    sourceVariableId: 'workflow.answer',
+                    sourceVariableId: 'answer-gen-output',
                     target: {
                         type: 'variable',
-                        variableId: 'workflow.answer'
+                        variableId: 'research-workflow-output'
                     }
                 }
             ],
-            success_criteria: [
-                'Comprehensive answer is generated',
-                'Answer meets all requirements',
-                'Answer is properly scored and validated'
-            ],
+            success_criteria: ['Comprehensive answer is generated'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         }
     ],
     state: [
+        // Workflow-level input variables
         {
-            variable_id: 'workflow.question',
-            name: 'question',
-            description: 'The original question',
+            variable_id: 'research-workflow-input',
+            name: 'raw_question',
             schema: {
                 type: 'string',
                 is_array: false,
-                description: 'The question to research'
+                description: 'The initial question to research'
             },
             io_type: 'input',
             required: true,
             status: 'pending',
-            createdBy: 'research-workflow'
+            createdBy: 'research-workflow',
+            error_message: undefined
         },
+        // Workflow-level intermediate variables
         {
-            variable_id: 'workflow.improved_question',
-            name: 'improved_question',
-            description: 'The improved and clarified question',
+            variable_id: 'research-workflow-intermediate',
+            name: 'developed_question',
             schema: {
                 type: 'string',
                 is_array: false,
-                description: 'The improved version of the question'
+                description: 'The developed question'
             },
-            io_type: 'output',
+            io_type: 'wip',
             status: 'pending',
-            createdBy: 'research-workflow'
+            createdBy: 'research-workflow',
+            error_message: undefined
         },
         {
-            variable_id: 'workflow.checklist',
-            name: 'checklist',
-            description: 'Requirements checklist for a complete answer',
+            variable_id: 'research-workflow-intermediate2',
+            name: 'research_findings',
             schema: {
                 type: 'object',
                 is_array: true,
+                description: 'The research findings',
                 fields: {
-                    item_to_score: { type: 'string', is_array: false },
-                    current_score: { type: 'number', is_array: false },
-                    explanation: { type: 'string', is_array: false }
-                }
-            },
-            io_type: 'output',
-            status: 'pending',
-            createdBy: 'research-workflow'
-        },
-        {
-            variable_id: 'workflow.knowledge_base',
-            name: 'knowledge_base',
-            description: 'The knowledge base built from research',
-            schema: {
-                type: 'object',
-                is_array: true,
-                fields: {
-                    nugget_id: { type: 'string', is_array: false },
+                    source: { type: 'string', is_array: false },
                     content: { type: 'string', is_array: false },
-                    confidence: { type: 'number', is_array: false },
-                    conflicts_with: { type: 'string', is_array: true }
+                    relevance: { type: 'number', is_array: false }
                 }
             },
-            io_type: 'output',
+            io_type: 'wip',
             status: 'pending',
-            createdBy: 'research-workflow'
+            createdBy: 'research-workflow',
+            error_message: undefined
         },
+        // Workflow-level output variables
         {
-            variable_id: 'workflow.answer',
-            name: 'answer',
-            description: 'The final answer',
+            variable_id: 'research-workflow-output',
+            name: 'final_answer',
             schema: {
                 type: 'string',
                 is_array: false,
-                description: 'The generated answer in markdown format',
+                description: 'The final answer to the question',
                 format: 'markdown'
             },
             io_type: 'output',
             status: 'pending',
-            createdBy: 'research-workflow'
+            createdBy: 'research-workflow',
+            error_message: undefined
         }
     ],
-    inputMappings: [{
-        sourceVariableId: 'mission.question',
-        target: {
-            type: 'variable',
-            variableId: 'workflow.question'
+    inputMappings: [
+        {
+            sourceVariableId: 'research-mission-input',
+            target: {
+                type: 'variable',
+                variableId: 'research-workflow-input'
+            }
         }
-    }],
+    ],
     outputMappings: [
         {
-            sourceVariableId: 'workflow.improved_question',
+            sourceVariableId: 'research-workflow-output',
             target: {
                 type: 'variable',
-                variableId: 'mission.improved_question'
-            }
-        },
-        {
-            sourceVariableId: 'workflow.checklist',
-            target: {
-                type: 'variable',
-                variableId: 'mission.checklist'
-            }
-        },
-        {
-            sourceVariableId: 'workflow.knowledge_base',
-            target: {
-                type: 'variable',
-                variableId: 'mission.knowledge_base'
-            }
-        },
-        {
-            sourceVariableId: 'workflow.answer',
-            target: {
-                type: 'variable',
-                variableId: 'mission.answer'
+                variableId: 'research-mission-output'
             }
         }
     ],
@@ -337,59 +357,54 @@ export const missionTemplate: Mission = {
     updatedAt: new Date().toISOString(),
 }
 
-// Research mission example
+// Example mission demonstrating proper variable and mapping structure
 export const missionExample: Mission = {
     id: 'research-mission',
-    title: 'General Purpose Research Mission',
-    goal: 'Research and provide a comprehensive answer to a complex question using multiple tools and sources',
-    status: 'active',
+    title: 'Research Question',
+    goal: 'Research and answer a complex question',
+    status: 'pending',
     workflow: workflowExample,
     state: [
+        // Mission-level input variables
         {
-            variable_id: 'question',
-            name: 'question',
-            description: 'The question to research',
+            variable_id: 'research-mission-input',
+            name: 'raw_question',
             schema: {
                 type: 'string',
                 is_array: false,
-                description: 'The question to research'
+                description: 'The initial question to research'
             },
             io_type: 'input',
             required: true,
             status: 'pending',
-            createdBy: 'research-mission'
+            createdBy: 'research-mission',
+            error_message: undefined
         },
+        // Mission-level output variables
         {
-            variable_id: 'answer',
-            name: 'answer',
-            description: 'The final answer',
+            variable_id: 'research-mission-output',
+            name: 'final_answer',
             schema: {
                 type: 'string',
                 is_array: false,
-                description: 'The generated answer in markdown format',
+                description: 'The final answer to the question',
                 format: 'markdown'
             },
             io_type: 'output',
             status: 'pending',
-            createdBy: 'research-mission'
+            createdBy: 'research-mission',
+            error_message: undefined
         }
     ],
-    inputMappings: [],
-    outputMappings: [],
-    resources: [
-        'Web Search API',
-        'Content Scraping Tools',
-        'Natural Language Processing',
-        'Knowledge Base Management System'
-    ],
+    inputMappings: [], // These would map to external inputs
+    outputMappings: [], // These would map to external outputs
+    resources: ['Question Development Tool', 'Research Tools', 'Answer Generation Tool'],
     success_criteria: [
-        'Question is improved and clarified',
-        'Comprehensive research is conducted',
-        'Knowledge base is properly maintained',
-        'Answer meets all requirements',
-        'Answer is properly formatted and validated'
+        'Question is properly developed and refined',
+        'Comprehensive research findings are gathered',
+        'Comprehensive answer is generated'
     ],
-    selectedTools: availableTools,
+    selectedTools: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
 };

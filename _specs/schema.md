@@ -3,8 +3,10 @@ FractalBot Schema
 
 Children help parents as follows:
 - parent inputs and outputs are mapped to child state
-- child generates output values and maps them back to parent state
-
+- child state mirrors parent input and output vars in its own state
+    this allows for a single collection of state vars to work with
+- child stores output values from its tools and substeps in its state
+    how does value then get propagated to parent?
 
 
 Mission

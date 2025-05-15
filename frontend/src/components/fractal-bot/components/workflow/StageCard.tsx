@@ -47,7 +47,7 @@ const StageCard: React.FC<StageCardProps> = ({ stage, index, isSelected, onClick
                     <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Inputs</h4>
                         <ul className="mt-1 space-y-0.5">
-                            {stage.childVariables?.filter(v => v.io_type === 'input').map((input) => (
+                            {stage.state?.filter(v => v.io_type === 'input').map((input) => (
                                 <li key={input.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
                                     {input.name}
                                 </li>
@@ -57,7 +57,7 @@ const StageCard: React.FC<StageCardProps> = ({ stage, index, isSelected, onClick
                     <div className="bg-gray-50 dark:bg-[#252b3b] p-2 rounded-lg">
                         <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400">Outputs</h4>
                         <ul className="mt-1 space-y-0.5">
-                            {stage.childVariables?.filter(v => v.io_type === 'output').map((output) => (
+                            {stage.state?.filter(v => v.io_type === 'output').map((output) => (
                                 <li key={output.variable_id} className="text-xs text-gray-600 dark:text-gray-300 truncate">
                                     {output.name}
                                 </li>

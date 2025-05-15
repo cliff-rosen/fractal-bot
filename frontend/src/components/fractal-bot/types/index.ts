@@ -14,7 +14,7 @@ export interface WorkflowVariable {
     schema: Schema;         // Structure definition
     value?: SchemaValueType; // Actual data
     description?: string;   // Human-readable description
-    io_type: 'input' | 'output' | 'evaluation';
+    io_type: 'input' | 'output' | 'wip';
     required?: boolean;
     status: VariableStatus;  // Current status of the variable
     error_message?: string;  // Optional error message when status is 'error'
@@ -112,7 +112,7 @@ export interface Mission {
     goal: string;
     status: string;
     workflow: Workflow;
-    state: WorkflowVariable[];
+    state: WorkflowVariable[];  // Changed back to state to match our data structure
     inputMappings: VariableMapping[];  // Maps available inputs to mission inputs
     outputMappings: VariableMapping[]; // Maps workflow outputs to mission outputs
     resources: string[];
@@ -292,7 +292,7 @@ export function isStepReady(step: Step): boolean {
 export function createWorkflowVariable(
     name: string,
     schema: Schema,
-    io_type: 'input' | 'output' | 'evaluation',
+    io_type: 'input' | 'output' | 'wip',
     createdBy: string
 ): WorkflowVariable {
     return {
