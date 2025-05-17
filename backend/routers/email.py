@@ -24,6 +24,7 @@ import jwt
 import asyncio
 import uuid
 from schemas.newsletter import Newsletter, NewsletterExtractionRange
+import json
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/email", tags=["email"])
@@ -606,6 +607,9 @@ async def extract_newsletter_range(
                     date=str(newsletter['email_date'])
                 )
                 
+                # Convert extraction to JSON string
+                extraction_json = json.dumps(extraction)
+                
                 # Update the newsletter record
                 update_query = text("""
                     UPDATE newsletters 
@@ -615,7 +619,7 @@ async def extract_newsletter_range(
                 """)
                 
                 db.execute(update_query, {
-                    'extraction': extraction,
+                    'extraction': extraction_json,
                     'id': newsletter['id']
                 })
                 
