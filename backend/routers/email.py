@@ -4,6 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from services.auth_service import validate_token
 from services.email_service import EmailService
+from services.newsletter_extraction_service import NewsletterExtractionService
 from schemas.email import (
     EmailLabel,
     EmailMessage,
@@ -22,10 +23,12 @@ from google.auth.transport import requests
 import jwt
 import asyncio
 import uuid
+from schemas.newsletter import Newsletter, NewsletterExtractionRange
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/email", tags=["email"])
 email_service = EmailService()
+newsletter_extraction_service = NewsletterExtractionService()
 
 
 def credentials_to_dict(credentials):
@@ -462,4 +465,184 @@ async def disconnect_gmail(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error disconnecting Gmail: {str(e)}"
+        )
+
+@router.post("/newsletter/extract", response_model=EmailAgentResponse)
+async def extract_newsletter(
+    newsletter: Newsletter,
+    user = Depends(validate_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Extract structured information from a newsletter
+    
+    Args:
+        newsletter: Newsletter data to extract from
+        user: Authenticated user
+        db: Database session
+        
+    Returns:
+        EmailAgentResponse with extracted information
+    """
+    try:
+        # Get the content - prefer cleaned content if available, fall back to raw content
+        content = newsletter.cleaned_content or newsletter.raw_content
+        
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No content found in newsletter"
+            )
+            
+        # Extract information using AI
+        extraction = await newsletter_extraction_service.extract_from_newsletter(
+            content=content,
+            source=newsletter.source_name,
+            date=str(newsletter.email_date)
+        )
+        
+        # Update the newsletter record with the extraction
+        from sqlalchemy import text
+        query = text("""
+            UPDATE newsletters 
+            SET extraction = :extraction,
+                processed_status = 'extracted'
+            WHERE id = :id
+        """)
+        
+        db.execute(query, {
+            'extraction': extraction,
+            'id': newsletter.id
+        })
+        db.commit()
+        
+        return EmailAgentResponse(
+            success=True,
+            data={
+                'newsletter': newsletter.dict(),
+                'extraction': extraction
+            },
+            message="Successfully extracted information from newsletter"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error extracting newsletter: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+@router.post("/newsletter/extract/range", response_model=EmailAgentResponse)
+async def extract_newsletter_range(
+    range: NewsletterExtractionRange,
+    user = Depends(validate_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Extract structured information from a range of newsletters
+    
+    Args:
+        range: Range of newsletter IDs to process
+        user: Authenticated user
+        db: Database session
+        
+    Returns:
+        EmailAgentResponse with extraction results
+    """
+    try:
+        # Get all newsletters in the range
+        from sqlalchemy import text
+        query = text("""
+            SELECT * FROM newsletters 
+            WHERE id BETWEEN :min_id AND :max_id
+            AND (processed_status IS NULL OR processed_status = 'pending')
+        """)
+        
+        result = db.execute(query, {
+            'min_id': range.min_id,
+            'max_id': range.max_id
+        })
+        
+        # Convert rows to dictionaries properly
+        newsletters = []
+        for row in result:
+            newsletter = {
+                'id': row.id,
+                'source_name': row.source_name,
+                'issue_identifier': row.issue_identifier,
+                'email_date': row.email_date,
+                'subject_line': row.subject_line,
+                'raw_content': row.raw_content,
+                'cleaned_content': row.cleaned_content,
+                'extraction': row.extraction,
+                'processed_status': row.processed_status
+            }
+            newsletters.append(newsletter)
+        
+        if not newsletters:
+            return EmailAgentResponse(
+                success=True,
+                data={'processed': 0},
+                message="No pending newsletters found in the specified range"
+            )
+            
+        # Process each newsletter
+        processed = 0
+        errors = []
+        
+        for newsletter in newsletters:
+            try:
+                # Get the content - prefer cleaned content if available, fall back to raw content
+                content = newsletter['cleaned_content'] or newsletter['raw_content']
+                
+                if not content:
+                    errors.append(f"Newsletter {newsletter['id']}: No content found")
+                    continue
+                    
+                # Extract information using AI
+                extraction = await newsletter_extraction_service.extract_from_newsletter(
+                    content=content,
+                    source=newsletter['source_name'],
+                    date=str(newsletter['email_date'])
+                )
+                
+                # Update the newsletter record
+                update_query = text("""
+                    UPDATE newsletters 
+                    SET extraction = :extraction,
+                        processed_status = 'extracted'
+                    WHERE id = :id
+                """)
+                
+                db.execute(update_query, {
+                    'extraction': extraction,
+                    'id': newsletter['id']
+                })
+                
+                processed += 1
+                
+            except Exception as e:
+                error_msg = f"Newsletter {newsletter['id']}: {str(e)}"
+                logger.error(error_msg)
+                errors.append(error_msg)
+                continue
+                
+        # Commit all successful updates
+        db.commit()
+        
+        return EmailAgentResponse(
+            success=True,
+            data={
+                'processed': processed,
+                'total': len(newsletters),
+                'errors': errors if errors else None
+            },
+            message=f"Successfully processed {processed} out of {len(newsletters)} newsletters"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error processing newsletter range: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
         ) 
