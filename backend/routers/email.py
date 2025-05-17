@@ -508,7 +508,7 @@ async def extract_newsletter(
             UPDATE newsletters 
             SET extraction = :extraction,
                 processed_status = 'extracted'
-            WHERE id = :id
+            WHERE id = :id AND processed_status = 'pending'
         """)
         
         db.execute(query, {
