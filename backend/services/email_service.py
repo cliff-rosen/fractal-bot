@@ -12,6 +12,7 @@ from schemas.email import DateRange
 from config.settings import settings
 import base64
 from bs4 import BeautifulSoup
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -276,7 +277,8 @@ class EmailService:
         max_results: int = 100,
         include_attachments: bool = False,
         include_metadata: bool = True,
-        db: Optional[Session] = None
+        db: Optional[Session] = None,
+        save_to_newsletters: bool = False
     ) -> List[Dict[str, Any]]:
         """
         Get messages from specified folders
@@ -288,7 +290,8 @@ class EmailService:
             max_results: Maximum number of results to return
             include_attachments: Whether to include attachment data (not used)
             include_metadata: Whether to include message metadata (not used)
-            db: Database session (used only for authentication)
+            db: Database session (used for authentication and saving to newsletters)
+            save_to_newsletters: Whether to save messages to newsletters table
             
         Returns:
             List of message objects
@@ -346,4 +349,118 @@ class EmailService:
             raise
         except Exception as e:
             logger.error(f"Unexpected error getting messages: {str(e)}", exc_info=True)
+            raise
+
+    async def store_messages_to_newsletters(self, messages: List[Dict[str, Any]], db: Session) -> List[int]:
+        """
+        Store a list of email messages in the newsletters table
+        
+        Args:
+            messages: List of message objects from get_messages
+            db: Database session
+            
+        Returns:
+            List of inserted newsletter IDs
+        """
+        try:
+            inserted_ids = []
+            
+            for message in messages:
+                # Extract date from internalDate (which is in milliseconds since epoch)
+                email_date = datetime.fromtimestamp(int(message['date']) / 1000).date()
+                
+                # Get the best content - prefer HTML if available, fall back to plain text
+                content = message['body'].get('html') or message['body'].get('plain') or ''
+                
+                # Create newsletter record
+                newsletter = {
+                    'source_name': message['from'],
+                    'issue_identifier': None,  # Can be populated later if needed
+                    'email_date': email_date,
+                    'subject_line': message['subject'],
+                    'raw_content': content,
+                    'cleaned_content': None,  # Can be populated later
+                    'extraction': '{}',  # Empty JSON object as default
+                    'processed_status': 'pending'
+                }
+                
+                # Insert into database using SQLAlchemy text()
+                query = text("""
+                    INSERT INTO newsletters 
+                    (source_name, issue_identifier, email_date, subject_line, 
+                     raw_content, cleaned_content, extraction, processed_status)
+                    VALUES 
+                    (:source_name, :issue_identifier, :email_date, :subject_line,
+                     :raw_content, :cleaned_content, :extraction, :processed_status)
+                """)
+                
+                result = db.execute(query, newsletter)
+                inserted_ids.append(result.lastrowid)
+                
+            db.commit()
+            return inserted_ids
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Error storing messages to newsletters: {str(e)}", exc_info=True)
+            raise 
+
+    async def get_messages_and_store(
+        self,
+        db: Session,
+        folders: Optional[List[str]] = None,
+        date_range: Optional[DateRange] = None,
+        query_terms: Optional[List[str]] = None,
+        max_results: int = 100,
+        include_attachments: bool = False,
+        include_metadata: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Get messages from Gmail and store them in the newsletters table
+        
+        Args:
+            db: Database session (required)
+            folders: List of folder/label IDs
+            date_range: DateRange object with start and end dates
+            query_terms: List of search terms
+            max_results: Maximum number of results to return
+            include_attachments: Whether to include attachment data
+            include_metadata: Whether to include message metadata
+            
+        Returns:
+            Dictionary containing:
+            - messages: List of fetched message objects
+            - stored_ids: List of IDs of successfully stored newsletters
+            - error: Error message if storage failed (None if successful)
+        """
+        try:
+            # First get the messages
+            messages = await self.get_messages(
+                folders=folders,
+                date_range=date_range,
+                query_terms=query_terms,
+                max_results=max_results,
+                include_attachments=include_attachments,
+                include_metadata=include_metadata,
+                db=db
+            )
+            
+            # Then store them
+            try:
+                stored_ids = await self.store_messages_to_newsletters(messages, db)
+                return {
+                    'messages': messages,
+                    'stored_ids': stored_ids,
+                    'error': None
+                }
+            except Exception as e:
+                logger.error(f"Error storing messages to newsletters: {str(e)}")
+                return {
+                    'messages': messages,
+                    'stored_ids': [],
+                    'error': str(e)
+                }
+                
+        except Exception as e:
+            logger.error(f"Error in get_messages_and_store: {str(e)}")
             raise 

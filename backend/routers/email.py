@@ -313,6 +313,70 @@ async def get_messages(
             error=str(e)
         )
 
+@router.post("/messages/store", response_model=EmailAgentResponse)
+async def get_messages_and_store(
+    params: EmailSearchParams,
+    user = Depends(validate_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Get messages from Gmail and store them in the newsletters table
+    
+    Args:
+        params: Email search parameters
+        user: Authenticated user
+        db: Database session
+        
+    Returns:
+        EmailAgentResponse with messages and storage results
+    """
+    try:
+        # Authenticate with Gmail API
+        if not await email_service.authenticate(user.user_id, db):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Failed to authenticate with Gmail API"
+            )
+            
+        # Get messages and store them
+        result = await email_service.get_messages_and_store(
+            db=db,
+            folders=params.folders,
+            date_range=params.date_range,
+            query_terms=params.query_terms,
+            max_results=params.max_results,
+            include_attachments=params.include_attachments,
+            include_metadata=params.include_metadata
+        )
+        
+        # Check if there was an error storing messages
+        if result['error']:
+            return EmailAgentResponse(
+                success=True,  # Still true because we got the messages
+                data={
+                    'messages': result['messages'],
+                    'stored_ids': result['stored_ids'],
+                    'storage_error': result['error']
+                },
+                message=f"Retrieved {len(result['messages'])} messages. Warning: {result['error']}"
+            )
+            
+        return EmailAgentResponse(
+            success=True,
+            data={
+                'messages': result['messages'],
+                'stored_ids': result['stored_ids']
+            },
+            message=f"Successfully retrieved and stored {len(result['messages'])} messages"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in get_messages_and_store: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
 @router.get("/messages/{message_id}", response_model=EmailAgentResponse)
 async def get_message(
     message_id: str,
